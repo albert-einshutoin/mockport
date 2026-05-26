@@ -36,7 +36,7 @@ jobs:
       - run: go vet ./...
       - name: Build archive
         run: scripts/build-release-archives.sh "${GITHUB_REF_NAME#v}" dist "${{ matrix.goos }}" "${{ matrix.goarch }}"
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: mockport-${{ matrix.goos }}-${{ matrix.goarch }}
           path: |
