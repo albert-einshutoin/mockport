@@ -55,7 +55,7 @@ jobs:
         run: |
           find dist -name checksums.txt -exec cat {} + | sort -u > checksums.txt
           find dist -name 'mockport_*.tar.gz' -exec mv {} . \;
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           files: |
             mockport_*.tar.gz
