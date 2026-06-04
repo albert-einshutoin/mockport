@@ -40,9 +40,26 @@ Compatibility score is deterministic and offline. It combines:
 
 - Endpoint coverage.
 - Built-in scenario coverage.
-- SDK evidence.
-- Fake state support.
-- Error behavior support.
+- SDK evidence (the `sdk` level plus at least one pinned SDK version).
+- Fake state support (the `state` level plus concrete state evidence).
+- Error behavior support (the `error` level plus concrete error evidence).
+
+Declaring a level does not by itself earn coverage. State and error coverage are
+tied to concrete evidence so a manifest cannot be inflated by level declarations
+alone:
+
+- State coverage requires the `state` level **and** concrete state evidence:
+  stateful resources, idempotency, or reset support, or an endpoint/scenario that
+  explicitly claims the `state` level. A `state` level with no such evidence
+  scores zero state coverage.
+- Error coverage requires the `error` level **and** concrete error evidence: a
+  supported built-in error scenario (flagged with the `error` category or matched
+  by a known error-name marker), or an endpoint/scenario that explicitly claims
+  the `error` level. An `error` level with no such evidence scores zero error
+  coverage.
+
+`workflow-compatible` promotion requires full state and error coverage (not just
+the level declarations), so mismatched metadata cannot be promoted.
 
 User-defined scenarios do not raise provider compatibility score unless promoted into a built-in scenario with tests, docs, and sanitized fixture evidence.
 

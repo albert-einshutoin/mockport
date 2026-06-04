@@ -48,7 +48,13 @@ type SDKVersion struct {
 type Scenario struct {
 	Name      string
 	Supported bool
+	// Category optionally classifies the scenario. The "error" category marks a
+	// scenario as concrete error-behavior evidence for compatibility scoring.
+	Category string
 }
+
+// ScenarioCategoryError marks a scenario as concrete error-behavior evidence.
+const ScenarioCategoryError = "error"
 
 // Endpoint describes one provider-like HTTP endpoint exposed by an adapter.
 type Endpoint struct {

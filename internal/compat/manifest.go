@@ -23,6 +23,10 @@ const (
 	LevelContract = adapter.LevelContract
 )
 
+// ScenarioCategoryError is the scenario category that marks a manifest scenario
+// as concrete error-behavior evidence for compatibility scoring.
+const ScenarioCategoryError = adapter.ScenarioCategoryError
+
 type SDKVersion struct {
 	Name    string `json:"name"`
 	Version string `json:"version"`
@@ -36,7 +40,25 @@ type Manifest struct {
 	Levels          []Level               `json:"levels,omitempty"`
 	Endpoints       []Endpoint            `json:"endpoints,omitempty"`
 	Scenarios       []Scenario            `json:"scenarios,omitempty"`
+	StateEvidence   *StateEvidence        `json:"state_evidence,omitempty"`
 	Unsupported     []UnsupportedBehavior `json:"unsupported_behavior,omitempty"`
+}
+
+// StateEvidence captures the concrete fake-state surface an adapter exposes.
+// It backs the state coverage score so a declared state level alone does not
+// inflate the score without observable stateful behavior.
+type StateEvidence struct {
+	StatefulResources []string `json:"stateful_resources,omitempty"`
+	Idempotency       bool     `json:"idempotency,omitempty"`
+	Reset             bool     `json:"reset,omitempty"`
+}
+
+// HasEvidence reports whether any concrete fake-state behavior is present.
+func (s *StateEvidence) HasEvidence() bool {
+	if s == nil {
+		return false
+	}
+	return len(s.StatefulResources) > 0 || s.Idempotency || s.Reset
 }
 
 type Endpoint struct {
@@ -51,6 +73,7 @@ type Scenario struct {
 	Name      string  `json:"name"`
 	BuiltIn   bool    `json:"built_in"`
 	Supported bool    `json:"supported"`
+	Category  string  `json:"category,omitempty"`
 	Levels    []Level `json:"levels,omitempty"`
 }
 
@@ -136,8 +159,16 @@ func FromMetadata(meta adapter.Metadata) Manifest {
 			Name:      scenario.Name,
 			BuiltIn:   true,
 			Supported: scenario.Supported,
+			Category:  scenario.Category,
 			Levels:    metadataLevels(meta.Levels),
 		})
+	}
+	if len(meta.StatefulResources) > 0 || meta.Idempotency || meta.Reset {
+		manifest.StateEvidence = &StateEvidence{
+			StatefulResources: append([]string(nil), meta.StatefulResources...),
+			Idempotency:       meta.Idempotency,
+			Reset:             meta.Reset,
+		}
 	}
 	return manifest
 }
