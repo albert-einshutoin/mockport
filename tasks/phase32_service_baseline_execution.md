@@ -1,5 +1,7 @@
 # Phase 32 Service Baseline Execution
 
+[日本語版](phase32_service_baseline_execution.ja.md)
+
 **Goal:** Close the minimum useful integration-test baseline for every committed adapter, then add SendGrid only after the current service baselines are explicit and verifiable.
 
 **Current registered adapters:** `stripe`, `openai`, `github-oauth`, `slack`, and `line`.

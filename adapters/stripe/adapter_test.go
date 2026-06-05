@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/albert-einshutoin/mockport/internal/adapter"
@@ -115,6 +116,66 @@ func TestCheckoutSessionCreateRetrieveListAndIdempotency(t *testing.T) {
 	}
 	if listed.Object != "list" || len(listed.Data) != 1 || listed.Data[0]["id"] != created["id"] {
 		t.Fatalf("list = %#v", listed)
+	}
+}
+
+func TestCheckoutSessionIdempotencyIsAtomicUnderConcurrentRequests(t *testing.T) {
+	mux := newStripeMux(t, adapter.Config{BasePath: "/stripe", Scenario: "payment_success"})
+	const requests = 64
+	start := make(chan struct{})
+	bodies := make(chan map[string]any, requests)
+	var wg sync.WaitGroup
+
+	for range requests {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			<-start
+
+			rec := serveStripeRequest(mux, http.MethodPost, "/stripe/v1/checkout/sessions", "client_reference_id=cart_race", map[string]string{"Idempotency-Key": "cart-race"})
+			if rec.Code != http.StatusOK {
+				t.Errorf("status = %d, want %d, body=%s", rec.Code, http.StatusOK, rec.Body.String())
+				return
+			}
+			var body map[string]any
+			if err := json.Unmarshal(rec.Body.Bytes(), &body); err != nil {
+				t.Errorf("decode response: %v", err)
+				return
+			}
+			bodies <- body
+		}()
+	}
+	close(start)
+	wg.Wait()
+	close(bodies)
+	if t.Failed() {
+		return
+	}
+
+	ids := map[string]int{}
+	for body := range bodies {
+		id, ok := body["id"].(string)
+		if !ok || id == "" {
+			t.Fatalf("response without id: %#v", body)
+		}
+		ids[id]++
+	}
+	if len(ids) != 1 {
+		t.Fatalf("created ids = %#v, want one replayed id", ids)
+	}
+
+	list := serveStripeRequest(mux, http.MethodGet, "/stripe/v1/checkout/sessions", "", nil)
+	if list.Code != http.StatusOK {
+		t.Fatalf("list status = %d, want %d", list.Code, http.StatusOK)
+	}
+	var listed struct {
+		Data []map[string]any `json:"data"`
+	}
+	if err := json.Unmarshal(list.Body.Bytes(), &listed); err != nil {
+		t.Fatalf("decode list: %v", err)
+	}
+	if len(listed.Data) != 1 {
+		t.Fatalf("listed sessions = %#v, want one side effect", listed.Data)
 	}
 }
 

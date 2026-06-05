@@ -1,5 +1,7 @@
 # 99. Sources
 
+[日本語版](99_sources.ja.md)
+
 This document records external version references checked on 2026-05-25.
 
 ## Go

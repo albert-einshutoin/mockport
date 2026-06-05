@@ -1,5 +1,7 @@
 # Phase 14 Compatibility Engine Implementation Plan
 
+[日本語版](phase14_compatibility_engine.ja.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Mockport の互換性を「感覚」ではなく、adapter ごとの contract、coverage、score として測れる基盤にする。

@@ -1,5 +1,7 @@
 # AI-safe Development
 
+[日本語版](ai-safe-development.ja.md)
+
 Mockport does not try to hide real secrets from AI tools. It makes real secrets unnecessary for local and CI integration testing.
 
 ## Default Mode

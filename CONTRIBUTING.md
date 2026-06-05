@@ -1,5 +1,7 @@
 # Contributing
 
+[日本語版](CONTRIBUTING.ja.md)
+
 ## Setup
 
 Use Go 1.26.3.

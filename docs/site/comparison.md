@@ -1,5 +1,7 @@
 # Comparison
 
+[日本語版](comparison.ja.md)
+
 ## Mockport vs Provider Sandboxes
 
 Provider sandboxes are authoritative for provider behavior. Mockport is local, Docker-first, secret-free, and deterministic. Use Mockport for fast local and CI integration tests, then validate critical paths against the real provider sandbox before production.

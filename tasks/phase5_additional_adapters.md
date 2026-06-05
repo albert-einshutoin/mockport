@@ -1,5 +1,7 @@
 # Phase 5 Additional Adapters Implementation Plan
 
+[日本語版](phase5_additional_adapters.ja.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Phase 4 の adapter metadata/report contract に沿って、OpenAI-compatible、GitHub OAuth-like、Slack-like adapter を built-in adapter として追加する。

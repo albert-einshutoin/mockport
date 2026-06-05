@@ -1,5 +1,7 @@
 # Phase 16 State Foundation Implementation Plan
 
+[日本語版](phase16_state_foundation.ja.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** provider-specific state adoption の前に、deterministic fake state と idempotency/validation primitives を共有基盤として用意する。

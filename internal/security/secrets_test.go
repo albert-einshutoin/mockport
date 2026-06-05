@@ -17,7 +17,9 @@ func TestLooksLikeSecret(t *testing.T) {
 		{"stripe test", "sk_test_123", true},
 		{"aws access key", "AKIAIOSFODNN7EXAMPLE", true},
 		{"github token", "github_pat_abc", true},
+		{"quoted live secret", " 'sk_live_123' ", true},
 		{"mockport fake", "mockport_stripe_secret", false},
+		{"quoted mockport fake", " \"mockport_stripe_secret\" ", false},
 		{"mockport webhook fake", "whsec_mockport", false},
 		{"local fake", "local_openai_key", false},
 	}
@@ -70,11 +72,30 @@ func TestRedactMessage(t *testing.T) {
 }
 
 func TestLooksLikeExternalServiceURL(t *testing.T) {
-	if !LooksLikeExternalServiceURL("https://api.stripe.com/v1/checkout/sessions") {
-		t.Fatal("expected Stripe live API URL to be dangerous")
+	tests := []struct {
+		name  string
+		value string
+		want  bool
+	}{
+		{"stripe path", "https://api.stripe.com/v1/checkout/sessions", true},
+		{"stripe uppercase host", " HTTPS://API.STRIPE.COM/v1/checkout/sessions?expand[]=payment_intent ", true},
+		{"openai quoted", "'https://api.openai.com/v1/chat/completions?timeout=1'", true},
+		{"github query", "https://api.github.com/repos/acme/project?per_page=1", true},
+		{"line path", "https://api.line.me/v2/bot/message/push", true},
+		{"slack api path", "https://slack.com/api/chat.postMessage?token=x", true},
+		{"slack webhook host", "https://hooks.slack.com/services/T000/B000/XXX", true},
+		{"localhost", "http://localhost:43101/stripe", false},
+		{"lookalike host", "https://example.com/api.stripe.com/v1", false},
+		{"slack non api path", "https://slack.com/help", false},
 	}
-	if LooksLikeExternalServiceURL("http://localhost:43101/stripe") {
-		t.Fatal("expected localhost URL to be allowed")
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := LooksLikeExternalServiceURL(tt.value)
+			if got != tt.want {
+				t.Fatalf("LooksLikeExternalServiceURL(%q) = %v, want %v", tt.value, got, tt.want)
+			}
+		})
 	}
 }
 

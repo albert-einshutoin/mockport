@@ -1,5 +1,7 @@
 # Roadmap
 
+[日本語版](ROADMAP.ja.md)
+
 Mockport is a Docker-first local API environment for AI-native development and CI. This roadmap is intentionally scoped to public preview work and provider-compatible direction without promising full provider internals.
 
 ## Current Release

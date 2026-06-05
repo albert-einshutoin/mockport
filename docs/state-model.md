@@ -1,5 +1,7 @@
 # State Model
 
+[日本語版](state-model.ja.md)
+
 Mockport state is deterministic, in-memory, and provider-neutral. It exists to support local API-compatible workflows without reproducing provider internals.
 
 ## Store Scope

@@ -1,5 +1,7 @@
 # Phase 8 Public Env Safety Implementation Plan
 
+[日本語版](phase8_public_env_safety.ja.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 「Mockport 用 `.env` は公開してもよい」と言える条件を、初回 public preview 前にプロダクト契約として定義し検証する。

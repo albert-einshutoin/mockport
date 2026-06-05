@@ -1,5 +1,7 @@
 # Stripe Checkout Example
 
+[日本語版](README.ja.md)
+
 This example runs the Stripe-like Mockport adapter with fake local credentials.
 
 ```bash

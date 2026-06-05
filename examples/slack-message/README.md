@@ -1,5 +1,7 @@
 # Slack Message Example
 
+[日本語版](README.ja.md)
+
 This example runs the Slack-like Mockport adapter with fake local credentials.
 
 ```bash

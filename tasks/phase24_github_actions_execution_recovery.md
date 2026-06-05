@@ -1,5 +1,7 @@
 # Phase 24 GitHub Actions Execution Recovery Implementation Plan
 
+[日本語版](phase24_github_actions_execution_recovery.ja.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** `git push` 後に GitHub Actions run が作成されない状態を調査し、CI / smoke / compatibility workflow が実際に実行される公開OSS運用に戻す。

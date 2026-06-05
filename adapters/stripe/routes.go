@@ -170,42 +170,30 @@ func (rt *routes) writeGenericResource(w http.ResponseWriter, r *http.Request, r
 func (rt *routes) createStatefulResource(w http.ResponseWriter, r *http.Request, resourceType string, body map[string]interface{}) {
 	scope := "stripe:" + resourceType
 	fingerprint := requestFingerprint(r)
-	if replayed, replayResponse, err := rt.idempotency.Lookup(scope, r.Header.Get("Idempotency-Key"), fingerprint); err != nil {
+
+	replayed, idempotentResponse, err := rt.idempotency.Do(scope, r.Header.Get("Idempotency-Key"), fingerprint, func() (state.IdempotentResponse, error) {
+		resource, err := rt.store.Create("stripe", resourceType, body)
+		if err != nil {
+			return state.IdempotentResponse{}, err
+		}
+		response := resource.Data
+		response["id"] = resource.ID
+		return state.IdempotentResponse{Status: http.StatusOK, Body: response}, nil
+	})
+	if err != nil {
 		var conflict *state.IdempotencyConflictError
 		if errors.As(err, &conflict) {
 			rt.writeStripeError(w, http.StatusConflict, "idempotency_error", "idempotency_key_in_use", "Keys for idempotent requests can only be reused with the same parameters")
 			return
 		}
-		rt.writeStripeError(w, http.StatusInternalServerError, "api_error", "mockport_idempotency_error", err.Error())
-		return
-	} else if replayed {
-		rt.writeJSON(w, replayResponse.Status, replayResponse.Body)
-		return
-	}
-
-	resource, err := rt.store.Create("stripe", resourceType, body)
-	if err != nil {
 		rt.writeStripeError(w, http.StatusInternalServerError, "api_error", "mockport_state_error", err.Error())
 		return
 	}
-	response := resource.Data
-	response["id"] = resource.ID
-	idempotentResponse := state.IdempotentResponse{Status: http.StatusOK, Body: response}
-	replayed, replayResponse, err := rt.idempotency.Remember(scope, r.Header.Get("Idempotency-Key"), fingerprint, idempotentResponse)
-	if err != nil {
-		var conflict *state.IdempotencyConflictError
-		if errors.As(err, &conflict) {
-			rt.writeStripeError(w, http.StatusConflict, "idempotency_error", "idempotency_key_in_use", "Keys for idempotent requests can only be reused with the same parameters")
-			return
-		}
-		rt.writeStripeError(w, http.StatusInternalServerError, "api_error", "mockport_idempotency_error", err.Error())
-		return
-	}
 	if replayed {
-		rt.writeJSON(w, replayResponse.Status, replayResponse.Body)
+		rt.writeJSON(w, idempotentResponse.Status, idempotentResponse.Body)
 		return
 	}
-	rt.writeJSON(w, http.StatusOK, response)
+	rt.writeJSON(w, idempotentResponse.Status, idempotentResponse.Body)
 }
 
 func (rt *routes) writeResource(w http.ResponseWriter, resourceType, id string, fallback func(string) map[string]interface{}) {

@@ -23,6 +23,7 @@ var fakeSecretPrefixes = []string{
 }
 
 func LooksLikeSecret(value string) bool {
+	value = NormalizePublicSafetyValue(value)
 	if value == "whsec_mockport" {
 		return false
 	}
@@ -37,6 +38,10 @@ func LooksLikeSecret(value string) bool {
 		}
 	}
 	return false
+}
+
+func NormalizePublicSafetyValue(value string) string {
+	return strings.Trim(strings.TrimSpace(value), `"'`)
 }
 
 type PublicEnvFinding struct {
@@ -57,7 +62,7 @@ func ScanPublicEnv(content string) []PublicEnvFinding {
 			continue
 		}
 		key = strings.TrimSpace(key)
-		value = strings.Trim(strings.TrimSpace(value), `"'`)
+		value = NormalizePublicSafetyValue(value)
 		switch {
 		case LooksLikeSecret(value):
 			findings = append(findings, PublicEnvFinding{Line: idx + 1, Key: key, Reason: "real-looking provider secret"})

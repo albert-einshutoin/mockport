@@ -1,5 +1,7 @@
 # Phase 26 Provider-compatible Manifest Promotion Implementation Plan
 
+[日本語版](phase26_provider_compatible_manifest_promotion.ja.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** `provider-compatible` 昇格に必要な manifest / contract evidence / fixture coverage / known gaps を adapter ごとに明示し、maturity promotion が手作業の主観にならないようにする。

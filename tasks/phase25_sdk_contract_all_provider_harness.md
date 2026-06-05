@@ -1,5 +1,7 @@
 # Phase 25 SDK Contract All-provider Harness Implementation Plan
 
+[日本語版](phase25_sdk_contract_all_provider_harness.ja.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** `bash scripts/run-sdk-contracts.sh all` を placeholder ではなく、Stripe / OpenAI / GitHub OAuth / Slack の実 provider-specific contracts をまとめて実行する信頼できるCI入口にする。

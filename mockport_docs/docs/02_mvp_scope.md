@@ -1,5 +1,7 @@
 # 02. MVP Scope
 
+[日本語版](02_mvp_scope.ja.md)
+
 Mockport should be built in two MVP layers:
 
 1. Minimal MVP

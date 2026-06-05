@@ -1,5 +1,7 @@
 # Phase 18 Stripe Provider Compatibility Implementation Plan
 
+[日本語版](phase18_stripe_provider_compatibility.ja.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Stripe adapter を scenario-compatible から Stripe SDK/workflow-compatible local API へ引き上げる。

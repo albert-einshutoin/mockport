@@ -34,6 +34,7 @@ func Validate(cfg *Config) error {
 			name + ".webhook.signing_secret": adapter.Webhook.SigningSecret,
 		}
 		for field, value := range checks {
+			value = security.NormalizePublicSafetyValue(value)
 			if value == "" {
 				continue
 			}

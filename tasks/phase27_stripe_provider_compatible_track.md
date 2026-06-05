@@ -1,5 +1,7 @@
 # Phase 27 Stripe Provider-compatible Track Implementation Plan
 
+[日本語版](phase27_stripe_provider_compatible_track.ja.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Stripe first 方針に従い、Stripe adapter を最初の `provider-compatible` 候補として、選定workflowのcontract evidenceを厚くする。

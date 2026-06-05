@@ -1,5 +1,7 @@
 # Phase 12 Fixture, Spec, And Scenario Policy Implementation Plan
 
+[日本語版](phase12_fixture_spec_policy.ja.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** compatibility engine と SDK contract 実装の前に、fixture/spec snapshot/scenario の安全性、出典、更新ルールを定義する。

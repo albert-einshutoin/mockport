@@ -1,5 +1,7 @@
 # Phase 22 Provider-compatible Release Track Implementation Plan
 
+[日本語版](phase22_provider_compatible_release_track.ja.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 高忠実度互換を release train として運用し、provider/API/SDK version ごとの compatibility を継続的に公開する。

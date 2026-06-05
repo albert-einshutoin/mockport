@@ -1,5 +1,7 @@
 # 08. CLI Spec
 
+[日本語版](08_cli_spec.ja.md)
+
 ## CLI name
 
 ```bash

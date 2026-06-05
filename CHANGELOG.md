@@ -1,5 +1,7 @@
 # Changelog
 
+[日本語版](CHANGELOG.ja.md)
+
 ## Unreleased
 
 ### Compatibility release track

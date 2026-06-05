@@ -1,5 +1,7 @@
 # Compatibility Reports
 
+[日本語版](README.ja.md)
+
 Compatibility reports are generated trust artifacts for the provider-compatible release track.
 
 - `latest.md` is the human-readable report.

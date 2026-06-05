@@ -1,5 +1,7 @@
 # Phase 20 GitHub OAuth Provider Compatibility Implementation Plan
 
+[日本語版](phase20_github_oauth_provider_compatibility.ja.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** GitHub OAuth-like adapter を OAuth client/workflow-compatible local API へ引き上げる。

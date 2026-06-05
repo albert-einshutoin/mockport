@@ -1,5 +1,7 @@
 # Phase 13 Public Preview Contract Cleanup Implementation Plan
 
+[日本語版](phase13_public_preview_contract_cleanup.ja.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** public preview で露出した実装との期待値差を compatibility engine 前に潰す。

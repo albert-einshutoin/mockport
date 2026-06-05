@@ -1,5 +1,7 @@
 # Phase 15 SDK Contract Harness Foundation Implementation Plan
 
+[日本語版](phase15_sdk_contract_harness_foundation.ja.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 公式 SDK または実運用に近い client を使った contract harness の土台を作る。

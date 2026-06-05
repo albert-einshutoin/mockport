@@ -1,5 +1,7 @@
 # Mockport Implementation Status
 
+[日本語版](status.ja.md)
+
 最終更新: 2026-05-26
 
 ## Decisions

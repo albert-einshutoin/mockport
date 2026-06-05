@@ -1,5 +1,7 @@
 # Phase 0 Baseline Implementation Plan
 
+[日本語版](phase0_baseline.ja.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Mockport の Go repository skeleton を作り、CLI から server を起動し、Docker 上で `/health` が 200 を返す状態にする。

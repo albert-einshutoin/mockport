@@ -1,5 +1,7 @@
 # OpenAI Chat Example
 
+[日本語版](README.ja.md)
+
 This example runs the OpenAI-compatible Mockport adapter with fake local credentials.
 
 ```bash

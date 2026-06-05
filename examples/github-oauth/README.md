@@ -1,5 +1,7 @@
 # GitHub OAuth Example
 
+[日本語版](README.ja.md)
+
 This example runs the GitHub OAuth-like Mockport adapter with fake local credentials.
 
 ```bash

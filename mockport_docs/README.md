@@ -1,5 +1,7 @@
 # Mockport Development Documentation Pack
 
+[日本語版](README.ja.md)
+
 Created: 2026-05-25
 
 Mockport is a Docker-first service emulator for secret-free integration testing in AI-native development.

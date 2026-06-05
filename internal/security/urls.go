@@ -6,19 +6,24 @@ import (
 	"strings"
 )
 
-var dangerousURLPrefixes = []string{
-	"https://api.stripe.com",
-	"https://api.openai.com",
-	"https://api.github.com",
-	"https://api.line.me",
-	"https://slack.com/api",
-}
-
 func LooksLikeExternalServiceURL(value string) bool {
-	for _, prefix := range dangerousURLPrefixes {
-		if strings.HasPrefix(value, prefix) {
-			return true
-		}
+	value = NormalizePublicSafetyValue(value)
+	parsed, err := url.Parse(value)
+	if err != nil || parsed.Host == "" {
+		return false
+	}
+	switch strings.ToLower(parsed.Scheme) {
+	case "http", "https":
+	default:
+		return false
+	}
+
+	host := normalizedURLHost(parsed)
+	switch host {
+	case "api.stripe.com", "api.openai.com", "api.github.com", "api.line.me", "hooks.slack.com":
+		return true
+	case "slack.com":
+		return parsed.Path == "/api" || strings.HasPrefix(parsed.Path, "/api/")
 	}
 	return false
 }

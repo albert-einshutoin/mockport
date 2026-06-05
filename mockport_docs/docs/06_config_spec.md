@@ -1,5 +1,7 @@
 # 06. Configuration Spec
 
+[日本語版](06_config_spec.ja.md)
+
 ## File name
 
 Default:

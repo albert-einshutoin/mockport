@@ -1,5 +1,7 @@
 # Phase 23 Roadmap And Documentation Alignment Implementation Plan
 
+[日本語版](phase23_roadmap_docs_alignment.ja.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Phase 22 完了後の実態と公開 docs / roadmap / release notes のズレをなくし、次の contributor が現在地と次の優先順位を誤読しない状態にする。

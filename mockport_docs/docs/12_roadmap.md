@@ -1,5 +1,7 @@
 # 12. Roadmap
 
+[日本語版](12_roadmap.ja.md)
+
 ## Phase 0: Baseline
 
 Goal: repository skeleton.

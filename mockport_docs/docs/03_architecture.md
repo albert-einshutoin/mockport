@@ -1,5 +1,7 @@
 # 03. Architecture
 
+[日本語版](03_architecture.ja.md)
+
 ## High-level architecture
 
 ```txt

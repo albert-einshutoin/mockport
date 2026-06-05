@@ -1,5 +1,7 @@
 # Mockport npm Wrapper
 
+[日本語版](README.ja.md)
+
 This package is experimental. It is a convenience wrapper around a Mockport binary or Docker image, not the primary runtime.
 
 Resolution order:

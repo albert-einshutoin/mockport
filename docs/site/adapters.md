@@ -1,5 +1,7 @@
 # Adapters
 
+[日本語版](adapters.ja.md)
+
 | Adapter | Base path | Maturity | Workflows |
 | --- | --- | --- | --- |
 | `stripe` | `/stripe` plus SDK-compatible `/v1` alias | `workflow-compatible` | checkout sessions, payment intents, customers, products, prices, subscriptions, invoices, refunds, fake signed webhooks |

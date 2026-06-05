@@ -1,5 +1,7 @@
 # Public Env Safety
 
+[日本語版](public-env-safety.ja.md)
+
 Mockport generated env files are intended to be safe to commit when they remain unchanged.
 
 ## Safe Values

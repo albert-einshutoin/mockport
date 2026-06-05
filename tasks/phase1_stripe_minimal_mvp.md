@@ -1,5 +1,7 @@
 # Phase 1 Stripe Minimal MVP Implementation Plan
 
+[日本語版](phase1_stripe_minimal_mvp.ja.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Stripe-like adapter を built-in adapter として追加し、Minimal MVP の success/failure/webhook/report/AI-safe 検証を Docker-first で満たす。

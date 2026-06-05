@@ -1,5 +1,7 @@
 # Mockport Task Board
 
+[日本語版](README.ja.md)
+
 この `tasks/` ディレクトリは、Mockport を Phase 0 から公開 OSS 運用まで TDD ベースで実装するための作業ボードです。
 
 ## 方針

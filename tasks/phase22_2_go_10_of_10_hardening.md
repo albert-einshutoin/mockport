@@ -1,5 +1,7 @@
 # Phase 22.2: Go 10/10 Hardening Track
 
+[日本語版](phase22_2_go_10_of_10_hardening.ja.md)
+
 ## Goal
 
 Phase 23 の docs alignment に入る前に、Mockport の Go 実装を「堅い Go 実装」から「Go の言語特性と標準 ecosystem を最大限活かした実装」へ引き上げるための作業を設計する。

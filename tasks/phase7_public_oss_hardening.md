@@ -1,5 +1,7 @@
 # Phase 7 Public OSS Hardening Implementation Plan
 
+[日本語版](phase7_public_oss_hardening.ja.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Mockport を公開前に最低限信頼できる OSS repository にする。

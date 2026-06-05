@@ -1,5 +1,7 @@
 # Phase 29 GitHub OAuth And Slack Client Evidence Implementation Plan
 
+[日本語版](phase29_oauth_slack_client_evidence.ja.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** GitHub OAuth と Slack の client evidence を強化し、SDK/client contract の弱さによる compatibility score の不透明さを解消する。

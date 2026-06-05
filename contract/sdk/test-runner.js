@@ -9,6 +9,15 @@ const { runSlackSmoke } = require("./slack-smoke.test.js");
 
 const allowedProviders = new Set(["all", "stripe", "openai", "github-oauth", "slack"]);
 
+const liveSmokeRunners = {
+  stripe: runStripeSmoke,
+  openai: runOpenAISmoke,
+  "github-oauth": runGitHubOAuthSmoke,
+  slack: runSlackSmoke,
+};
+
+const allProviders = ["stripe", "openai", "github-oauth", "slack"];
+
 function parseArgs(argv) {
   const options = {
     baseURL: process.env.MOCKPORT_BASE_URL || "http://127.0.0.1:43101",
@@ -44,24 +53,60 @@ function parseArgs(argv) {
   return options;
 }
 
+async function runAllSmoke(options) {
+  const providers = [];
+  let failed = false;
+  for (const provider of allProviders) {
+    const runner = liveSmokeRunners[provider];
+    try {
+      const result = await runner({ ...options, provider });
+      providers.push(result);
+    } catch (error) {
+      failed = true;
+      providers.push({
+        provider,
+        baseURL: options.baseURL,
+        status: "failed",
+        error: error.message,
+      });
+    }
+  }
+  return {
+    provider: "all",
+    baseURL: options.baseURL,
+    status: failed ? "failed" : "sdk-ok",
+    providers,
+  };
+}
+
+function formatResultLine(result) {
+  if (result.provider === "all" && Array.isArray(result.providers)) {
+    const details = result.providers
+      .map((entry) => `${entry.provider}=${entry.status}`)
+      .join(" ");
+    return `sdk-contracts provider=all status=${result.status} baseURL=${result.baseURL} ${details}\n`;
+  }
+  return `sdk-contracts provider=${result.provider} status=${result.status} baseURL=${result.baseURL}\n`;
+}
+
 async function main() {
   const options = parseArgs(process.argv.slice(2));
   let result;
-  if (!options.offline && options.provider === "stripe") {
-    result = await runStripeSmoke(options);
-  } else if (!options.offline && options.provider === "openai") {
-    result = await runOpenAISmoke(options);
-  } else if (!options.offline && options.provider === "github-oauth") {
-    result = await runGitHubOAuthSmoke(options);
-  } else if (!options.offline && options.provider === "slack") {
-    result = await runSlackSmoke(options);
-  } else {
+  if (options.offline) {
     result = await runSmokePlaceholder(options);
+  } else if (options.provider === "all") {
+    result = await runAllSmoke(options);
+  } else {
+    const runner = liveSmokeRunners[options.provider];
+    result = await runner(options);
   }
   if (options.json) {
     process.stdout.write(`${JSON.stringify(result)}\n`);
   } else {
-    process.stdout.write(`sdk-contracts provider=${result.provider} status=${result.status} baseURL=${result.baseURL}\n`);
+    process.stdout.write(formatResultLine(result));
+  }
+  if (result.status === "failed") {
+    process.exit(1);
   }
 }
 

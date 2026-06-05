@@ -1,5 +1,7 @@
 # Phase 22.1: Go Engineering Hardening Before Docs Alignment
 
+[日本語版](phase22_1_go_engineering_hardening.ja.md)
+
 ## Goal
 
 Phase 23 の roadmap/docs alignment に入る前に、Phase 22 までの実装レビューで見つかった Go 固有の品質課題を解消する。

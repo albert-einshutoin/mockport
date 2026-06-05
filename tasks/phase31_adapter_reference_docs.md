@@ -1,5 +1,7 @@
 # Phase 31 Adapter Reference And Task Inventory
 
+[日本語版](phase31_adapter_reference_docs.ja.md)
+
 > **For agentic workers:** keep this file in sync with `internal/cli/run.go`, `docs/adapters/*.md`, and the adapter entries in `docs/site/adapters.md`.
 
 **Goal:** Find the issues and tasks for every currently registered adapter, and make the reproduced provider domains/endpoints traceable to official documentation.

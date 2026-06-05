@@ -1,5 +1,7 @@
 # Phase 11 Community And Maintenance Implementation Plan
 
+[日本語版](phase11_community_and_maintenance.ja.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 公開OSSとして継続メンテできる運用面を整え、外部 contributor と adopter の負担を下げる。

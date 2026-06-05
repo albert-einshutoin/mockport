@@ -1,5 +1,7 @@
 # Examples
 
+[日本語版](examples.ja.md)
+
 Run commands from the repository root.
 
 ## Stripe Checkout

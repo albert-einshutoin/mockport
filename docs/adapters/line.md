@@ -1,5 +1,7 @@
 # LINE Adapter Specification
 
+[日本語版](line.ja.md)
+
 This document describes the Mockport `line` adapter contract. It is not a copy of LINE's platform documentation and does not claim full LINE platform compatibility.
 
 ## Scope

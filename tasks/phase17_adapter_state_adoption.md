@@ -1,5 +1,7 @@
 # Phase 17 Adapter State Adoption Implementation Plan
 
+[日本語版](phase17_adapter_state_adoption.ja.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Phase 16 の state foundation を主要 adapter に適用し、provider-specific SDK compatibility tracks の前提を作る。

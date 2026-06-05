@@ -1,5 +1,7 @@
 # Compatibility Fixtures
 
+[日本語版](README.ja.md)
+
 Compatibility fixtures are sanitized evidence used to implement and review provider-compatible behavior. They are not recordings of production traffic.
 
 ## Required Fields

@@ -565,6 +565,156 @@ func performLineRequest(t *testing.T, cfg adapter.Config, method, path, body str
 	return rec
 }
 
+// TestConcurrentSingletonStateNoRace hammers the endpoints that mutate the
+// adapter's singleton webhook endpoint and default rich menu state from many
+// goroutines at once. It is meant to be run with -race: without locking around
+// those fields, the detector flags the concurrent read/write.
+func TestConcurrentSingletonStateNoRace(t *testing.T) {
+	mux := newLineMux(t, adapter.Config{BasePath: "/line", Scenario: "line_success"})
+
+	// Seed a rich menu with an image so it can be set as the default.
+	createRec := httptest.NewRecorder()
+	createReq := httptest.NewRequest(http.MethodPost, "/line/v2/bot/richmenu", strings.NewReader(`{"name":"race"}`))
+	createReq.Header.Set("Content-Type", "application/json")
+	mux.ServeHTTP(createRec, createReq)
+	if createRec.Code != http.StatusOK {
+		t.Fatalf("create rich menu status = %d: %s", createRec.Code, createRec.Body.String())
+	}
+	var created map[string]any
+	if err := json.Unmarshal(createRec.Body.Bytes(), &created); err != nil {
+		t.Fatalf("decode rich menu: %v", err)
+	}
+	richMenuID, _ := created["richMenuId"].(string)
+	if richMenuID == "" {
+		t.Fatalf("missing richMenuId: %#v", created)
+	}
+	uploadRec := httptest.NewRecorder()
+	mux.ServeHTTP(uploadRec, httptest.NewRequest(http.MethodPost, "/line/v2/bot/richmenu/"+richMenuID+"/content", nil))
+	if uploadRec.Code != http.StatusOK {
+		t.Fatalf("upload image status = %d: %s", uploadRec.Code, uploadRec.Body.String())
+	}
+
+	requests := []struct {
+		method string
+		path   string
+		body   string
+	}{
+		{http.MethodPut, "/line/v2/bot/channel/webhook/endpoint", `{"endpoint":"https://example.test/webhook"}`},
+		{http.MethodGet, "/line/v2/bot/channel/webhook/endpoint", ""},
+		{http.MethodPost, "/line/v2/bot/user/all/richmenu/" + richMenuID, ""},
+		{http.MethodGet, "/line/v2/bot/user/all/richmenu", ""},
+		{http.MethodDelete, "/line/v2/bot/user/all/richmenu", ""},
+		{http.MethodDelete, "/line/v2/bot/richmenu/" + richMenuID, ""},
+	}
+
+	var wg sync.WaitGroup
+	for i := 0; i < 50; i++ {
+		for _, rc := range requests {
+			wg.Add(1)
+			go func(method, path, body string) {
+				defer wg.Done()
+				var reader io.Reader
+				if body != "" {
+					reader = strings.NewReader(body)
+				}
+				req := httptest.NewRequest(method, path, reader)
+				if body != "" {
+					req.Header.Set("Content-Type", "application/json")
+				}
+				mux.ServeHTTP(httptest.NewRecorder(), req)
+			}(rc.method, rc.path, rc.body)
+		}
+	}
+	wg.Wait()
+}
+
+// TestConcurrentDefaultRichMenuStaysConsistent reproduces the check-then-set
+// race between adopting a default rich menu and deleting that same menu. Each
+// round races a set-default and a delete on one id, then verifies the invariant
+// while state is quiescent: the default rich menu must never reference a menu
+// that no longer exists in the store. Without serializing the set's existence
+// check with the assignment (and re-checking on read), a set whose check ran
+// before the delete but whose assignment lands after it leaves the default
+// dangling, which this test catches.
+func TestConcurrentDefaultRichMenuStaysConsistent(t *testing.T) {
+	mux := newLineMux(t, adapter.Config{BasePath: "/line", Scenario: "line_success"})
+
+	const settersPerRound = 24
+	for round := 0; round < 300; round++ {
+		id := createRichMenuWithImage(t, mux)
+
+		// Race many set-default calls against a delete on the same menu id. The
+		// set handler first checks the menu exists and then adopts it as the
+		// default; with that check-then-set unsynchronized, a setter whose check
+		// passed before the delete but whose assignment runs after it leaves the
+		// default dangling. Many concurrent setters widen the chance of straddling
+		// the delete.
+		start := make(chan struct{})
+		var wg sync.WaitGroup
+		wg.Add(settersPerRound + 1)
+		for s := 0; s < settersPerRound; s++ {
+			go func() {
+				defer wg.Done()
+				<-start
+				mux.ServeHTTP(httptest.NewRecorder(), httptest.NewRequest(http.MethodPost, "/line/v2/bot/user/all/richmenu/"+id, nil))
+			}()
+		}
+		go func() {
+			defer wg.Done()
+			<-start
+			mux.ServeHTTP(httptest.NewRecorder(), httptest.NewRequest(http.MethodDelete, "/line/v2/bot/richmenu/"+id, nil))
+		}()
+		close(start) // release all goroutines as simultaneously as possible
+		wg.Wait()
+
+		// Quiescent invariant check: nothing mutates state now, so the default
+		// reported here is authoritative and must point at a menu that exists.
+		getRec := httptest.NewRecorder()
+		mux.ServeHTTP(getRec, httptest.NewRequest(http.MethodGet, "/line/v2/bot/user/all/richmenu", nil))
+		if getRec.Code == http.StatusNotFound {
+			continue // no default set — consistent
+		}
+		if getRec.Code != http.StatusOK {
+			t.Fatalf("round %d: get default status = %d: %s", round, getRec.Code, getRec.Body.String())
+		}
+		var got map[string]any
+		if err := json.Unmarshal(getRec.Body.Bytes(), &got); err != nil {
+			t.Fatalf("round %d: decode default: %v", round, err)
+		}
+		defaultID, _ := got["richMenuId"].(string)
+		lookupRec := httptest.NewRecorder()
+		mux.ServeHTTP(lookupRec, httptest.NewRequest(http.MethodGet, "/line/v2/bot/richmenu/"+defaultID, nil))
+		if lookupRec.Code != http.StatusOK {
+			t.Fatalf("round %d: default rich menu %q does not exist in store (lookup status %d): the default points at a deleted menu", round, defaultID, lookupRec.Code)
+		}
+	}
+}
+
+func createRichMenuWithImage(t *testing.T, mux *http.ServeMux) string {
+	t.Helper()
+	createRec := httptest.NewRecorder()
+	createReq := httptest.NewRequest(http.MethodPost, "/line/v2/bot/richmenu", strings.NewReader(`{"name":"race"}`))
+	createReq.Header.Set("Content-Type", "application/json")
+	mux.ServeHTTP(createRec, createReq)
+	if createRec.Code != http.StatusOK {
+		t.Fatalf("create rich menu status = %d: %s", createRec.Code, createRec.Body.String())
+	}
+	var created map[string]any
+	if err := json.Unmarshal(createRec.Body.Bytes(), &created); err != nil {
+		t.Fatalf("decode rich menu: %v", err)
+	}
+	id, _ := created["richMenuId"].(string)
+	if id == "" {
+		t.Fatalf("missing richMenuId: %#v", created)
+	}
+	uploadRec := httptest.NewRecorder()
+	mux.ServeHTTP(uploadRec, httptest.NewRequest(http.MethodPost, "/line/v2/bot/richmenu/"+id+"/content", nil))
+	if uploadRec.Code != http.StatusOK {
+		t.Fatalf("upload image status = %d: %s", uploadRec.Code, uploadRec.Body.String())
+	}
+	return id
+}
+
 func newLineMux(t *testing.T, cfg adapter.Config) *http.ServeMux {
 	t.Helper()
 	mux := http.NewServeMux()

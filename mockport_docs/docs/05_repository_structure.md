@@ -1,5 +1,7 @@
 # 05. Repository Structure
 
+[日本語版](05_repository_structure.ja.md)
+
 Recommended initial single repository:
 
 ```txt

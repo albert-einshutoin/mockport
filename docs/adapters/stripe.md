@@ -1,5 +1,7 @@
 # Stripe Adapter Specification
 
+[日本語版](stripe.ja.md)
+
 This document describes the Mockport `stripe` adapter contract. It is not a copy of Stripe's documentation and does not claim full Stripe API compatibility.
 
 ## Scope

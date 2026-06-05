@@ -1,5 +1,7 @@
 # Adapter Helper Policy
 
+[日本語版](adapter-helper-policy.ja.md)
+
 OpenAI, GitHub OAuth, and Slack currently keep small local helpers such as `writeJSON` and `normalizeScenario` inside each adapter package.
 
 This is intentional for Phase 13:

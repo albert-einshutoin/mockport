@@ -1,5 +1,7 @@
 # Phase 3 AI-safe Mode Implementation Plan
 
+[日本語版](phase3_ai_safe_mode.ja.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** AI-safe mode を Mockport の明確な差別化として、警告、strict fail、redaction、report、docs まで一貫させる。

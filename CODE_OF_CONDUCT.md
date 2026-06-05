@@ -1,5 +1,7 @@
 # Code of Conduct
 
+[日本語版](CODE_OF_CONDUCT.ja.md)
+
 This project follows the Contributor Covenant Code of Conduct.
 
 ## Our Pledge

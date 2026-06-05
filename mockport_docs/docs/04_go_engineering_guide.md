@@ -1,5 +1,7 @@
 # 04. Go Engineering Guide
 
+[日本語版](04_go_engineering_guide.ja.md)
+
 ## Go version
 
 Use Go `1.26.3` for initial development.

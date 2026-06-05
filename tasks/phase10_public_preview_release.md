@@ -1,5 +1,7 @@
 # Phase 10 Public Preview Release Implementation Plan
 
+[日本語版](phase10_public_preview_release.ja.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Mockport の最初の public preview release を GitHub Release と GHCR image として公開する。

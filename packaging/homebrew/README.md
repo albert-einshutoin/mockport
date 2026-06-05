@@ -1,5 +1,7 @@
 # Homebrew Packaging
 
+[日本語版](README.ja.md)
+
 The formula template is intentionally not published yet. Release artifacts must exist before a tap can be updated.
 
 Manual flow:

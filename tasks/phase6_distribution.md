@@ -1,5 +1,7 @@
 # Phase 6 Distribution Implementation Plan
 
+[日本語版](phase6_distribution.ja.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Mockport を OSS として配布できる状態に近づける。Docker image、release binaries、Homebrew、npm wrapper、docs site の導線を用意する。

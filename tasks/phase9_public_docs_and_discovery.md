@@ -1,5 +1,7 @@
 # Phase 9 Public Docs And Discovery Implementation Plan
 
+[日本語版](phase9_public_docs_and_discovery.ja.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Public preview 前に初見ユーザーが、価値、制約、導入方法、adapter coverage を短時間で判断できる状態にする。

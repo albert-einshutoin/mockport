@@ -1,5 +1,7 @@
 # Multi-adapter Example
 
+[日本語版](README.ja.md)
+
 This example runs Stripe-like, OpenAI-compatible, GitHub OAuth-like, Slack-like, and LINE-like adapters in one Mockport process.
 
 ```bash

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"sync/atomic"
 	"testing"
 )
 
@@ -57,6 +58,91 @@ func TestIdempotencyStoreRejectsConflictingRequest(t *testing.T) {
 	}
 	if conflict.Scope != "stripe" || conflict.Key != "key-1" {
 		t.Fatalf("conflict = %#v", conflict)
+	}
+}
+
+func TestIdempotencyStoreDoReplaysMatchingInFlightRequest(t *testing.T) {
+	store := NewIdempotencyStore()
+	scope := "stripe:checkout_session"
+	response := IdempotentResponse{Status: http.StatusOK, Body: map[string]any{"id": "cs_test_123"}}
+	started := make(chan struct{})
+	release := make(chan struct{})
+	firstDone := make(chan idempotencyResult, 1)
+	secondDone := make(chan idempotencyResult, 1)
+	var calls atomic.Int64
+
+	go func() {
+		replayed, got, err := store.Do(scope, "key-1", "client_reference_id=cart_1", func() (IdempotentResponse, error) {
+			calls.Add(1)
+			close(started)
+			<-release
+			return response, nil
+		})
+		firstDone <- idempotencyResult{replayed: replayed, response: got, err: err}
+	}()
+	<-started
+
+	go func() {
+		replayed, got, err := store.Do(scope, "key-1", "client_reference_id=cart_1", func() (IdempotentResponse, error) {
+			calls.Add(1)
+			return IdempotentResponse{Status: http.StatusInternalServerError}, nil
+		})
+		secondDone <- idempotencyResult{replayed: replayed, response: got, err: err}
+	}()
+	close(release)
+
+	first := <-firstDone
+	second := <-secondDone
+	if first.err != nil || second.err != nil {
+		t.Fatalf("Do errors = first %v second %v", first.err, second.err)
+	}
+	if first.replayed {
+		t.Fatal("first request replayed = true, want false")
+	}
+	if !second.replayed {
+		t.Fatal("second matching request replayed = false, want true")
+	}
+	if first.response.Body["id"] != "cs_test_123" || second.response.Body["id"] != "cs_test_123" {
+		t.Fatalf("responses = first %#v second %#v", first.response, second.response)
+	}
+	if calls.Load() != 1 {
+		t.Fatalf("side effect calls = %d, want 1", calls.Load())
+	}
+}
+
+func TestIdempotencyStoreDoRejectsConflictingInFlightRequest(t *testing.T) {
+	store := NewIdempotencyStore()
+	scope := "stripe:checkout_session"
+	started := make(chan struct{})
+	release := make(chan struct{})
+	firstDone := make(chan idempotencyResult, 1)
+	var conflictingRunCalled atomic.Bool
+
+	go func() {
+		replayed, got, err := store.Do(scope, "key-1", "client_reference_id=cart_1", func() (IdempotentResponse, error) {
+			close(started)
+			<-release
+			return IdempotentResponse{Status: http.StatusOK}, nil
+		})
+		firstDone <- idempotencyResult{replayed: replayed, response: got, err: err}
+	}()
+	<-started
+
+	_, _, err := store.Do(scope, "key-1", "client_reference_id=cart_2", func() (IdempotentResponse, error) {
+		conflictingRunCalled.Store(true)
+		return IdempotentResponse{Status: http.StatusOK}, nil
+	})
+	var conflict *IdempotencyConflictError
+	if !errors.As(err, &conflict) {
+		t.Fatalf("err = %v, want IdempotencyConflictError", err)
+	}
+	if conflictingRunCalled.Load() {
+		t.Fatal("conflicting request executed side effect")
+	}
+
+	close(release)
+	if first := <-firstDone; first.err != nil {
+		t.Fatalf("first request err = %v", first.err)
 	}
 }
 
@@ -149,6 +235,12 @@ func TestIdempotencyStoreEvictionIsScoped(t *testing.T) {
 	if got, want := len(store.records), MaxIdempotencyRecordsPerScope+1; got != want {
 		t.Fatalf("record count across scopes = %d, want %d", got, want)
 	}
+}
+
+type idempotencyResult struct {
+	replayed bool
+	response IdempotentResponse
+	err      error
 }
 
 func TestRequireFieldsReportsMissingRequiredFields(t *testing.T) {

@@ -1,5 +1,7 @@
 # Reporting
 
+[日本語版](reporting.ja.md)
+
 Mockport reports are trust artifacts. They explain what ran, what was safe, what is supported, and what was not supported.
 
 ## JSON Report

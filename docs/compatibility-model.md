@@ -1,5 +1,7 @@
 # Compatibility Model
 
+[日本語版](compatibility-model.ja.md)
+
 Mockport compatibility is measured against public provider API behavior, SDK contracts, selected workflows, fake state, and known gaps. It does not mean provider internals, undocumented behavior, model quality, fraud checks, billing networks, delivery guarantees, or production network effects are reproduced.
 
 ## Implementation Boundary

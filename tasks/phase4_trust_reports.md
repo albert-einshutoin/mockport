@@ -1,5 +1,7 @@
 # Phase 4 Trust Reports And Adapter Contracts Implementation Plan
 
+[日本語版](phase4_trust_reports.ja.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** adapter を増やす前に、Mockport が「何をサポートし、何をサポートしないか」を report で説明できる trust foundation を作る。

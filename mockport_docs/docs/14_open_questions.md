@@ -1,5 +1,7 @@
 # 14. Open Questions
 
+[日本語版](14_open_questions.ja.md)
+
 ## Naming
 
 Current candidate:

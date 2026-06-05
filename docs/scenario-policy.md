@@ -1,5 +1,7 @@
 # Scenario Policy
 
+[日本語版](scenario-policy.ja.md)
+
 Mockport supports built-in scenarios first. User-defined scenarios are future work and must stay separate from provider compatibility claims until they are promoted through the fixture and compatibility process.
 
 ## Built-in Scenarios

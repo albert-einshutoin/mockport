@@ -214,6 +214,50 @@ func TestStrictRejectsExternalServiceURL(t *testing.T) {
 	}
 }
 
+func TestStrictRejectsNormalizedUnsafeConfigValues(t *testing.T) {
+	tests := []struct {
+		name      string
+		adapter   AdapterConfig
+		wantField string
+	}{
+		{
+			name:      "quoted secret",
+			adapter:   AdapterConfig{Enabled: true, BasePath: "/stripe", FakeSecret: " 'sk_live_123' "},
+			wantField: "stripe.fake_secret",
+		},
+		{
+			name:      "uppercase provider host with path and query",
+			adapter:   AdapterConfig{Enabled: true, BasePath: "/stripe", APIURL: " HTTPS://API.STRIPE.COM/v1/checkout/sessions?limit=1 "},
+			wantField: "stripe.api_url",
+		},
+		{
+			name:      "quoted slack api path",
+			adapter:   AdapterConfig{Enabled: true, BasePath: "/stripe", Webhook: WebhookConfig{TargetURL: "\"https://slack.com/api/chat.postMessage?token=x\""}},
+			wantField: "stripe.webhook.target_url",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cfg := Config{
+				Server: ServerConfig{Port: 43101},
+				Mode:   "strict",
+				Adapters: map[string]AdapterConfig{
+					"stripe": tt.adapter,
+				},
+			}
+
+			err := Validate(&cfg)
+			if err == nil {
+				t.Fatal("strict config with normalized unsafe value returned nil error")
+			}
+			if !strings.Contains(err.Error(), tt.wantField) {
+				t.Fatalf("error = %q, want %q", err.Error(), tt.wantField)
+			}
+		})
+	}
+}
+
 func TestAISafeRecordsExternalURLWarning(t *testing.T) {
 	cfg := Config{
 		Server: ServerConfig{Port: 43101},

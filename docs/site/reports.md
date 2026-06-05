@@ -1,5 +1,7 @@
 # Reports
 
+[日本語版](reports.ja.md)
+
 Mockport exposes a run report at:
 
 ```bash

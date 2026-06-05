@@ -1,5 +1,7 @@
 # 00. Product Vision
 
+[日本語版](00_product_vision.ja.md)
+
 ## Project name
 
 Mockport

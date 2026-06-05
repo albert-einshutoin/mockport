@@ -1,5 +1,7 @@
 # 10. AI-safe Security
 
+[日本語版](10_ai_safe_security.ja.md)
+
 ## Security principle
 
 Mockport should not try to hide real secrets from AI. It should make real secrets unnecessary.

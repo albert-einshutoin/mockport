@@ -1,5 +1,7 @@
 # Phase 2 CLI UX Implementation Plan
 
+[日本語版](phase2_cli_ux.ja.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** 空ディレクトリから `mockport init` と `mockport up/run` で 2 分以内に Stripe adapter を起動できる CLI UX にする。

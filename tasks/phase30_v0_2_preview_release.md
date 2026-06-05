@@ -1,5 +1,7 @@
 # Phase 30 v0.2.0-preview Release Implementation Plan
 
+[日本語版](phase30_v0_2_preview_release.ja.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Phase 23-29 の成果を `v0.2.0-preview` として公開し、Docker/GitHub Release/compatibility report の証跡付きで導入前PoCに使えるOSS状態へ進める。

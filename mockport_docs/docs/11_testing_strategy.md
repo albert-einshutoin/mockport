@@ -1,5 +1,7 @@
 # 11. Testing Strategy
 
+[日本語版](11_testing_strategy.ja.md)
+
 ## Test philosophy
 
 Mockport must be trusted as infrastructure. Tests should cover:

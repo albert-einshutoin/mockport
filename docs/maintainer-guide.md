@@ -1,5 +1,7 @@
 # Maintainer Guide
 
+[日本語版](maintainer-guide.ja.md)
+
 This guide keeps the public OSS workflow explicit while Mockport is in preview.
 
 ## Release Process

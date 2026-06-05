@@ -1,5 +1,7 @@
 # Quickstart
 
+[日本語版](quickstart.ja.md)
+
 ```bash
 mockport init --adapter stripe
 docker compose -f docker-compose.mockport.yml up

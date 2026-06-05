@@ -1,5 +1,7 @@
 # Fixture Policy
 
+[日本語版](fixture-policy.ja.md)
+
 Mockport fixtures are sanitized compatibility evidence. They help AI-driven and TDD-driven implementation reproduce public API contracts without copying production traffic or leaking credentials.
 
 ## Allowed Sources

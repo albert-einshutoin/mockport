@@ -1,5 +1,7 @@
 # Go Engineering Readiness
 
+[日本語版](go-engineering-readiness.ja.md)
+
 Last updated: 2026-05-26
 
 ## Required Gates

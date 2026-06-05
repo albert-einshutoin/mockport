@@ -1,5 +1,7 @@
 # Phase 21 Slack Provider Compatibility Implementation Plan
 
+[日本語版](phase21_slack_provider_compatibility.ja.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Slack-like adapter を Slack client/workflow-compatible local API へ引き上げる。

@@ -1,5 +1,7 @@
 # Phase 28 OpenAI Provider-compatible Track Implementation Plan
 
+[日本語版](phase28_openai_provider_compatible_track.ja.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** OpenAI-compatible adapter を選定workflow単位で provider-compatible 候補に近づけ、real model inference をしない前提でも API / SDK / streaming / state の互換証跡を強化する。

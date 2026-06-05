@@ -1,5 +1,7 @@
 # Distribution
 
+[日本語版](distribution.ja.md)
+
 Primary distribution paths:
 
 | Path | Status |

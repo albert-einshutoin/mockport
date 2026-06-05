@@ -1,5 +1,7 @@
 # Limitations
 
+[日本語版](limitations.ja.md)
+
 Mockport targets provider-compatible local APIs for selected workflows. It does not reproduce provider internals or undocumented behavior.
 
 ## Current Preview Scope

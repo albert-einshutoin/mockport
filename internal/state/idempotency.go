@@ -16,19 +16,84 @@ type idempotencyRecord struct {
 	response    IdempotentResponse
 }
 
+type idempotencyCall struct {
+	fingerprint string
+	done        chan struct{}
+	response    IdempotentResponse
+	err         error
+}
+
 type IdempotencyStore struct {
-	mu      sync.Mutex
-	records map[string]idempotencyRecord
-	order   map[string][]string
+	mu       sync.Mutex
+	records  map[string]idempotencyRecord
+	order    map[string][]string
+	inFlight map[string]*idempotencyCall
 }
 
 const MaxIdempotencyRecordsPerScope = 1000
 
 func NewIdempotencyStore() *IdempotencyStore {
 	return &IdempotencyStore{
-		records: map[string]idempotencyRecord{},
-		order:   map[string][]string{},
+		records:  map[string]idempotencyRecord{},
+		order:    map[string][]string{},
+		inFlight: map[string]*idempotencyCall{},
 	}
+}
+
+func (s *IdempotencyStore) Do(scope, key, fingerprint string, run func() (IdempotentResponse, error)) (bool, IdempotentResponse, error) {
+	if strings.TrimSpace(key) == "" {
+		response, err := run()
+		return false, cloneResponse(response), err
+	}
+
+	recordKey := idempotencyRecordKey(scope, key)
+	s.mu.Lock()
+	s.initLocked()
+	if record, ok := s.records[recordKey]; ok {
+		replayed, response, err := replayRecord(scope, key, fingerprint, record)
+		s.mu.Unlock()
+		return replayed, response, err
+	}
+	if call, ok := s.inFlight[recordKey]; ok {
+		if call.fingerprint != fingerprint {
+			s.mu.Unlock()
+			return false, IdempotentResponse{}, &IdempotencyConflictError{Scope: scope, Key: key}
+		}
+		done := call.done
+		s.mu.Unlock()
+
+		<-done
+
+		s.mu.Lock()
+		defer s.mu.Unlock()
+		if call.err != nil {
+			return false, IdempotentResponse{}, call.err
+		}
+		return true, cloneResponse(call.response), nil
+	}
+
+	call := &idempotencyCall{fingerprint: fingerprint, done: make(chan struct{})}
+	s.inFlight[recordKey] = call
+	s.mu.Unlock()
+
+	response, err := run()
+
+	s.mu.Lock()
+	call.response = cloneResponse(response)
+	call.err = err
+	if err == nil {
+		s.records[recordKey] = idempotencyRecord{fingerprint: fingerprint, response: cloneResponse(response)}
+		s.order[scope] = append(s.order[scope], recordKey)
+		s.evictOldestLocked(scope)
+	}
+	delete(s.inFlight, recordKey)
+	close(call.done)
+	s.mu.Unlock()
+
+	if err != nil {
+		return false, IdempotentResponse{}, err
+	}
+	return false, cloneResponse(response), nil
 }
 
 func (s *IdempotencyStore) Remember(scope, key, fingerprint string, response IdempotentResponse) (bool, IdempotentResponse, error) {
@@ -109,6 +174,9 @@ func (s *IdempotencyStore) initLocked() {
 	}
 	if s.order == nil {
 		s.order = map[string][]string{}
+	}
+	if s.inFlight == nil {
+		s.inFlight = map[string]*idempotencyCall{}
 	}
 }
 

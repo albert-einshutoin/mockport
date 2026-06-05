@@ -1,5 +1,7 @@
 # Security Policy
 
+[日本語版](SECURITY.ja.md)
+
 ## Supported Versions
 
 Mockport is pre-1.0. Security fixes target the current `main` branch and the latest public preview release when one exists.

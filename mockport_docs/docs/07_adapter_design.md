@@ -1,5 +1,7 @@
 # 07. Adapter Design
 
+[日本語版](07_adapter_design.ja.md)
+
 ## Adapter goal
 
 An adapter emulates a specific external service or a subset of that service.

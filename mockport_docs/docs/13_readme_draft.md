@@ -1,5 +1,7 @@
 # Mockport
 
+[日本語版](13_readme_draft.ja.md)
+
 Secret-free service emulation for AI-native development.
 
 Mockport lets you run local Docker-based emulators for external services like Stripe, GitHub OAuth, LINE, Slack, SendGrid, and OpenAI.

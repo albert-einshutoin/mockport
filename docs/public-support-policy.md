@@ -1,5 +1,7 @@
 # Public Support Policy
 
+[日本語版](public-support-policy.ja.md)
+
 Mockport public preview support is best-effort.
 
 ## Compatibility Terms

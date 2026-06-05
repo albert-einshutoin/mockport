@@ -1,5 +1,7 @@
 # Phase 19 OpenAI Provider Compatibility Implementation Plan
 
+[日本語版](phase19_openai_provider_compatibility.ja.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** OpenAI-compatible adapter を OpenAI SDK/workflow-compatible local API へ引き上げる。
