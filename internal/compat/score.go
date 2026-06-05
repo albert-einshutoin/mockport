@@ -38,8 +38,10 @@ func CalculateScore(manifest Manifest) Score {
 
 // hasStateEvidence reports whether the manifest carries concrete fake-state
 // evidence. A declared state level alone is not enough: there must be at least
-// one stateful resource, idempotency/reset support, or an endpoint/scenario that
-// explicitly claims the state level.
+// one stateful resource, idempotency/reset support, an endpoint that explicitly
+// claims the state level, or a supported built-in scenario that does. Only
+// built-in scenarios count, matching scenarioCoverage, so a user-defined local
+// scenario cannot self-inflate state coverage.
 func hasStateEvidence(manifest Manifest) bool {
 	if manifest.StateEvidence.HasEvidence() {
 		return true
@@ -50,7 +52,7 @@ func hasStateEvidence(manifest Manifest) bool {
 		}
 	}
 	for _, scenario := range manifest.Scenarios {
-		if scenario.Supported && hasLevel(scenario.Levels, LevelState) {
+		if scenario.Supported && scenario.BuiltIn && hasLevel(scenario.Levels, LevelState) {
 			return true
 		}
 	}
@@ -59,11 +61,13 @@ func hasStateEvidence(manifest Manifest) bool {
 
 // hasErrorEvidence reports whether the manifest carries concrete error-behavior
 // evidence. A declared error level alone is not enough: there must be at least
-// one supported built-in error scenario, or an endpoint/scenario that explicitly
-// claims the error level.
+// one supported built-in error scenario, or an endpoint that explicitly claims
+// the error level. Only built-in scenarios count (matching scenarioCoverage), so
+// a user-defined local scenario with an error-like name cannot self-inflate error
+// coverage or unlock workflow promotion.
 func hasErrorEvidence(manifest Manifest) bool {
 	for _, scenario := range manifest.Scenarios {
-		if !scenario.Supported {
+		if !scenario.Supported || !scenario.BuiltIn {
 			continue
 		}
 		if isErrorScenario(scenario) {

@@ -234,3 +234,48 @@ func TestCalculateScoreFromMetadataRequiresConcreteStateAndErrorEvidence(t *test
 		t.Fatalf("error coverage = %d with error scenario, want 100", score.ErrorCoverage)
 	}
 }
+
+// TestNonBuiltInScenariosDoNotInflateCoverage は、supported でも BuiltIn=false の
+// local/custom scenario が error 風の名前や state level を持っていても evidence として
+// 数えないことを固定する。scenarioCoverage が built-in のみを対象とするのと揃え、
+// ユーザー定義 scenario だけで state/error coverage や workflow 昇格を自己申告で
+// 水増しできないようにする。
+func TestNonBuiltInScenariosDoNotInflateCoverage(t *testing.T) {
+	manifest := Manifest{
+		Adapter:         "stripe",
+		ProviderVersion: "2026-05-26",
+		Levels:          []Level{LevelWire, LevelWorkflow, LevelState, LevelError},
+		Endpoints:       []Endpoint{{ID: "one", Supported: true}},
+		Scenarios: []Scenario{
+			{Name: "payment_success", BuiltIn: true, Supported: true},
+			{Name: "local_timeout_repro", BuiltIn: false, Supported: true},
+			{Name: "local_state_repro", BuiltIn: false, Supported: true, Levels: []Level{LevelState}},
+		},
+	}
+
+	score := CalculateScore(manifest)
+	if score.ErrorCoverage != 0 {
+		t.Fatalf("error coverage = %d from non-built-in error-like scenario, want 0", score.ErrorCoverage)
+	}
+	if score.StateCoverage != 0 {
+		t.Fatalf("state coverage = %d from non-built-in scenario state level, want 0", score.StateCoverage)
+	}
+	if CanPromote(manifest, score, "workflow-compatible") {
+		t.Fatal("workflow-compatible promotion passed using only non-built-in scenarios")
+	}
+
+	// 同じ証跡を built-in scenario として宣言すれば evidence として数える。
+	builtIn := manifest
+	builtIn.Scenarios = []Scenario{
+		{Name: "payment_success", BuiltIn: true, Supported: true},
+		{Name: "payment_failed", BuiltIn: true, Supported: true},
+		{Name: "state_repro", BuiltIn: true, Supported: true, Levels: []Level{LevelState}},
+	}
+	score = CalculateScore(builtIn)
+	if score.ErrorCoverage != 100 {
+		t.Fatalf("error coverage = %d from built-in error scenario, want 100", score.ErrorCoverage)
+	}
+	if score.StateCoverage != 100 {
+		t.Fatalf("state coverage = %d from built-in scenario state level, want 100", score.StateCoverage)
+	}
+}
