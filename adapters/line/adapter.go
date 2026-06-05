@@ -65,7 +65,7 @@ func (a Adapter) Metadata() adapter.Metadata {
 		Name:            "line",
 		Maturity:        adapter.MaturityWorkflowCompatible,
 		ProviderVersion: "Messaging API v2 / Login v2.1 / Pay v3 / MINI App service messages / Mini Dapp SDK",
-		Levels:          []adapter.Level{adapter.LevelWire, adapter.LevelClient, adapter.LevelWorkflow, adapter.LevelState, adapter.LevelError},
+		Levels:          []adapter.Level{adapter.LevelWire, adapter.LevelWorkflow, adapter.LevelState, adapter.LevelError},
 		Capabilities: []string{
 			"channel_access_token",
 			"messaging_bot_info",

@@ -23,6 +23,9 @@ func CalculateScore(manifest Manifest) Score {
 	if hasLevel(manifest.Levels, LevelSDK) && len(manifest.SDKVersions) > 0 {
 		score.SDKCoverage = 100
 	}
+	if hasLevel(manifest.Levels, LevelClient) && len(manifest.ClientEvidence) > 0 {
+		score.SDKCoverage = 100
+	}
 	if hasLevel(manifest.Levels, LevelState) && hasStateEvidence(manifest) {
 		score.StateCoverage = 100
 	}
@@ -103,7 +106,8 @@ func CanPromote(manifest Manifest, score Score, target string) bool {
 	case "experimental":
 		return true
 	case "sdk-compatible":
-		return hasLevel(manifest.Levels, LevelSDK) && score.SDKCoverage == 100 && score.Total >= 40
+		hasSDKOrClientEvidence := hasLevel(manifest.Levels, LevelSDK) || hasLevel(manifest.Levels, LevelClient)
+		return hasSDKOrClientEvidence && score.SDKCoverage == 100 && score.Total >= 40
 	case "workflow-compatible":
 		return hasLevel(manifest.Levels, LevelWorkflow) &&
 			hasLevel(manifest.Levels, LevelState) && score.StateCoverage == 100 &&

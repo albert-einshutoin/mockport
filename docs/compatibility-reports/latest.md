@@ -2,7 +2,7 @@
 
 [日本語版](latest.ja.md)
 
-Generated: 2026-06-01
+Generated: 2026-06-05
 
 Compatibility is measured from Mockport runtime metadata, SDK/client contract checks, fixture coverage, and known gaps. It is not a claim that provider internals or undocumented behavior are reproduced.
 
@@ -10,20 +10,20 @@ Compatibility is measured from Mockport runtime metadata, SDK/client contract ch
 
 | Adapter | Maturity | Score | Provider API | SDK/client evidence |
 | --- | --- | ---: | --- | --- |
-| `github-oauth` | `workflow-compatible` | 80 | 2022-11-28 | client contract |
-| `line` | `workflow-compatible` | 80 | Messaging API v2 / Login v2.1 / Pay v3 / MINI App service messages / Mini Dapp SDK | client contract |
+| `github-oauth` | `workflow-compatible` | 100 | 2022-11-28 | oauth-client-contract |
+| `line` | `workflow-compatible` | 80 | Messaging API v2 / Login v2.1 / Pay v3 / MINI App service messages / Mini Dapp SDK | none |
 | `openai` | `workflow-compatible` | 100 | 2025-02-01 | openai@6.39.0 |
-| `slack` | `workflow-compatible` | 80 | 2025-02-01 | client contract |
+| `slack` | `workflow-compatible` | 100 | 2025-02-01 | slack-client-contract |
 | `stripe` | `workflow-compatible` | 100 | 2025-10-29.clover | stripe@22.1.1 |
 
 ## Coverage
 
 | Adapter | Endpoint | Scenario | SDK/client | State | Error |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `github-oauth` | 100 | 100 | 0 | 100 | 100 |
+| `github-oauth` | 100 | 100 | 100 | 100 | 100 |
 | `line` | 100 | 100 | 0 | 100 | 100 |
 | `openai` | 100 | 100 | 100 | 100 | 100 |
-| `slack` | 100 | 100 | 0 | 100 | 100 |
+| `slack` | 100 | 100 | 100 | 100 | 100 |
 | `stripe` | 100 | 100 | 100 | 100 | 100 |
 
 ## Known Gaps

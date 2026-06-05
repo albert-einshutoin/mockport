@@ -171,6 +171,7 @@ func cloneCompatibility(in []CompatibilityStatus) []CompatibilityStatus {
 	out := append([]CompatibilityStatus(nil), in...)
 	for i := range out {
 		out[i].SDKVersions = append([]string(nil), out[i].SDKVersions...)
+		out[i].ClientEvidence = append([]string(nil), out[i].ClientEvidence...)
 		out[i].UnsupportedEndpoints = append([]string(nil), out[i].UnsupportedEndpoints...)
 	}
 	return out

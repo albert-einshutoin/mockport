@@ -51,6 +51,7 @@ func (a Adapter) Metadata() adapter.Metadata {
 		Name:            "slack",
 		Maturity:        adapter.MaturityWorkflowCompatible,
 		ProviderVersion: "2025-02-01",
+		ClientEvidence:  []string{"slack-client-contract"},
 		Levels:          []adapter.Level{adapter.LevelWire, adapter.LevelClient, adapter.LevelWorkflow, adapter.LevelState, adapter.LevelError},
 		Capabilities:    []string{"auth_test", "chat_post_message", "chat_update", "chat_delete", "conversations_list", "conversations_history", "events_url_verification", "events_message_callback"},
 		StatefulResources: []string{

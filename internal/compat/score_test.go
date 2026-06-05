@@ -155,6 +155,31 @@ func TestCanPromoteWorkflowRequiresStateAndErrorEvidence(t *testing.T) {
 	}
 }
 
+func TestCalculateScoreUsesClientEvidence(t *testing.T) {
+	score := CalculateScore(Manifest{
+		Adapter:         "slack",
+		ProviderVersion: "2025-02-01",
+		Levels:          []Level{LevelWire, LevelClient, LevelWorkflow, LevelState, LevelError},
+		ClientEvidence:  []string{"slack-client-contract"},
+		Endpoints:       []Endpoint{{ID: "chat_post_message", Supported: true}},
+		Scenarios: []Scenario{
+			{Name: "message_success", BuiltIn: true, Supported: true},
+			{Name: "rate_limited", BuiltIn: true, Supported: true},
+		},
+		StateEvidence: &StateEvidence{StatefulResources: []string{"conversation"}, Reset: true},
+	})
+
+	if score.SDKCoverage != 100 {
+		t.Fatalf("sdk/client coverage = %d, want 100", score.SDKCoverage)
+	}
+	if score.Total != 100 {
+		t.Fatalf("total = %d, want 100", score.Total)
+	}
+	if score.Level != string(LevelWorkflow) {
+		t.Fatalf("level = %q, want workflow", score.Level)
+	}
+}
+
 func TestCalculateScoreReportsWorkflowAsHigherThanState(t *testing.T) {
 	score := CalculateScore(Manifest{
 		Adapter:         "stripe",

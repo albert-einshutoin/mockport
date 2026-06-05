@@ -45,6 +45,7 @@ const adapters = (snapshot.compatibility || []).map((entry) => {
     score: entry.score,
     provider_version: entry.provider_version,
     sdk_versions: entry.sdk_versions || [],
+    client_evidence: entry.client_evidence || [],
     endpoint_coverage: entry.endpoint_coverage || 0,
     scenario_coverage: entry.scenario_coverage || 0,
     sdk_coverage: entry.sdk_coverage || 0,
@@ -84,6 +85,8 @@ function renderMarkdown(report) {
   const lines = [];
   lines.push("# Compatibility Report");
   lines.push("");
+  lines.push("[日本語版](latest.ja.md)");
+  lines.push("");
   lines.push(`Generated: ${report.generated_at}`);
   lines.push("");
   lines.push("Compatibility is measured from Mockport runtime metadata, SDK/client contract checks, fixture coverage, and known gaps. It is not a claim that provider internals or undocumented behavior are reproduced.");
@@ -93,7 +96,7 @@ function renderMarkdown(report) {
   lines.push("| Adapter | Maturity | Score | Provider API | SDK/client evidence |");
   lines.push("| --- | --- | ---: | --- | --- |");
   for (const adapter of report.adapters) {
-    const sdk = adapter.sdk_versions.length > 0 ? adapter.sdk_versions.join(", ") : "client contract";
+    const sdk = evidenceLabel(adapter);
     lines.push(`| \`${adapter.name}\` | \`${adapter.maturity}\` | ${adapter.score} | ${adapter.provider_version} | ${sdk} |`);
   }
   lines.push("");
@@ -119,6 +122,13 @@ function renderMarkdown(report) {
   for (const [label, description] of Object.entries(report.release_labels)) {
     lines.push(`- \`${label}\`: ${description}`);
   }
-  lines.push("");
   return `${lines.join("\n")}\n`;
+}
+
+function evidenceLabel(adapter) {
+  const evidence = [
+    ...(adapter.sdk_versions || []),
+    ...(adapter.client_evidence || []),
+  ];
+  return evidence.length > 0 ? evidence.join(", ") : "none";
 }

@@ -110,6 +110,7 @@ func writeServiceHelp(w io.Writer, name string) (bool, error) {
 	fmt.Fprintf(w, "  idempotency: %t\n", meta.Idempotency)
 	fmt.Fprintf(w, "  reset: %t\n", meta.Reset)
 	writeInlineList(w, "  sdk_evidence", sdkVersionNames(meta.SDKVersions))
+	writeInlineList(w, "  client_evidence", meta.ClientEvidence)
 
 	fmt.Fprintln(w)
 	fmt.Fprintln(w, "Environment:")

@@ -94,6 +94,7 @@ func TestManifestFromAdapterMetadataPreservesClientLevel(t *testing.T) {
 		Name:            "slack",
 		Maturity:        adapter.MaturityWorkflowCompatible,
 		ProviderVersion: "2025-02-01",
+		ClientEvidence:  []string{"slack-client-contract"},
 		Levels:          []adapter.Level{adapter.LevelWire, adapter.LevelClient, adapter.LevelWorkflow},
 		Scenarios:       []adapter.Scenario{{Name: "message_success", Supported: true}},
 		Endpoints:       []adapter.Endpoint{{Method: http.MethodPost, Path: "/slack/api/chat.postMessage", SupportedScenarios: []string{"message_success"}}},
@@ -105,6 +106,9 @@ func TestManifestFromAdapterMetadataPreservesClientLevel(t *testing.T) {
 	}
 	if manifest.Levels[1] != LevelClient {
 		t.Fatalf("levels = %#v, want client at index 1", manifest.Levels)
+	}
+	if len(manifest.ClientEvidence) != 1 || manifest.ClientEvidence[0] != "slack-client-contract" {
+		t.Fatalf("client evidence = %#v", manifest.ClientEvidence)
 	}
 	if err := manifest.Validate(); err != nil {
 		t.Fatalf("Validate() with client level error = %v", err)

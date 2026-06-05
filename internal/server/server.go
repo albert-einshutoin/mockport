@@ -112,6 +112,7 @@ func compatibilityStatus(manifest compat.Manifest) report.CompatibilityStatus {
 	for _, sdk := range manifest.SDKVersions {
 		status.SDKVersions = append(status.SDKVersions, sdk.Name+"@"+sdk.Version)
 	}
+	status.ClientEvidence = append(status.ClientEvidence, manifest.ClientEvidence...)
 	for _, unsupported := range manifest.Unsupported {
 		status.UnsupportedEndpoints = append(status.UnsupportedEndpoints, unsupported.ID)
 	}

@@ -1,6 +1,6 @@
 {
   "generated_by": "scripts/generate-compatibility-report.sh",
-  "generated_at": "2026-06-01",
+  "generated_at": "2026-06-05",
   "source": "_mockport/report",
   "release_labels": {
     "experimental": "Early adapter coverage for selected workflows. Expect gaps.",
@@ -18,12 +18,15 @@
       "name": "github-oauth",
       "maturity": "workflow-compatible",
       "measured_level": "workflow",
-      "score": 80,
+      "score": 100,
       "provider_version": "2022-11-28",
       "sdk_versions": [],
+      "client_evidence": [
+        "oauth-client-contract"
+      ],
       "endpoint_coverage": 100,
       "scenario_coverage": 100,
-      "sdk_coverage": 0,
+      "sdk_coverage": 100,
       "state_coverage": 100,
       "error_coverage": 100,
       "stateful_resources": [
@@ -51,6 +54,7 @@
       "score": 80,
       "provider_version": "Messaging API v2 / Login v2.1 / Pay v3 / MINI App service messages / Mini Dapp SDK",
       "sdk_versions": [],
+      "client_evidence": [],
       "endpoint_coverage": 100,
       "scenario_coverage": 100,
       "sdk_coverage": 0,
@@ -159,6 +163,7 @@
       "sdk_versions": [
         "openai@6.39.0"
       ],
+      "client_evidence": [],
       "endpoint_coverage": 100,
       "scenario_coverage": 100,
       "sdk_coverage": 100,
@@ -191,12 +196,15 @@
       "name": "slack",
       "maturity": "workflow-compatible",
       "measured_level": "workflow",
-      "score": 80,
+      "score": 100,
       "provider_version": "2025-02-01",
       "sdk_versions": [],
+      "client_evidence": [
+        "slack-client-contract"
+      ],
       "endpoint_coverage": 100,
       "scenario_coverage": 100,
-      "sdk_coverage": 0,
+      "sdk_coverage": 100,
       "state_coverage": 100,
       "error_coverage": 100,
       "stateful_resources": [
@@ -230,6 +238,7 @@
       "sdk_versions": [
         "stripe@22.1.1"
       ],
+      "client_evidence": [],
       "endpoint_coverage": 100,
       "scenario_coverage": 100,
       "sdk_coverage": 100,

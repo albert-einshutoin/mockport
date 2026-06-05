@@ -29,6 +29,7 @@ type Metadata struct {
 	Maturity          Maturity
 	ProviderVersion   string
 	SDKVersions       []SDKVersion
+	ClientEvidence    []string
 	Levels            []Level
 	Capabilities      []string
 	Scenarios         []Scenario

@@ -45,6 +45,7 @@ func (a Adapter) Metadata() adapter.Metadata {
 		Name:            "github-oauth",
 		Maturity:        adapter.MaturityWorkflowCompatible,
 		ProviderVersion: "2022-11-28",
+		ClientEvidence:  []string{"oauth-client-contract"},
 		Levels:          []adapter.Level{adapter.LevelWire, adapter.LevelClient, adapter.LevelWorkflow, adapter.LevelState, adapter.LevelError},
 		Capabilities:    []string{"oauth_authorize", "oauth_token", "user_profile", "user_emails", "user_orgs"},
 		StatefulResources: []string{
@@ -61,7 +62,7 @@ func (a Adapter) Metadata() adapter.Metadata {
 			{Name: "redirect_uri_mismatch", Supported: true},
 		},
 		Endpoints: []adapter.Endpoint{
-			{Method: http.MethodGet, Path: "/github/login/oauth/authorize", SupportedScenarios: []string{"oauth_success", "invalid_code", "redirect_uri_mismatch"}, Notes: "GitHub OAuth-like authorize redirect"},
+			{Method: http.MethodGet, Path: "/github/login/oauth/authorize", SupportedScenarios: []string{"oauth_success"}, Notes: "GitHub OAuth-like authorize redirect"},
 			{Method: http.MethodPost, Path: "/github/login/oauth/access_token", SupportedScenarios: []string{"oauth_success", "invalid_code", "expired_token", "scope_missing", "redirect_uri_mismatch"}, Notes: "GitHub OAuth-like token exchange"},
 			{Method: http.MethodGet, Path: "/github/user", SupportedScenarios: []string{"oauth_success", "expired_token", "scope_missing"}, Notes: "GitHub-like user profile"},
 			{Method: http.MethodGet, Path: "/github/user/emails", SupportedScenarios: []string{"oauth_success", "scope_missing"}, Notes: "GitHub-like user emails subset"},

@@ -44,7 +44,7 @@ Adapters can expose state coverage through metadata:
 - idempotency support
 - reset support
 
-The report includes these fields as state coverage hooks. Existing adapters are not marked stateful until Phase 17 adopts the shared store.
+The report includes these fields as state coverage hooks. Current workflow-compatible adapters expose state coverage when their metadata declares stateful resources, idempotency support, or reset support.
 
 ## Limits
 

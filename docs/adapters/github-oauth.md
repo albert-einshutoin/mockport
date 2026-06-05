@@ -64,7 +64,7 @@ Use this table to jump from Mockport's supported local surface to the closest of
 | `invalid_code` | Returns token exchange failure behavior for unknown or invalid codes. |
 | `expired_token` | Returns protected-resource authentication failures. |
 | `scope_missing` | Returns scope-related failures for protected endpoints. |
-| `redirect_uri_mismatch` | Returns or redirects with redirect URI mismatch behavior. |
+| `redirect_uri_mismatch` | Returns token exchange failure behavior when the posted `redirect_uri` does not match the authorization request. Unsafe authorize redirect URIs are rejected independently of scenario. |
 
 ## Current Gaps And Tasks
 
