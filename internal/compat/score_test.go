@@ -1,6 +1,11 @@
 package compat
 
-import "testing"
+import (
+	"net/http"
+	"testing"
+
+	"github.com/albert-einshutoin/mockport/internal/adapter"
+)
 
 func TestCalculateScoreUsesEndpointScenarioSDKStateAndErrorCoverage(t *testing.T) {
 	score := CalculateScore(Manifest{
@@ -162,5 +167,45 @@ func TestCalculateScoreReportsWorkflowAsHigherThanState(t *testing.T) {
 
 	if score.Level != string(LevelWorkflow) {
 		t.Fatalf("level = %q, want workflow", score.Level)
+	}
+}
+
+// TestCalculateScoreFromMetadataRequiresConcreteStateAndErrorEvidence は runtime-report
+// パス（FromMetadata 経由）でも、宣言しただけの state/error level が coverage を
+// 過大評価しないことを固定する（#21）。FromMetadata が endpoint/scenario へ adapter 全体の
+// levels をバックフィルしていた頃は、具体証跡ゼロでも 100 になっていた。
+func TestCalculateScoreFromMetadataRequiresConcreteStateAndErrorEvidence(t *testing.T) {
+	// state/error を宣言しているが、具体証跡（StatefulResources/Idempotency/Reset/
+	// error scenario）は一切持たないメタデータ。
+	declaredOnly := adapter.Metadata{
+		Name:            "openai",
+		Maturity:        adapter.MaturityExperimental,
+		ProviderVersion: "2025-10-29.clover",
+		Levels:          []adapter.Level{adapter.LevelWire, adapter.LevelState, adapter.LevelError},
+		Scenarios:       []adapter.Scenario{{Name: "chat_success", Supported: true}},
+		Endpoints:       []adapter.Endpoint{{Method: http.MethodPost, Path: "/openai/v1/chat/completions", SupportedScenarios: []string{"chat_success"}}},
+	}
+
+	score := CalculateScore(FromMetadata(declaredOnly))
+	if score.StateCoverage != 0 {
+		t.Fatalf("state coverage = %d from declared level without evidence, want 0", score.StateCoverage)
+	}
+	if score.ErrorCoverage != 0 {
+		t.Fatalf("error coverage = %d from declared level without evidence, want 0", score.ErrorCoverage)
+	}
+
+	// 具体証跡（fake-state surface と error scenario）を加えると 100 になる。
+	withEvidence := declaredOnly
+	withEvidence.StatefulResources = []string{"thread"}
+	withEvidence.Idempotency = true
+	withEvidence.Scenarios = append(append([]adapter.Scenario(nil), declaredOnly.Scenarios...),
+		adapter.Scenario{Name: "chat_failed", Supported: true, Category: adapter.ScenarioCategoryError})
+
+	score = CalculateScore(FromMetadata(withEvidence))
+	if score.StateCoverage != 100 {
+		t.Fatalf("state coverage = %d with concrete state evidence, want 100", score.StateCoverage)
+	}
+	if score.ErrorCoverage != 100 {
+		t.Fatalf("error coverage = %d with error scenario, want 100", score.ErrorCoverage)
 	}
 }

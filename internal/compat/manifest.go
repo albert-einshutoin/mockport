@@ -145,13 +145,16 @@ func FromMetadata(meta adapter.Metadata) Manifest {
 	for _, sdk := range meta.SDKVersions {
 		manifest.SDKVersions = append(manifest.SDKVersions, SDKVersion{Name: sdk.Name, Version: sdk.Version})
 	}
+	// adapter 全体の levels は manifest.Levels にのみ保持する。adapter.Metadata は
+	// endpoint/scenario 単位の証跡を表現できないため、ここで Levels をバックフィルすると
+	// 「宣言しただけ」の level が endpoint/scenario の証跡に化け、state/error スコアを
+	// 過大評価してしまう（#21）。per-item の level は明示的なマニフェストでのみ与える。
 	for _, endpoint := range meta.Endpoints {
 		manifest.Endpoints = append(manifest.Endpoints, Endpoint{
 			ID:        endpointID(endpoint.Method, endpoint.Path),
 			Method:    endpoint.Method,
 			Path:      endpoint.Path,
 			Supported: len(endpoint.SupportedScenarios) > 0 || endpoint.Method == http.MethodGet,
-			Levels:    metadataLevels(meta.Levels),
 		})
 	}
 	for _, scenario := range meta.Scenarios {
@@ -160,7 +163,6 @@ func FromMetadata(meta adapter.Metadata) Manifest {
 			BuiltIn:   true,
 			Supported: scenario.Supported,
 			Category:  scenario.Category,
-			Levels:    metadataLevels(meta.Levels),
 		})
 	}
 	if len(meta.StatefulResources) > 0 || meta.Idempotency || meta.Reset {
