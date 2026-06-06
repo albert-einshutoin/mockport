@@ -12,7 +12,7 @@
   },
   "license": "Apache-2.0",
   "devDependencies": {
-    "openai": "6.39.0",
-    "stripe": "22.1.1"
+    "openai": "6.39.1",
+    "stripe": "22.2.0"
   }
 }

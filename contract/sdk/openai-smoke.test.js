@@ -60,7 +60,7 @@ async function runOpenAISmoke(options) {
     provider: "openai",
     baseURL: options.baseURL,
     status: "sdk-ok",
-    sdk: "openai@6.39.0",
+    sdk: "openai@6.39.1",
     chatCompletion: chat.id,
     response: response.id,
     embedding: embedding.data[0].embedding.length,

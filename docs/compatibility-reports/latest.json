@@ -164,7 +164,7 @@
       "score": 100,
       "provider_version": "2025-02-01",
       "sdk_versions": [
-        "openai@6.39.0"
+        "openai@6.39.1"
       ],
       "client_evidence": [],
       "endpoint_coverage": 100,
@@ -241,7 +241,7 @@
       "score": 100,
       "provider_version": "2025-10-29.clover",
       "sdk_versions": [
-        "stripe@22.1.1"
+        "stripe@22.2.0"
       ],
       "client_evidence": [],
       "endpoint_coverage": 100,
