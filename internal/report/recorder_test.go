@@ -91,7 +91,17 @@ func TestRecorderSnapshotDeepCopiesNestedSlices(t *testing.T) {
 	rec := NewRecorder()
 	rec.SetScenarioCoverage([]ScenarioCoverage{{Adapter: "stripe", Scenarios: []ScenarioSupport{{Name: "payment_success", Supported: true}}}})
 	rec.SetBehaviorMatrix([]BehaviorMatrixEntry{{Adapter: "stripe", SupportedScenarios: []string{"payment_success"}}})
-	rec.SetCompatibility([]CompatibilityStatus{{Adapter: "stripe", SDKVersions: []string{"stripe@22.1.1"}, ClientEvidence: []string{"stripe-node-contract"}, UnsupportedEndpoints: []string{"post_v1_missing"}}})
+	rec.SetCompatibility([]CompatibilityStatus{{
+		Adapter:        "stripe",
+		SDKVersions:    []string{"stripe@22.1.1"},
+		ClientEvidence: []string{"stripe-node-contract"},
+		ContractEvidence: &ContractEvidence{
+			Fixtures:     []string{"compat/fixtures/stripe/checkout_session_create.json"},
+			SDKContracts: []string{"contract/sdk/stripe"},
+			KnownGaps:    []string{"docs/compatibility-reports/latest.json#stripe"},
+		},
+		UnsupportedEndpoints: []string{"post_v1_missing"},
+	}})
 	rec.SetStateCoverage([]StateCoverageStatus{{Adapter: "stripe", StatefulResources: []string{"checkout_session"}}})
 
 	first := rec.Snapshot()
@@ -99,6 +109,9 @@ func TestRecorderSnapshotDeepCopiesNestedSlices(t *testing.T) {
 	first.BehaviorMatrix[0].SupportedScenarios[0] = "mutated"
 	first.Compatibility[0].SDKVersions[0] = "mutated"
 	first.Compatibility[0].ClientEvidence[0] = "mutated"
+	first.Compatibility[0].ContractEvidence.Fixtures[0] = "mutated"
+	first.Compatibility[0].ContractEvidence.SDKContracts[0] = "mutated"
+	first.Compatibility[0].ContractEvidence.KnownGaps[0] = "mutated"
 	first.Compatibility[0].UnsupportedEndpoints[0] = "mutated"
 	first.StateCoverage[0].StatefulResources[0] = "mutated"
 
@@ -114,6 +127,15 @@ func TestRecorderSnapshotDeepCopiesNestedSlices(t *testing.T) {
 	}
 	if second.Compatibility[0].ClientEvidence[0] != "stripe-node-contract" {
 		t.Fatalf("compatibility client evidence was mutated through snapshot: %#v", second.Compatibility)
+	}
+	if second.Compatibility[0].ContractEvidence.Fixtures[0] != "compat/fixtures/stripe/checkout_session_create.json" {
+		t.Fatalf("compatibility contract fixture evidence was mutated through snapshot: %#v", second.Compatibility)
+	}
+	if second.Compatibility[0].ContractEvidence.SDKContracts[0] != "contract/sdk/stripe" {
+		t.Fatalf("compatibility contract SDK evidence was mutated through snapshot: %#v", second.Compatibility)
+	}
+	if second.Compatibility[0].ContractEvidence.KnownGaps[0] != "docs/compatibility-reports/latest.json#stripe" {
+		t.Fatalf("compatibility contract known-gap evidence was mutated through snapshot: %#v", second.Compatibility)
 	}
 	if second.Compatibility[0].UnsupportedEndpoints[0] != "post_v1_missing" {
 		t.Fatalf("compatibility unsupported endpoints were mutated through snapshot: %#v", second.Compatibility)

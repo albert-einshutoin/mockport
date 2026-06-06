@@ -45,3 +45,20 @@ require_text "CHANGELOG.md" "compatibility scores"
 # score threshold). Run its regression tests first so the gate logic stays covered.
 node --test scripts/validate-compatibility-report.test.mjs
 node scripts/validate-compatibility-report.mjs docs/compatibility-reports/latest.json
+
+# Provenance gate: regenerate the report from the runtime endpoint and require
+# the committed artifacts to match. Use the committed generated_at date so this
+# check catches hand edits and stale content without failing only because the
+# calendar day changed.
+REPORT_WORK_DIR="$(mktemp -d)"
+cleanup_report_work_dir() {
+  rm -rf "$REPORT_WORK_DIR"
+}
+trap cleanup_report_work_dir EXIT
+
+REPORT_DATE="$(
+  node -e 'const fs = require("fs"); const report = JSON.parse(fs.readFileSync("docs/compatibility-reports/latest.json", "utf8")); if (!report.generated_at) throw new Error("latest.json missing generated_at"); process.stdout.write(report.generated_at);'
+)"
+MOCKPORT_COMPATIBILITY_DATE="$REPORT_DATE" bash scripts/generate-compatibility-report.sh "$REPORT_WORK_DIR"
+diff -u docs/compatibility-reports/latest.json "$REPORT_WORK_DIR/latest.json"
+diff -u docs/compatibility-reports/latest.md "$REPORT_WORK_DIR/latest.md"

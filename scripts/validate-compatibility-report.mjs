@@ -23,8 +23,23 @@ const MATURITY_FLOOR = {
     minScore: 80,
     coverage: ["sdk_coverage", "state_coverage", "error_coverage"],
     measuredLevel: "contract",
+    contractEvidence: true,
   },
 };
+
+function hasEvidenceArray(value) {
+  return Array.isArray(value) && value.some((item) => typeof item === "string" && item.trim() !== "");
+}
+
+function hasContractEvidence(adapter) {
+  const evidence = adapter.contract_evidence;
+  return Boolean(
+    evidence &&
+      hasEvidenceArray(evidence.fixtures) &&
+      hasEvidenceArray(evidence.sdk_contracts) &&
+      hasEvidenceArray(evidence.known_gaps),
+  );
+}
 
 function validateAdapter(adapter) {
   if (!adapter.name || !adapter.maturity || !Number.isInteger(adapter.score)) {
@@ -59,6 +74,11 @@ function validateAdapter(adapter) {
     if (floor.measuredLevel && adapter.measured_level !== floor.measuredLevel) {
       throw new Error(
         `${adapter.name} claims ${adapter.maturity} but measured_level is "${adapter.measured_level}" (want "${floor.measuredLevel}")`,
+      );
+    }
+    if (floor.contractEvidence && !hasContractEvidence(adapter)) {
+      throw new Error(
+        `${adapter.name} claims ${adapter.maturity} but contract_evidence is incomplete`,
       );
     }
   }

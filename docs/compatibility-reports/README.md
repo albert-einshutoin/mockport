@@ -15,7 +15,7 @@ Maturity labels:
 | `experimental` | Early adapter coverage for selected workflows. Expect gaps. |
 | `sdk-compatible` | Selected SDK or client contract calls pass against local Mockport. |
 | `workflow-compatible` | Selected workflows include fake state, errors, and replayable behavior. |
-| `provider-compatible` | Selected provider workflows are backed by manifests, SDK contracts, fixtures, scores, and known-gap reports. |
+| `provider-compatible` | Selected provider workflows are backed by manifests, SDK/client contracts, fixtures, scores, contract evidence, and known-gap reports. |
 
 Generate locally:
 

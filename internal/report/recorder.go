@@ -172,6 +172,13 @@ func cloneCompatibility(in []CompatibilityStatus) []CompatibilityStatus {
 	for i := range out {
 		out[i].SDKVersions = append([]string(nil), out[i].SDKVersions...)
 		out[i].ClientEvidence = append([]string(nil), out[i].ClientEvidence...)
+		if out[i].ContractEvidence != nil {
+			out[i].ContractEvidence = &ContractEvidence{
+				Fixtures:     append([]string(nil), out[i].ContractEvidence.Fixtures...),
+				SDKContracts: append([]string(nil), out[i].ContractEvidence.SDKContracts...),
+				KnownGaps:    append([]string(nil), out[i].ContractEvidence.KnownGaps...),
+			}
+		}
 		out[i].UnsupportedEndpoints = append([]string(nil), out[i].UnsupportedEndpoints...)
 	}
 	return out

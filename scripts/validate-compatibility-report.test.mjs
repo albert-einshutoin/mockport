@@ -20,6 +20,15 @@ function baseAdapter(overrides = {}) {
   };
 }
 
+function contractEvidence(overrides = {}) {
+  return {
+    fixtures: ["compat/fixtures/stripe/checkout_session_create.json"],
+    sdk_contracts: ["contract/sdk/stripe"],
+    known_gaps: ["docs/compatibility-reports/latest.json#stripe"],
+    ...overrides,
+  };
+}
+
 // Replace the first adapter with the one under test; the rest are passing
 // adapters so the required set of five is satisfied.
 function reportWith(adapter) {
@@ -32,6 +41,15 @@ function reportWith(adapter) {
 
 test("accepts a report where every adapter is promotion-eligible and consistent", () => {
   assert.doesNotThrow(() => validateReport(reportWith(baseAdapter())));
+});
+
+test("accepts provider-compatible with complete contract evidence", () => {
+  const adapter = baseAdapter({
+    maturity: "provider-compatible",
+    measured_level: "contract",
+    contract_evidence: contractEvidence(),
+  });
+  assert.doesNotThrow(() => validateReport(reportWith(adapter)));
 });
 
 test("rejects an adapter that is not promotion-eligible", () => {
@@ -58,6 +76,21 @@ test("rejects promotion_eligible=true that contradicts the maturity score floor"
 test("rejects promotion_eligible=true with an impossible measured_level", () => {
   const adapter = baseAdapter({ maturity: "provider-compatible", measured_level: "wire", score: 100 });
   assert.throws(() => validateReport(reportWith(adapter)), /measured_level is "wire"/);
+});
+
+test("rejects provider-compatible without complete contract evidence", () => {
+  const adapter = baseAdapter({
+    maturity: "provider-compatible",
+    measured_level: "contract",
+  });
+  assert.throws(() => validateReport(reportWith(adapter)), /contract_evidence is incomplete/);
+
+  const partial = baseAdapter({
+    maturity: "provider-compatible",
+    measured_level: "contract",
+    contract_evidence: contractEvidence({ sdk_contracts: [" "] }),
+  });
+  assert.throws(() => validateReport(reportWith(partial)), /contract_evidence is incomplete/);
 });
 
 test("rejects workflow-compatible whose state coverage is not 100", () => {

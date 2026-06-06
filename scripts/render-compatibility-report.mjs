@@ -38,7 +38,7 @@ const knownGaps = {
 
 const adapters = (snapshot.compatibility || []).map((entry) => {
   const state = stateByAdapter.get(entry.adapter) || {};
-  return {
+  const adapter = {
     name: entry.adapter,
     maturity: maturityByAdapter.get(entry.adapter) || "experimental",
     promotion_eligible: Boolean(entry.promotion_eligible),
@@ -58,6 +58,10 @@ const adapters = (snapshot.compatibility || []).map((entry) => {
     endpoints: behaviorByAdapter.get(entry.adapter) || [],
     known_gaps: knownGaps[entry.adapter] || [],
   };
+  if (entry.contract_evidence) {
+    adapter.contract_evidence = entry.contract_evidence;
+  }
+  return adapter;
 }).sort((a, b) => a.name.localeCompare(b.name));
 
 const report = {
@@ -68,7 +72,7 @@ const report = {
     experimental: "Early adapter coverage for selected workflows. Expect gaps.",
     "sdk-compatible": "Selected SDK or client contract calls pass against local Mockport.",
     "workflow-compatible": "Selected workflows include fake state, errors, and replayable behavior.",
-    "provider-compatible": "Selected provider workflows are backed by manifests, SDK contracts, fixtures, scores, and known-gap reports.",
+    "provider-compatible": "Selected provider workflows are backed by manifests, SDK/client contracts, fixtures, scores, contract evidence, and known-gap reports.",
   },
   promotion_criteria: {
     "sdk-compatible": "SDK or client contract coverage is 100 and score is at least 40.",
@@ -109,6 +113,18 @@ function renderMarkdown(report) {
     lines.push(`| \`${adapter.name}\` | ${adapter.endpoint_coverage} | ${adapter.scenario_coverage} | ${adapter.sdk_coverage} | ${adapter.state_coverage} | ${adapter.error_coverage} |`);
   }
   lines.push("");
+  const adaptersWithContractEvidence = report.adapters.filter((adapter) => adapter.contract_evidence);
+  if (adaptersWithContractEvidence.length > 0) {
+    lines.push("## Contract Evidence");
+    lines.push("");
+    lines.push("| Adapter | Fixtures | SDK/client contracts | Known-gap publication |");
+    lines.push("| --- | --- | --- | --- |");
+    for (const adapter of adaptersWithContractEvidence) {
+      const evidence = adapter.contract_evidence || {};
+      lines.push(`| \`${adapter.name}\` | ${evidenceList(evidence.fixtures)} | ${evidenceList(evidence.sdk_contracts)} | ${evidenceList(evidence.known_gaps)} |`);
+    }
+    lines.push("");
+  }
   lines.push("## Known Gaps");
   lines.push("");
   for (const adapter of report.adapters) {
@@ -132,4 +148,9 @@ function evidenceLabel(adapter) {
     ...(adapter.client_evidence || []),
   ];
   return evidence.length > 0 ? evidence.join(", ") : "none";
+}
+
+function evidenceList(values) {
+  const evidence = (values || []).filter((value) => typeof value === "string" && value.trim() !== "");
+  return evidence.length > 0 ? evidence.map((value) => `\`${value}\``).join("<br>") : "none";
 }

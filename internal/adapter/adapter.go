@@ -30,6 +30,7 @@ type Metadata struct {
 	ProviderVersion   string
 	SDKVersions       []SDKVersion
 	ClientEvidence    []string
+	ContractEvidence  ContractEvidence
 	Levels            []Level
 	Capabilities      []string
 	Scenarios         []Scenario
@@ -43,6 +44,14 @@ type Metadata struct {
 type SDKVersion struct {
 	Name    string
 	Version string
+}
+
+// ContractEvidence records the release artifacts that support a contract-level
+// provider-compatible claim.
+type ContractEvidence struct {
+	Fixtures     []string
+	SDKContracts []string
+	KnownGaps    []string
 }
 
 // Scenario describes a built-in deterministic behavior mode for an adapter.

@@ -2,7 +2,7 @@
 
 [日本語版](latest.ja.md)
 
-Generated: 2026-06-05
+Generated: 2026-06-06
 
 Compatibility is measured from Mockport runtime metadata, SDK/client contract checks, fixture coverage, and known gaps. It is not a claim that provider internals or undocumented behavior are reproduced.
 
@@ -48,4 +48,4 @@ Compatibility is measured from Mockport runtime metadata, SDK/client contract ch
 - `experimental`: Early adapter coverage for selected workflows. Expect gaps.
 - `sdk-compatible`: Selected SDK or client contract calls pass against local Mockport.
 - `workflow-compatible`: Selected workflows include fake state, errors, and replayable behavior.
-- `provider-compatible`: Selected provider workflows are backed by manifests, SDK contracts, fixtures, scores, and known-gap reports.
+- `provider-compatible`: Selected provider workflows are backed by manifests, SDK/client contracts, fixtures, scores, contract evidence, and known-gap reports.

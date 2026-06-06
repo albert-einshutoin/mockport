@@ -188,7 +188,16 @@ func TestCompatibilityStatusReportsPromotionEligibility(t *testing.T) {
 	ineligible.Maturity = "provider-compatible"
 	ineligible.Levels = []compat.Level{compat.LevelWire, compat.LevelSDK, compat.LevelState, compat.LevelError, compat.LevelContract}
 	ineligible.SDKVersions = []compat.SDKVersion{{Name: "lib", Version: "1.0.0"}}
+	ineligible.ContractEvidence = &compat.ContractEvidence{
+		Fixtures:     []string{"compat/fixtures/demo/success.json"},
+		SDKContracts: []string{"contract/sdk/demo"},
+		KnownGaps:    []string{"docs/compatibility-reports/latest.json#demo"},
+	}
 	if status := compatibilityStatus(ineligible); status.PromotionEligible {
 		t.Fatalf("provider-compatible without workflow level must not be promotion-eligible: %#v", status)
+	}
+	status := compatibilityStatus(ineligible)
+	if status.ContractEvidence == nil || len(status.ContractEvidence.Fixtures) != 1 {
+		t.Fatalf("contract evidence was not reported: %#v", status)
 	}
 }

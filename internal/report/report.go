@@ -74,19 +74,26 @@ type UnsupportedEndpoint struct {
 }
 
 type CompatibilityStatus struct {
-	Adapter              string   `json:"adapter"`
-	Level                string   `json:"level"`
-	Score                int      `json:"score"`
-	EndpointCoverage     int      `json:"endpoint_coverage,omitempty"`
-	ScenarioCoverage     int      `json:"scenario_coverage,omitempty"`
-	SDKCoverage          int      `json:"sdk_coverage,omitempty"`
-	StateCoverage        int      `json:"state_coverage,omitempty"`
-	ErrorCoverage        int      `json:"error_coverage,omitempty"`
-	PromotionEligible    bool     `json:"promotion_eligible"`
-	ProviderVersion      string   `json:"provider_version"`
-	SDKVersions          []string `json:"sdk_versions,omitempty"`
-	ClientEvidence       []string `json:"client_evidence,omitempty"`
-	UnsupportedEndpoints []string `json:"unsupported_endpoints,omitempty"`
+	Adapter              string            `json:"adapter"`
+	Level                string            `json:"level"`
+	Score                int               `json:"score"`
+	EndpointCoverage     int               `json:"endpoint_coverage,omitempty"`
+	ScenarioCoverage     int               `json:"scenario_coverage,omitempty"`
+	SDKCoverage          int               `json:"sdk_coverage,omitempty"`
+	StateCoverage        int               `json:"state_coverage,omitempty"`
+	ErrorCoverage        int               `json:"error_coverage,omitempty"`
+	PromotionEligible    bool              `json:"promotion_eligible"`
+	ProviderVersion      string            `json:"provider_version"`
+	SDKVersions          []string          `json:"sdk_versions,omitempty"`
+	ClientEvidence       []string          `json:"client_evidence,omitempty"`
+	ContractEvidence     *ContractEvidence `json:"contract_evidence,omitempty"`
+	UnsupportedEndpoints []string          `json:"unsupported_endpoints,omitempty"`
+}
+
+type ContractEvidence struct {
+	Fixtures     []string `json:"fixtures,omitempty"`
+	SDKContracts []string `json:"sdk_contracts,omitempty"`
+	KnownGaps    []string `json:"known_gaps,omitempty"`
 }
 
 type StateCoverageStatus struct {

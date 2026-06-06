@@ -33,16 +33,17 @@ type SDKVersion struct {
 }
 
 type Manifest struct {
-	Adapter         string                `json:"adapter"`
-	ProviderVersion string                `json:"provider_version"`
-	Maturity        string                `json:"maturity,omitempty"`
-	SDKVersions     []SDKVersion          `json:"sdk_versions,omitempty"`
-	ClientEvidence  []string              `json:"client_evidence,omitempty"`
-	Levels          []Level               `json:"levels,omitempty"`
-	Endpoints       []Endpoint            `json:"endpoints,omitempty"`
-	Scenarios       []Scenario            `json:"scenarios,omitempty"`
-	StateEvidence   *StateEvidence        `json:"state_evidence,omitempty"`
-	Unsupported     []UnsupportedBehavior `json:"unsupported_behavior,omitempty"`
+	Adapter          string                `json:"adapter"`
+	ProviderVersion  string                `json:"provider_version"`
+	Maturity         string                `json:"maturity,omitempty"`
+	SDKVersions      []SDKVersion          `json:"sdk_versions,omitempty"`
+	ClientEvidence   []string              `json:"client_evidence,omitempty"`
+	Levels           []Level               `json:"levels,omitempty"`
+	Endpoints        []Endpoint            `json:"endpoints,omitempty"`
+	Scenarios        []Scenario            `json:"scenarios,omitempty"`
+	StateEvidence    *StateEvidence        `json:"state_evidence,omitempty"`
+	ContractEvidence *ContractEvidence     `json:"contract_evidence,omitempty"`
+	Unsupported      []UnsupportedBehavior `json:"unsupported_behavior,omitempty"`
 }
 
 // StateEvidence captures the concrete fake-state surface an adapter exposes.
@@ -60,6 +61,32 @@ func (s *StateEvidence) HasEvidence() bool {
 		return false
 	}
 	return len(s.StatefulResources) > 0 || s.Idempotency || s.Reset
+}
+
+// ContractEvidence captures the concrete release artifacts required for a
+// contract-level provider-compatible claim. It must include fixture coverage,
+// SDK/client contract evidence, and known-gap publication evidence.
+type ContractEvidence struct {
+	Fixtures     []string `json:"fixtures,omitempty"`
+	SDKContracts []string `json:"sdk_contracts,omitempty"`
+	KnownGaps    []string `json:"known_gaps,omitempty"`
+}
+
+// HasEvidence reports whether every contract-evidence dimension is present.
+func (c *ContractEvidence) HasEvidence() bool {
+	if c == nil {
+		return false
+	}
+	return hasStringEvidence(c.Fixtures) &&
+		hasStringEvidence(c.SDKContracts) &&
+		hasStringEvidence(c.KnownGaps)
+}
+
+func (c *ContractEvidence) hasAnyEvidence() bool {
+	if c == nil {
+		return false
+	}
+	return len(c.Fixtures) > 0 || len(c.SDKContracts) > 0 || len(c.KnownGaps) > 0
 }
 
 type Endpoint struct {
@@ -174,7 +201,38 @@ func FromMetadata(meta adapter.Metadata) Manifest {
 			Reset:             meta.Reset,
 		}
 	}
+	if evidence := contractEvidenceFromMetadata(meta.ContractEvidence); evidence.hasAnyEvidence() {
+		manifest.ContractEvidence = evidence
+	}
 	return manifest
+}
+
+func contractEvidenceFromMetadata(evidence adapter.ContractEvidence) *ContractEvidence {
+	return &ContractEvidence{
+		Fixtures:     compactEvidence(evidence.Fixtures),
+		SDKContracts: compactEvidence(evidence.SDKContracts),
+		KnownGaps:    compactEvidence(evidence.KnownGaps),
+	}
+}
+
+func compactEvidence(values []string) []string {
+	out := make([]string, 0, len(values))
+	for _, value := range values {
+		value = strings.TrimSpace(value)
+		if value != "" {
+			out = append(out, value)
+		}
+	}
+	return out
+}
+
+func hasStringEvidence(values []string) bool {
+	for _, value := range values {
+		if strings.TrimSpace(value) != "" {
+			return true
+		}
+	}
+	return false
 }
 
 func metadataLevels(values []adapter.Level) []Level {

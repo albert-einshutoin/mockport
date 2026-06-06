@@ -34,8 +34,8 @@ jobs:
       - run: bash scripts/run-sdk-contracts.sh github-oauth
       - run: bash scripts/run-sdk-contracts.sh slack
       - run: bash scripts/check-compat-fixtures.sh
-      - run: bash scripts/generate-compatibility-report.sh
       - run: bash scripts/check-compatibility-release.sh
+      - run: bash scripts/generate-compatibility-report.sh
       - uses: actions/upload-artifact@v7
         with:
           name: mockport-compatibility-report

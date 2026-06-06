@@ -34,7 +34,7 @@ A compatibility claim is valid only when the written spec, implementation, metad
 | `workflow` | A selected user workflow works across multiple requests. |
 | `state` | Fake deterministic state supports create/retrieve/list/update or equivalent lifecycle paths. |
 | `error` | Common provider error shapes, status codes, and retry/rate-limit hints are represented. |
-| `contract` | Manifest, fixture, SDK, workflow, state, and known-gap evidence are all present for the selected surface. |
+| `contract` | Manifest, fixture, SDK/client contract, workflow, state, and known-gap evidence are all present for the selected surface. |
 
 ## Score Inputs
 
@@ -63,6 +63,10 @@ alone:
 `workflow-compatible` promotion requires full state and error coverage (not just
 the level declarations), so mismatched metadata cannot be promoted.
 
+`provider-compatible` promotion additionally requires `contract_evidence` with
+fixture, SDK/client contract, and known-gap publication evidence. A bare
+`contract` level declaration cannot promote an adapter.
+
 User-defined scenarios do not raise provider compatibility score unless promoted into a built-in scenario with tests, docs, and sanitized fixture evidence.
 
 ## SDK Contract Harness
@@ -79,6 +83,6 @@ The Phase 15 foundation runs a live placeholder contract against local Mockport 
 | `partial` | Common scenario-compatible paths are implemented and reported. |
 | `sdk-compatible` | SDK level evidence exists and selected SDK contracts pass. |
 | `workflow-compatible` | Workflow, state, and error evidence exists for selected workflows. |
-| `provider-compatible` | Contract level evidence exists with manifest, fixtures, SDK contracts, workflow/state/error coverage, score, and known gaps. |
+| `provider-compatible` | Contract level evidence exists with manifest, fixtures, SDK/client contracts, workflow/state/error coverage, score, and known gaps. |
 
 Adapters must not be promoted only because local app-specific behavior works. Unsupported and approximate behavior must stay visible in reports.

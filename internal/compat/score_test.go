@@ -7,6 +7,14 @@ import (
 	"github.com/albert-einshutoin/mockport/internal/adapter"
 )
 
+func testContractEvidence() *ContractEvidence {
+	return &ContractEvidence{
+		Fixtures:     []string{"compat/fixtures/stripe/checkout_session_create.json"},
+		SDKContracts: []string{"contract/sdk/stripe"},
+		KnownGaps:    []string{"docs/compatibility-reports/latest.json#stripe"},
+	}
+}
+
 func TestCalculateScoreUsesEndpointScenarioSDKStateAndErrorCoverage(t *testing.T) {
 	score := CalculateScore(Manifest{
 		Adapter:         "stripe",
@@ -62,6 +70,11 @@ func TestCanPromoteRequiresContractEvidenceForProviderCompatible(t *testing.T) {
 		t.Fatal("provider-compatible promotion passed without contract level")
 	}
 	manifest.Levels = append(manifest.Levels, LevelContract)
+	score = CalculateScore(manifest)
+	if CanPromote(manifest, score, "provider-compatible") {
+		t.Fatal("provider-compatible promotion passed with a bare contract level")
+	}
+	manifest.ContractEvidence = testContractEvidence()
 	score = CalculateScore(manifest)
 	if !CanPromote(manifest, score, "provider-compatible") {
 		t.Fatalf("provider-compatible promotion failed with contract evidence: %#v", score)
@@ -310,6 +323,7 @@ func TestCanPromoteProviderCompatibleRequiresConcreteEvidence(t *testing.T) {
 	full := manifest
 	full.Levels = append(append([]Level(nil), manifest.Levels...), LevelWorkflow, LevelError)
 	full.Scenarios = append(append([]Scenario(nil), manifest.Scenarios...), Scenario{Name: "payment_failed", BuiltIn: true, Supported: true})
+	full.ContractEvidence = testContractEvidence()
 	score = CalculateScore(full)
 	if !CanPromote(full, score, "provider-compatible") {
 		t.Fatalf("provider-compatible promotion failed with full concrete evidence: %#v", score)
@@ -322,6 +336,64 @@ func TestCanPromoteProviderCompatibleRequiresConcreteEvidence(t *testing.T) {
 	score = CalculateScore(noWorkflow)
 	if CanPromote(noWorkflow, score, "provider-compatible") {
 		t.Fatal("provider-compatible promotion passed without workflow level")
+	}
+}
+
+// TestCanPromoteProviderCompatibleRequiresContractArtifactsFromMetadata pins
+// that runtime metadata cannot self-promote by declaring LevelContract alone.
+// Contract-level promotion needs release artifacts for fixtures, SDK/client
+// contracts, and known-gap publication.
+func TestCanPromoteProviderCompatibleRequiresContractArtifactsFromMetadata(t *testing.T) {
+	meta := adapter.Metadata{
+		Name:            "stripe",
+		Maturity:        adapter.MaturityProviderCompatible,
+		ProviderVersion: "2025-10-29.clover",
+		Levels: []adapter.Level{
+			adapter.LevelWire,
+			adapter.LevelSDK,
+			adapter.LevelWorkflow,
+			adapter.LevelState,
+			adapter.LevelError,
+			adapter.LevelContract,
+		},
+		SDKVersions:       []adapter.SDKVersion{{Name: "stripe", Version: "22.1.1"}},
+		StatefulResources: []string{"checkout_session"},
+		Idempotency:       true,
+		Reset:             true,
+		Endpoints: []adapter.Endpoint{
+			{Method: http.MethodPost, Path: "/stripe/v1/checkout/sessions", SupportedScenarios: []string{"payment_success"}},
+		},
+		Scenarios: []adapter.Scenario{
+			{Name: "payment_success", Supported: true},
+			{Name: "payment_failed", Supported: true, Category: adapter.ScenarioCategoryError},
+		},
+	}
+
+	manifest := FromMetadata(meta)
+	score := CalculateScore(manifest)
+	if score.Total < 80 {
+		t.Fatalf("precondition: total = %d, want >= 80", score.Total)
+	}
+	if CanPromote(manifest, score, "provider-compatible") {
+		t.Fatal("provider-compatible promotion passed without contract artifacts")
+	}
+
+	meta.ContractEvidence = adapter.ContractEvidence{
+		Fixtures:     []string{"compat/fixtures/stripe/checkout_session_create.json"},
+		SDKContracts: []string{"contract/sdk/stripe"},
+		KnownGaps:    []string{"docs/compatibility-reports/latest.json#stripe"},
+	}
+	manifest = FromMetadata(meta)
+	score = CalculateScore(manifest)
+	if !CanPromote(manifest, score, "provider-compatible") {
+		t.Fatalf("provider-compatible promotion failed with contract artifacts: %#v", score)
+	}
+
+	meta.ContractEvidence.SDKContracts = []string{" "}
+	manifest = FromMetadata(meta)
+	score = CalculateScore(manifest)
+	if CanPromote(manifest, score, "provider-compatible") {
+		t.Fatal("provider-compatible promotion passed with empty SDK contract evidence")
 	}
 }
 
