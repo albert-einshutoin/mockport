@@ -20,10 +20,10 @@ func CalculateScore(manifest Manifest) Score {
 		EndpointCoverage: endpointCoverage(manifest.Endpoints),
 		ScenarioCoverage: scenarioCoverage(manifest.Scenarios),
 	}
-	if hasLevel(manifest.Levels, LevelSDK) && len(manifest.SDKVersions) > 0 {
+	if hasLevel(manifest.Levels, LevelSDK) && hasSDKEvidence(manifest.SDKVersions) {
 		score.SDKCoverage = 100
 	}
-	if hasLevel(manifest.Levels, LevelClient) && len(manifest.ClientEvidence) > 0 {
+	if hasLevel(manifest.Levels, LevelClient) && hasClientEvidence(manifest.ClientEvidence) {
 		score.SDKCoverage = 100
 	}
 	if hasLevel(manifest.Levels, LevelState) && hasStateEvidence(manifest) {
@@ -105,20 +105,58 @@ func isErrorScenario(scenario Scenario) bool {
 	return false
 }
 
+// hasSDKEvidence reports whether at least one SDK version carries a concrete,
+// non-empty name and version. Empty entries must not inflate SDK coverage.
+func hasSDKEvidence(versions []SDKVersion) bool {
+	for _, v := range versions {
+		if strings.TrimSpace(v.Name) != "" && strings.TrimSpace(v.Version) != "" {
+			return true
+		}
+	}
+	return false
+}
+
+// hasClientEvidence reports whether at least one client-evidence entry is a
+// concrete, non-empty value.
+func hasClientEvidence(evidence []string) bool {
+	for _, e := range evidence {
+		if strings.TrimSpace(e) != "" {
+			return true
+		}
+	}
+	return false
+}
+
+// meetsSDKCompatible reports whether the manifest clears the SDK/client evidence
+// bar shared by sdk-compatible and every higher maturity.
+func meetsSDKCompatible(manifest Manifest, score Score) bool {
+	return (hasLevel(manifest.Levels, LevelSDK) || hasLevel(manifest.Levels, LevelClient)) &&
+		score.SDKCoverage == 100
+}
+
+// meetsWorkflowCompatible reports whether the manifest clears the state/error
+// evidence bar shared by workflow-compatible and provider-compatible.
+func meetsWorkflowCompatible(manifest Manifest, score Score) bool {
+	return hasLevel(manifest.Levels, LevelWorkflow) &&
+		hasLevel(manifest.Levels, LevelState) && score.StateCoverage == 100 &&
+		hasLevel(manifest.Levels, LevelError) && score.ErrorCoverage == 100
+}
+
 func CanPromote(manifest Manifest, score Score, target string) bool {
 	switch target {
 	case "experimental":
 		return true
 	case "sdk-compatible":
-		hasSDKOrClientEvidence := hasLevel(manifest.Levels, LevelSDK) || hasLevel(manifest.Levels, LevelClient)
-		return hasSDKOrClientEvidence && score.SDKCoverage == 100 && score.Total >= 40
+		return meetsSDKCompatible(manifest, score) && score.Total >= 40
 	case "workflow-compatible":
-		return hasLevel(manifest.Levels, LevelWorkflow) &&
-			hasLevel(manifest.Levels, LevelState) && score.StateCoverage == 100 &&
-			hasLevel(manifest.Levels, LevelError) && score.ErrorCoverage == 100 &&
-			score.Total >= 60
+		return meetsWorkflowCompatible(manifest, score) && score.Total >= 60
 	case "provider-compatible":
-		return hasLevel(manifest.Levels, LevelContract) && score.Total >= 80
+		// 最上位 maturity。下位 (sdk / workflow) の証跡条件をすべて包含した上で、
+		// contract level と total>=80 を要求する。階層条件を飛ばして昇格できないようにする。
+		return meetsSDKCompatible(manifest, score) &&
+			meetsWorkflowCompatible(manifest, score) &&
+			hasLevel(manifest.Levels, LevelContract) &&
+			score.Total >= 80
 	default:
 		return false
 	}

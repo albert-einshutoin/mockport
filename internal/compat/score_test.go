@@ -279,3 +279,80 @@ func TestNonBuiltInScenariosDoNotInflateCoverage(t *testing.T) {
 		t.Fatalf("state coverage = %d from built-in scenario state level, want 100", score.StateCoverage)
 	}
 }
+
+// TestCanPromoteProviderCompatibleRequiresConcreteEvidence は、最上位 maturity の
+// provider-compatible が total 閾値だけで昇格できないことを固定する。contract level と
+// total>=80 を満たしても、error/state/SDK のいずれかの具体証跡が欠けていれば昇格しない。
+func TestCanPromoteProviderCompatibleRequiresConcreteEvidence(t *testing.T) {
+	// SDK=100 / State=100 / Endpoint=100 / Scenario=100 だが Error=0。total はちょうど 80。
+	manifest := Manifest{
+		Adapter:         "stripe",
+		ProviderVersion: "2026-05-26",
+		Levels:          []Level{LevelWire, LevelSDK, LevelState, LevelContract},
+		SDKVersions:     []SDKVersion{{Name: "stripe-go", Version: "v83.0.0"}},
+		Endpoints:       []Endpoint{{ID: "one", Supported: true}},
+		Scenarios:       []Scenario{{Name: "payment_success", BuiltIn: true, Supported: true}},
+		StateEvidence:   &StateEvidence{StatefulResources: []string{"payment_intent"}, Idempotency: true},
+	}
+
+	score := CalculateScore(manifest)
+	if score.Total < 80 {
+		t.Fatalf("precondition: total = %d, want >= 80", score.Total)
+	}
+	if score.ErrorCoverage != 0 {
+		t.Fatalf("precondition: error coverage = %d, want 0", score.ErrorCoverage)
+	}
+	if CanPromote(manifest, score, "provider-compatible") {
+		t.Fatal("provider-compatible promotion passed without error evidence")
+	}
+
+	// workflow/error level と built-in error scenario を加えると、全証跡が揃い昇格できる。
+	full := manifest
+	full.Levels = append(append([]Level(nil), manifest.Levels...), LevelWorkflow, LevelError)
+	full.Scenarios = append(append([]Scenario(nil), manifest.Scenarios...), Scenario{Name: "payment_failed", BuiltIn: true, Supported: true})
+	score = CalculateScore(full)
+	if !CanPromote(full, score, "provider-compatible") {
+		t.Fatalf("provider-compatible promotion failed with full concrete evidence: %#v", score)
+	}
+
+	// workflow level が欠けていれば、他の証跡が揃っていても provider-compatible にならない
+	// （最上位 maturity は workflow-compatible 条件を包含する）。
+	noWorkflow := full
+	noWorkflow.Levels = []Level{LevelWire, LevelSDK, LevelState, LevelError, LevelContract}
+	score = CalculateScore(noWorkflow)
+	if CanPromote(noWorkflow, score, "provider-compatible") {
+		t.Fatal("provider-compatible promotion passed without workflow level")
+	}
+}
+
+// TestSDKCoverageRejectsEmptyEvidence は、空文字の SDK version / client evidence では
+// SDKCoverage が 100 にならないことを固定する。空証跡で sdk-compatible や
+// provider-compatible の SDK 条件を満たせてしまう穴を防ぐ。
+func TestSDKCoverageRejectsEmptyEvidence(t *testing.T) {
+	base := Manifest{
+		Adapter:         "x",
+		ProviderVersion: "1",
+		Levels:          []Level{LevelWire, LevelSDK},
+		Endpoints:       []Endpoint{{ID: "one", Supported: true}},
+		Scenarios:       []Scenario{{Name: "ok", BuiltIn: true, Supported: true}},
+	}
+
+	emptySDK := base
+	emptySDK.SDKVersions = []SDKVersion{{Name: "", Version: ""}}
+	if score := CalculateScore(emptySDK); score.SDKCoverage != 0 {
+		t.Fatalf("sdk coverage = %d with empty sdk version, want 0", score.SDKCoverage)
+	}
+
+	emptyClient := base
+	emptyClient.Levels = []Level{LevelWire, LevelClient}
+	emptyClient.ClientEvidence = []string{"", "   "}
+	if score := CalculateScore(emptyClient); score.SDKCoverage != 0 {
+		t.Fatalf("sdk coverage = %d with empty client evidence, want 0", score.SDKCoverage)
+	}
+
+	validSDK := base
+	validSDK.SDKVersions = []SDKVersion{{Name: "lib", Version: "1.0.0"}}
+	if score := CalculateScore(validSDK); score.SDKCoverage != 100 {
+		t.Fatalf("sdk coverage = %d with valid sdk version, want 100", score.SDKCoverage)
+	}
+}

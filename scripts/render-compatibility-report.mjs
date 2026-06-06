@@ -41,6 +41,7 @@ const adapters = (snapshot.compatibility || []).map((entry) => {
   return {
     name: entry.adapter,
     maturity: maturityByAdapter.get(entry.adapter) || "experimental",
+    promotion_eligible: Boolean(entry.promotion_eligible),
     measured_level: entry.level,
     score: entry.score,
     provider_version: entry.provider_version,
@@ -70,9 +71,9 @@ const report = {
     "provider-compatible": "Selected provider workflows are backed by manifests, SDK contracts, fixtures, scores, and known-gap reports.",
   },
   promotion_criteria: {
-    "sdk-compatible": "SDK/client contract coverage exists and score is at least 40.",
-    "workflow-compatible": "Workflow, state, and error evidence exists and score is at least 60.",
-    "provider-compatible": "Contract-level evidence exists and score is at least 80.",
+    "sdk-compatible": "SDK or client contract coverage is 100 and score is at least 40.",
+    "workflow-compatible": "Workflow level with state and error coverage at 100, and score is at least 60.",
+    "provider-compatible": "Meets the sdk- and workflow-compatible evidence bars, has contract-level evidence, and score is at least 80.",
   },
   adapters,
 };

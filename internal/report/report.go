@@ -82,6 +82,7 @@ type CompatibilityStatus struct {
 	SDKCoverage          int      `json:"sdk_coverage,omitempty"`
 	StateCoverage        int      `json:"state_coverage,omitempty"`
 	ErrorCoverage        int      `json:"error_coverage,omitempty"`
+	PromotionEligible    bool     `json:"promotion_eligible"`
 	ProviderVersion      string   `json:"provider_version"`
 	SDKVersions          []string `json:"sdk_versions,omitempty"`
 	ClientEvidence       []string `json:"client_evidence,omitempty"`

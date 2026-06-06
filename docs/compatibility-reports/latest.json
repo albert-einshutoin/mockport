@@ -9,14 +9,15 @@
     "provider-compatible": "Selected provider workflows are backed by manifests, SDK contracts, fixtures, scores, and known-gap reports."
   },
   "promotion_criteria": {
-    "sdk-compatible": "SDK/client contract coverage exists and score is at least 40.",
-    "workflow-compatible": "Workflow, state, and error evidence exists and score is at least 60.",
-    "provider-compatible": "Contract-level evidence exists and score is at least 80."
+    "sdk-compatible": "SDK or client contract coverage is 100 and score is at least 40.",
+    "workflow-compatible": "Workflow level with state and error coverage at 100, and score is at least 60.",
+    "provider-compatible": "Meets the sdk- and workflow-compatible evidence bars, has contract-level evidence, and score is at least 80."
   },
   "adapters": [
     {
       "name": "github-oauth",
       "maturity": "workflow-compatible",
+      "promotion_eligible": true,
       "measured_level": "workflow",
       "score": 100,
       "provider_version": "2022-11-28",
@@ -50,6 +51,7 @@
     {
       "name": "line",
       "maturity": "workflow-compatible",
+      "promotion_eligible": true,
       "measured_level": "workflow",
       "score": 80,
       "provider_version": "Messaging API v2 / Login v2.1 / Pay v3 / MINI App service messages / Mini Dapp SDK",
@@ -157,6 +159,7 @@
     {
       "name": "openai",
       "maturity": "workflow-compatible",
+      "promotion_eligible": true,
       "measured_level": "workflow",
       "score": 100,
       "provider_version": "2025-02-01",
@@ -195,6 +198,7 @@
     {
       "name": "slack",
       "maturity": "workflow-compatible",
+      "promotion_eligible": true,
       "measured_level": "workflow",
       "score": 100,
       "provider_version": "2025-02-01",
@@ -232,6 +236,7 @@
     {
       "name": "stripe",
       "maturity": "workflow-compatible",
+      "promotion_eligible": true,
       "measured_level": "workflow",
       "score": 100,
       "provider_version": "2025-10-29.clover",

@@ -40,39 +40,8 @@ require_text "docs/site/support-matrix.md" "provider-compatible"
 require_text "CHANGELOG.md" "Compatibility release track"
 require_text "CHANGELOG.md" "compatibility scores"
 
-node <<'NODE'
-const fs = require("fs");
-const report = JSON.parse(fs.readFileSync("docs/compatibility-reports/latest.json", "utf8"));
-if (!Array.isArray(report.adapters) || report.adapters.length < 5) {
-  throw new Error("compatibility report must include at least five adapters");
-}
-const requiredAdapters = new Set(["stripe", "openai", "github-oauth", "slack", "line"]);
-for (const name of requiredAdapters) {
-  if (!report.adapters.some((adapter) => adapter.name === name)) {
-    throw new Error(`compatibility report missing adapter: ${name}`);
-  }
-}
-for (const adapter of report.adapters) {
-  if (!adapter.name || !adapter.maturity || !Number.isInteger(adapter.score)) {
-    throw new Error(`invalid adapter report entry: ${JSON.stringify(adapter)}`);
-  }
-  if (adapter.maturity === "provider-compatible" && adapter.score < 80) {
-    throw new Error(`${adapter.name} is provider-compatible with score ${adapter.score}`);
-  }
-  if (adapter.maturity === "provider-compatible" && adapter.measured_level !== "contract") {
-    throw new Error(`${adapter.name} is provider-compatible without contract-level evidence`);
-  }
-  if (adapter.maturity === "workflow-compatible" && adapter.score < 60) {
-    throw new Error(`${adapter.name} is workflow-compatible with score ${adapter.score}`);
-  }
-  if (adapter.maturity === "sdk-compatible" && adapter.score < 40) {
-    throw new Error(`${adapter.name} is sdk-compatible with score ${adapter.score}`);
-  }
-  if (!Array.isArray(adapter.known_gaps)) {
-    throw new Error(`${adapter.name} missing known_gaps array`);
-  }
-  if (adapter.known_gaps.length === 0) {
-    throw new Error(`${adapter.name} must publish known gaps`);
-  }
-}
-NODE
+# Gate the published report through the shared validator, which mirrors
+# internal/compat CanPromote (maturities require concrete coverage, not just a
+# score threshold). Run its regression tests first so the gate logic stays covered.
+node --test scripts/validate-compatibility-report.test.mjs
+node scripts/validate-compatibility-report.mjs docs/compatibility-reports/latest.json
