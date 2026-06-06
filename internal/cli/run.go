@@ -18,6 +18,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	serverReadHeaderTimeout = 5 * time.Second
+	serverReadTimeout       = 15 * time.Second
+	serverIdleTimeout       = 60 * time.Second
+	serverMaxHeaderBytes    = 1 << 20
+)
+
 func newRunCommand() *cobra.Command {
 	var configPath string
 	var check bool
@@ -76,10 +83,7 @@ func defaultRegistry() (*adapter.Registry, error) {
 }
 
 func serveHTTP(ctx context.Context, listener net.Listener, handler http.Handler) error {
-	server := &http.Server{
-		Handler:           handler,
-		ReadHeaderTimeout: 5 * time.Second,
-	}
+	server := newHTTPServer(handler)
 	errc := make(chan error, 1)
 	go func() {
 		if err := server.Serve(listener); err != nil && !errors.Is(err, http.ErrServerClosed) {
@@ -99,6 +103,16 @@ func serveHTTP(ctx context.Context, listener net.Listener, handler http.Handler)
 			return fmt.Errorf("shutdown server: %w", err)
 		}
 		return <-errc
+	}
+}
+
+func newHTTPServer(handler http.Handler) *http.Server {
+	return &http.Server{
+		Handler:           handler,
+		ReadHeaderTimeout: serverReadHeaderTimeout,
+		ReadTimeout:       serverReadTimeout,
+		IdleTimeout:       serverIdleTimeout,
+		MaxHeaderBytes:    serverMaxHeaderBytes,
 	}
 }
 

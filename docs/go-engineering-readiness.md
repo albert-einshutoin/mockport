@@ -2,7 +2,7 @@
 
 [日本語版](go-engineering-readiness.ja.md)
 
-Last updated: 2026-05-26
+Last updated: 2026-06-06
 
 ## Required Gates
 
@@ -20,6 +20,12 @@ Last updated: 2026-05-26
 - `map[string]any` remains allowed for dynamic provider payload storage and provider-specific fixture-like fields.
 - Provider internals are not reproduced; Mockport focuses on public API and SDK/client workflow compatibility.
 - Benchmarks are lightweight regression sentinels, not formal performance guarantees.
+
+## Low-Severity Polish Decisions
+
+Issue #23 tracked four non-blocking Go polish items. The server lifecycle item is now implemented by bounding `ReadHeaderTimeout`, `ReadTimeout`, `IdleTimeout`, and `MaxHeaderBytes` in the run command HTTP server. `WriteTimeout` remains intentionally unset because Mockport includes local streaming-style responses where a fixed write deadline can cut off valid long-lived test flows.
+
+The JSON response write policy remains an accepted gap under the ignored error policy below: handlers may treat response writes as best-effort once the response is being emitted, while setup, config, state, metadata, and encoding boundaries must still return or assert errors. `LevelClient` scoring/modeling and deeper manifest validation for method, path, and unsupported behavior should stay as separate implementation issues because they change compatibility semantics rather than runtime safety.
 
 ## Ignored Error Policy
 

@@ -205,6 +205,23 @@ func TestServeHTTPShutsDownWhenContextIsCanceled(t *testing.T) {
 	}
 }
 
+func TestNewHTTPServerUsesBoundedTimeouts(t *testing.T) {
+	server := newHTTPServer(http.NotFoundHandler())
+
+	if server.ReadHeaderTimeout != serverReadHeaderTimeout {
+		t.Fatalf("ReadHeaderTimeout = %s, want %s", server.ReadHeaderTimeout, serverReadHeaderTimeout)
+	}
+	if server.ReadTimeout != serverReadTimeout {
+		t.Fatalf("ReadTimeout = %s, want %s", server.ReadTimeout, serverReadTimeout)
+	}
+	if server.IdleTimeout != serverIdleTimeout {
+		t.Fatalf("IdleTimeout = %s, want %s", server.IdleTimeout, serverIdleTimeout)
+	}
+	if server.MaxHeaderBytes != serverMaxHeaderBytes {
+		t.Fatalf("MaxHeaderBytes = %d, want %d", server.MaxHeaderBytes, serverMaxHeaderBytes)
+	}
+}
+
 func TestFormatListenErrorIncludesAddress(t *testing.T) {
 	err := formatListenError("127.0.0.1:43101", errAddressInUse{})
 	if !strings.Contains(err.Error(), "127.0.0.1:43101") || !strings.Contains(err.Error(), "address already in use") {
