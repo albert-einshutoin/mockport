@@ -2,9 +2,9 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { validateReport } from "./validate-compatibility-report.mjs";
 
-// promotion_eligible は Go の CanPromote が算出する真実の値。ここでは validator が
-// その値を強制し、かつ promotion_eligible と矛盾する自己申告（provenance ガード）を
-// 弾くことを検証する。
+// promotion_eligible is the true value computed by Go's CanPromote. These tests
+// check that the validator enforces it and also rejects self-declarations that
+// contradict it (the provenance guard).
 function baseAdapter(overrides = {}) {
   return {
     name: "stripe",
@@ -20,7 +20,8 @@ function baseAdapter(overrides = {}) {
   };
 }
 
-// 先頭 adapter をテスト対象に差し替え、残りは合格する adapter で必須5件を満たす。
+// Replace the first adapter with the one under test; the rest are passing
+// adapters so the required set of five is satisfied.
 function reportWith(adapter) {
   const names = ["stripe", "openai", "github-oauth", "slack", "line"];
   const adapters = names.map((name, i) =>
@@ -48,7 +49,7 @@ test("rejects an adapter missing the promotion_eligible field", () => {
   assert.throws(() => validateReport(reportWith(adapter)), /does not meet CanPromote/);
 });
 
-// provenance ガード: promotion_eligible=true でも矛盾する組み合わせは拒否する。
+// Provenance guard: even with promotion_eligible=true, contradictory combinations are rejected.
 test("rejects promotion_eligible=true that contradicts the maturity score floor", () => {
   const adapter = baseAdapter({ maturity: "provider-compatible", measured_level: "contract", score: 0 });
   assert.throws(() => validateReport(reportWith(adapter)), /score 0 < 80/);

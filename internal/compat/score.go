@@ -151,8 +151,8 @@ func CanPromote(manifest Manifest, score Score, target string) bool {
 	case "workflow-compatible":
 		return meetsWorkflowCompatible(manifest, score) && score.Total >= 60
 	case "provider-compatible":
-		// 最上位 maturity。下位 (sdk / workflow) の証跡条件をすべて包含した上で、
-		// contract level と total>=80 を要求する。階層条件を飛ばして昇格できないようにする。
+		// Top maturity: subsumes the lower (sdk / workflow) evidence bars and also
+		// requires contract level and total>=80, so promotion cannot skip the hierarchy.
 		return meetsSDKCompatible(manifest, score) &&
 			meetsWorkflowCompatible(manifest, score) &&
 			hasLevel(manifest.Levels, LevelContract) &&

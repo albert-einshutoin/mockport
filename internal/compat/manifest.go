@@ -147,10 +147,10 @@ func FromMetadata(meta adapter.Metadata) Manifest {
 		manifest.SDKVersions = append(manifest.SDKVersions, SDKVersion{Name: sdk.Name, Version: sdk.Version})
 	}
 	manifest.ClientEvidence = append(manifest.ClientEvidence, meta.ClientEvidence...)
-	// adapter 全体の levels は manifest.Levels にのみ保持する。adapter.Metadata は
-	// endpoint/scenario 単位の証跡を表現できないため、ここで Levels をバックフィルすると
-	// 「宣言しただけ」の level が endpoint/scenario の証跡に化け、state/error スコアを
-	// 過大評価してしまう（#21）。per-item の level は明示的なマニフェストでのみ与える。
+	// Adapter-wide levels live only on manifest.Levels. adapter.Metadata cannot
+	// express per-endpoint/scenario evidence, so backfilling Levels here would let a
+	// bare declaration masquerade as endpoint/scenario evidence and overstate the
+	// state/error score (#21). Per-item levels come only from explicit manifests.
 	for _, endpoint := range meta.Endpoints {
 		manifest.Endpoints = append(manifest.Endpoints, Endpoint{
 			ID:        endpointID(endpoint.Method, endpoint.Path),

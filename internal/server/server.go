@@ -107,8 +107,9 @@ func compatibilityStatus(manifest compat.Manifest) report.CompatibilityStatus {
 		SDKCoverage:      score.SDKCoverage,
 		StateCoverage:    score.StateCoverage,
 		ErrorCoverage:    score.ErrorCoverage,
-		// 公開レポートの真実の源として、宣言 maturity が CanPromote を満たすかを Go 側で
-		// 算出する。validator はこの値を信頼し、スコアリングロジックを二重実装しない。
+		// Single source of truth for the published report: compute on the Go side
+		// whether the declared maturity satisfies CanPromote. The validator trusts
+		// this value and does not re-implement the scoring logic.
 		PromotionEligible: compat.CanPromote(manifest, score, manifest.Maturity),
 		ProviderVersion:   manifest.ProviderVersion,
 	}

@@ -2,17 +2,20 @@
 import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 
-// 公開する互換性レポートのリリースゲート。各 adapter の promotion_eligible は、
-// レポート生成時に internal/compat.CanPromote（昇格判定の単一の真実の源）で算出される。
-// この validator はその結果を強制する。加えて、静的 JSON を検証するゲートである以上、
-// stale な artifact や手編集で promotion_eligible だけを true に詐称した矛盾を検出するため、
-// maturity が最低限要求する score / coverage / measured_level の整合性も確認する
-// （provenance ガード。CanPromote の完全再現ではなく、ありえない組み合わせの拒否）。
+// Release gate for the published compatibility report. Each adapter's
+// promotion_eligible is computed at report-generation time by
+// internal/compat.CanPromote (the single source of truth for promotion). This
+// validator enforces that result. Because it checks a static JSON file, it also
+// verifies the minimal score / coverage / measured_level consistency a maturity
+// requires, so a stale artifact or hand-edit that flips only promotion_eligible
+// to true is caught (a provenance guard: reject impossible combinations rather
+// than fully re-implement CanPromote).
 
 const REQUIRED_ADAPTERS = ["stripe", "openai", "github-oauth", "slack", "line"];
 
-// 各 maturity が満たすべき最低限の整合性。promotion_eligible が真実の源だが、
-// ここで「ありえない組み合わせ」を弾いて自己申告の boolean への過信を防ぐ。
+// Minimal consistency each maturity must satisfy. promotion_eligible is the
+// source of truth, but rejecting impossible combinations here prevents
+// over-trusting a self-declared boolean.
 const MATURITY_FLOOR = {
   "sdk-compatible": { minScore: 40, coverage: ["sdk_coverage"] },
   "workflow-compatible": { minScore: 60, coverage: ["state_coverage", "error_coverage"] },
@@ -28,16 +31,17 @@ function validateAdapter(adapter) {
     throw new Error(`invalid adapter report entry: ${JSON.stringify(adapter)}`);
   }
 
-  // 真実の源は Go の CanPromote。宣言した maturity がスコアリング規則上ありえない
-  // ものなら promotion_eligible は false になり、ここで弾かれる。
+  // The source of truth is Go's CanPromote. If the declared maturity is impossible
+  // under the scoring rules, promotion_eligible is false and we stop here.
   if (adapter.promotion_eligible !== true) {
     throw new Error(
       `${adapter.name} publishes maturity "${adapter.maturity}" but does not meet CanPromote (promotion_eligible is not true)`,
     );
   }
 
-  // provenance ガード: promotion_eligible=true と矛盾する score/coverage/measured_level を
-  // 拒否し、stale/手編集の JSON が boolean だけで昇格を詐称するのを防ぐ。
+  // Provenance guard: reject score/coverage/measured_level that contradict
+  // promotion_eligible=true, so a stale or hand-edited JSON cannot fake a
+  // promotion with the boolean alone.
   const floor = MATURITY_FLOOR[adapter.maturity];
   if (floor) {
     if (adapter.score < floor.minScore) {

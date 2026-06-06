@@ -195,13 +195,13 @@ func TestCalculateScoreReportsWorkflowAsHigherThanState(t *testing.T) {
 	}
 }
 
-// TestCalculateScoreFromMetadataRequiresConcreteStateAndErrorEvidence は runtime-report
-// パス（FromMetadata 経由）でも、宣言しただけの state/error level が coverage を
-// 過大評価しないことを固定する（#21）。FromMetadata が endpoint/scenario へ adapter 全体の
-// levels をバックフィルしていた頃は、具体証跡ゼロでも 100 になっていた。
+// TestCalculateScoreFromMetadataRequiresConcreteStateAndErrorEvidence pins that the
+// runtime-report path (via FromMetadata) does not overstate state/error coverage from
+// declared levels alone (#21). When FromMetadata backfilled adapter-wide levels onto
+// endpoints/scenarios, coverage reached 100 with zero concrete evidence.
 func TestCalculateScoreFromMetadataRequiresConcreteStateAndErrorEvidence(t *testing.T) {
-	// state/error を宣言しているが、具体証跡（StatefulResources/Idempotency/Reset/
-	// error scenario）は一切持たないメタデータ。
+	// Declares state/error but carries no concrete evidence (no StatefulResources/
+	// Idempotency/Reset and no error scenario).
 	declaredOnly := adapter.Metadata{
 		Name:            "openai",
 		Maturity:        adapter.MaturityExperimental,
@@ -219,7 +219,7 @@ func TestCalculateScoreFromMetadataRequiresConcreteStateAndErrorEvidence(t *test
 		t.Fatalf("error coverage = %d from declared level without evidence, want 0", score.ErrorCoverage)
 	}
 
-	// 具体証跡（fake-state surface と error scenario）を加えると 100 になる。
+	// Adding concrete evidence (a fake-state surface and an error scenario) reaches 100.
 	withEvidence := declaredOnly
 	withEvidence.StatefulResources = []string{"thread"}
 	withEvidence.Idempotency = true
@@ -235,11 +235,11 @@ func TestCalculateScoreFromMetadataRequiresConcreteStateAndErrorEvidence(t *test
 	}
 }
 
-// TestNonBuiltInScenariosDoNotInflateCoverage は、supported でも BuiltIn=false の
-// local/custom scenario が error 風の名前や state level を持っていても evidence として
-// 数えないことを固定する。scenarioCoverage が built-in のみを対象とするのと揃え、
-// ユーザー定義 scenario だけで state/error coverage や workflow 昇格を自己申告で
-// 水増しできないようにする。
+// TestNonBuiltInScenariosDoNotInflateCoverage pins that a supported but non-built-in
+// (BuiltIn=false) local/custom scenario is not counted as evidence even with an error-like
+// name or a declared state level. This matches scenarioCoverage counting only built-in
+// scenarios, so user-defined scenarios alone cannot self-inflate state/error coverage or
+// unlock workflow promotion.
 func TestNonBuiltInScenariosDoNotInflateCoverage(t *testing.T) {
 	manifest := Manifest{
 		Adapter:         "stripe",
@@ -264,7 +264,7 @@ func TestNonBuiltInScenariosDoNotInflateCoverage(t *testing.T) {
 		t.Fatal("workflow-compatible promotion passed using only non-built-in scenarios")
 	}
 
-	// 同じ証跡を built-in scenario として宣言すれば evidence として数える。
+	// Declaring the same evidence as a built-in scenario does count.
 	builtIn := manifest
 	builtIn.Scenarios = []Scenario{
 		{Name: "payment_success", BuiltIn: true, Supported: true},
@@ -280,11 +280,11 @@ func TestNonBuiltInScenariosDoNotInflateCoverage(t *testing.T) {
 	}
 }
 
-// TestCanPromoteProviderCompatibleRequiresConcreteEvidence は、最上位 maturity の
-// provider-compatible が total 閾値だけで昇格できないことを固定する。contract level と
-// total>=80 を満たしても、error/state/SDK のいずれかの具体証跡が欠けていれば昇格しない。
+// TestCanPromoteProviderCompatibleRequiresConcreteEvidence pins that the top maturity
+// provider-compatible cannot be promoted by the total threshold alone. Even with contract
+// level and total>=80, it must not promote when any concrete error/state/SDK evidence is missing.
 func TestCanPromoteProviderCompatibleRequiresConcreteEvidence(t *testing.T) {
-	// SDK=100 / State=100 / Endpoint=100 / Scenario=100 だが Error=0。total はちょうど 80。
+	// SDK=100 / State=100 / Endpoint=100 / Scenario=100 but Error=0. Total is exactly 80.
 	manifest := Manifest{
 		Adapter:         "stripe",
 		ProviderVersion: "2026-05-26",
@@ -306,7 +306,7 @@ func TestCanPromoteProviderCompatibleRequiresConcreteEvidence(t *testing.T) {
 		t.Fatal("provider-compatible promotion passed without error evidence")
 	}
 
-	// workflow/error level と built-in error scenario を加えると、全証跡が揃い昇格できる。
+	// Adding workflow/error levels and a built-in error scenario completes the evidence and promotes.
 	full := manifest
 	full.Levels = append(append([]Level(nil), manifest.Levels...), LevelWorkflow, LevelError)
 	full.Scenarios = append(append([]Scenario(nil), manifest.Scenarios...), Scenario{Name: "payment_failed", BuiltIn: true, Supported: true})
@@ -315,8 +315,8 @@ func TestCanPromoteProviderCompatibleRequiresConcreteEvidence(t *testing.T) {
 		t.Fatalf("provider-compatible promotion failed with full concrete evidence: %#v", score)
 	}
 
-	// workflow level が欠けていれば、他の証跡が揃っていても provider-compatible にならない
-	// （最上位 maturity は workflow-compatible 条件を包含する）。
+	// Without the workflow level it must not reach provider-compatible even when the other
+	// evidence is present (the top maturity subsumes the workflow-compatible bar).
 	noWorkflow := full
 	noWorkflow.Levels = []Level{LevelWire, LevelSDK, LevelState, LevelError, LevelContract}
 	score = CalculateScore(noWorkflow)
@@ -325,9 +325,9 @@ func TestCanPromoteProviderCompatibleRequiresConcreteEvidence(t *testing.T) {
 	}
 }
 
-// TestSDKCoverageRejectsEmptyEvidence は、空文字の SDK version / client evidence では
-// SDKCoverage が 100 にならないことを固定する。空証跡で sdk-compatible や
-// provider-compatible の SDK 条件を満たせてしまう穴を防ぐ。
+// TestSDKCoverageRejectsEmptyEvidence pins that empty SDK version / client evidence does not
+// push SDKCoverage to 100, preventing empty evidence from satisfying the sdk-compatible or
+// provider-compatible SDK requirement.
 func TestSDKCoverageRejectsEmptyEvidence(t *testing.T) {
 	base := Manifest{
 		Adapter:         "x",

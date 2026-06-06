@@ -161,10 +161,10 @@ func TestStateCoverageSkipsStatelessAdapterMetadata(t *testing.T) {
 	}
 }
 
-// TestCompatibilityStatusReportsPromotionEligibility は、レポートに出力される
-// PromotionEligible が internal/compat.CanPromote を真実の源として算出されることを
-// 固定する。特に、coverage が満点でも階層 level（LevelWorkflow 等）を欠く宣言は
-// 昇格不可として出力されなければならない。
+// TestCompatibilityStatusReportsPromotionEligibility pins that the PromotionEligible
+// value emitted in the report is computed from internal/compat.CanPromote as the single
+// source of truth. In particular, a declaration missing a hierarchy level (e.g.
+// LevelWorkflow) must be emitted as not promotion-eligible even when coverage is full.
 func TestCompatibilityStatusReportsPromotionEligibility(t *testing.T) {
 	eligible := compat.Manifest{
 		Adapter:         "demo",
@@ -182,8 +182,8 @@ func TestCompatibilityStatusReportsPromotionEligibility(t *testing.T) {
 		t.Fatalf("workflow-compatible manifest with full evidence should be promotion-eligible: %#v", status)
 	}
 
-	// provider-compatible を宣言するが LevelWorkflow を欠く。coverage は満点になり得るが
-	// CanPromote の階層条件を満たさないため eligible にしてはならない。
+	// Declares provider-compatible but lacks LevelWorkflow. Coverage can be full, yet it
+	// must not be eligible because it fails CanPromote's hierarchy condition.
 	ineligible := eligible
 	ineligible.Maturity = "provider-compatible"
 	ineligible.Levels = []compat.Level{compat.LevelWire, compat.LevelSDK, compat.LevelState, compat.LevelError, compat.LevelContract}
