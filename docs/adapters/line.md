@@ -152,9 +152,11 @@ Supported flow:
 
 1. App redirects to `/line/oauth2/v2.1/authorize` with `client_id`, `redirect_uri`, `state`, and optional `scope`.
 2. Mockport redirects back to `redirect_uri` with `code` and `state`.
-3. App posts the code to `/line/oauth2/v2.1/token`.
+3. App posts the code, `client_id`, and `redirect_uri` to `/line/oauth2/v2.1/token`.
 4. Mockport returns fake token material.
 5. App calls `/line/v2/profile` with `Authorization: Bearer <access_token>`.
+
+The default LINE Login flow rejects missing `client_id` at authorization time and rejects token exchange when `client_id` is missing or does not match the code-producing authorization request.
 
 ## Authentication Methods
 

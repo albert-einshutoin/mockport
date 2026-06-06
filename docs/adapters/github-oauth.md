@@ -56,6 +56,8 @@ Use this table to jump from Mockport's supported local surface to the closest of
 | `GET` | `/github/user/emails` | Returns deterministic authenticated user emails. |
 | `GET` | `/github/user/orgs` | Returns deterministic authenticated user organizations. |
 
+The default OAuth flow requires `client_id` on `/github/login/oauth/authorize`. Token exchange also requires `client_id`, and the value must match the authorization request that created the code.
+
 ## Scenarios
 
 | Scenario | Behavior |

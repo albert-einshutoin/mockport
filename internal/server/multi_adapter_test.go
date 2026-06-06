@@ -46,7 +46,7 @@ func TestConfiguredHandlerServesMultipleAdapters(t *testing.T) {
 	}{
 		{http.MethodPost, "/stripe/v1/checkout/sessions", http.StatusOK},
 		{http.MethodGet, "/openai/v1/models", http.StatusOK},
-		{http.MethodGet, "/github/login/oauth/authorize", http.StatusFound},
+		{http.MethodGet, "/github/login/oauth/authorize?client_id=mockport_github_client", http.StatusFound},
 		{http.MethodPost, "/slack/api/auth.test", http.StatusOK},
 		{http.MethodPost, "/line/v2/bot/message/push", http.StatusOK},
 	} {

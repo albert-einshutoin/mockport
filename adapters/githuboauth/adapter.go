@@ -82,6 +82,11 @@ func (r *routes) handle(w http.ResponseWriter, req *http.Request) {
 	path := strings.TrimPrefix(req.URL.Path, r.basePath)
 	switch {
 	case req.Method == http.MethodGet && path == "/login/oauth/authorize":
+		clientID := req.URL.Query().Get("client_id")
+		if strings.TrimSpace(clientID) == "" {
+			writeOAuthError(w, http.StatusBadRequest, "invalid_request", "client_id is required")
+			return
+		}
 		redirectURI := req.URL.Query().Get("redirect_uri")
 		if redirectURI == "" {
 			redirectURI = "http://localhost/callback"
@@ -99,7 +104,7 @@ func (r *routes) handle(w http.ResponseWriter, req *http.Request) {
 			})
 			return
 		}
-		code, err := r.createCode(req, redirectURI)
+		code, err := r.createCode(req, clientID, redirectURI)
 		if err != nil {
 			writeAPIError(w, http.StatusInternalServerError, err.Error())
 			return
@@ -118,13 +123,13 @@ func (r *routes) handle(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func (r *routes) createCode(req *http.Request, redirectURI string) (string, error) {
+func (r *routes) createCode(req *http.Request, clientID, redirectURI string) (string, error) {
 	scope := req.URL.Query().Get("scope")
 	if scope == "" {
 		scope = "read:user"
 	}
 	resource, err := r.store.Create("github-oauth", "oauth_code", map[string]any{
-		"client_id":    req.URL.Query().Get("client_id"),
+		"client_id":    clientID,
 		"redirect_uri": redirectURI,
 		"scope":        scope,
 		"user":         "mockport-user",
@@ -277,7 +282,7 @@ func splitScopes(value any) []string {
 
 func clientIDMatches(resource state.Resource, got string) bool {
 	want, _ := resource.Data["client_id"].(string)
-	return want == "" || got == want
+	return strings.TrimSpace(want) != "" && strings.TrimSpace(got) != "" && got == want
 }
 
 func redirectWithQuery(w http.ResponseWriter, req *http.Request, redirectURI string, values map[string]string) {

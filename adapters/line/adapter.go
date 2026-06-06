@@ -641,6 +641,11 @@ func (r *routes) writeContentEndpoint(w http.ResponseWriter, path string) {
 }
 
 func (r *routes) writeAuthorize(w http.ResponseWriter, req *http.Request) {
+	clientID := req.URL.Query().Get("client_id")
+	if strings.TrimSpace(clientID) == "" {
+		writeOAuthError(w, http.StatusBadRequest, "invalid_request", "client_id is required")
+		return
+	}
 	redirectURI := req.URL.Query().Get("redirect_uri")
 	if redirectURI == "" {
 		redirectURI = "http://localhost/callback"
@@ -662,7 +667,7 @@ func (r *routes) writeAuthorize(w http.ResponseWriter, req *http.Request) {
 		scope = "profile openid"
 	}
 	resource, err := r.store.Create("line", "oauth_code", map[string]any{
-		"client_id":    req.URL.Query().Get("client_id"),
+		"client_id":    clientID,
 		"redirect_uri": redirectURI,
 		"scope":        scope,
 		"user_id":      "Umockport",
@@ -710,6 +715,7 @@ func (r *routes) writeToken(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 		token, err := r.store.Create("line", "oauth_token", map[string]any{
+			"client_id":  codeResource.Data["client_id"],
 			"scope":      codeResource.Data["scope"],
 			"user_id":    codeResource.Data["user_id"],
 			"expires_at": "2999-01-01T00:00:00Z",
@@ -1520,5 +1526,5 @@ func firstNonEmpty(values ...any) any {
 
 func clientIDMatches(resource state.Resource, got string) bool {
 	want, _ := resource.Data["client_id"].(string)
-	return want == "" || got == want
+	return strings.TrimSpace(want) != "" && strings.TrimSpace(got) != "" && got == want
 }

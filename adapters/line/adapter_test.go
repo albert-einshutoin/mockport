@@ -316,9 +316,10 @@ func TestRichMenuAndChatResources(t *testing.T) {
 
 func TestLoginTokenAndProfile(t *testing.T) {
 	mux := newLineMux(t, adapter.Config{BasePath: "/line", Scenario: "line_success"})
+	clientID := "custom_line_channel"
 
 	authorize := httptest.NewRecorder()
-	mux.ServeHTTP(authorize, httptest.NewRequest(http.MethodGet, "/line/oauth2/v2.1/authorize?client_id=mockport_line_channel&redirect_uri=http://localhost/callback&state=abc&scope=profile%20openid", nil))
+	mux.ServeHTTP(authorize, httptest.NewRequest(http.MethodGet, "/line/oauth2/v2.1/authorize?client_id="+clientID+"&redirect_uri=http://localhost/callback&state=abc&scope=profile%20openid", nil))
 	if authorize.Code != http.StatusFound {
 		t.Fatalf("authorize status = %d, want %d", authorize.Code, http.StatusFound)
 	}
@@ -331,7 +332,7 @@ func TestLoginTokenAndProfile(t *testing.T) {
 		t.Fatalf("redirect location = %s", authorize.Header().Get("Location"))
 	}
 
-	form := url.Values{"grant_type": {"authorization_code"}, "code": {code}, "client_id": {"mockport_line_channel"}, "redirect_uri": {"http://localhost/callback"}}
+	form := url.Values{"grant_type": {"authorization_code"}, "code": {code}, "client_id": {clientID}, "redirect_uri": {"http://localhost/callback"}}
 	tokenRec := httptest.NewRecorder()
 	tokenReq := httptest.NewRequest(http.MethodPost, "/line/oauth2/v2.1/token", strings.NewReader(form.Encode()))
 	tokenReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -355,6 +356,12 @@ func TestLoginTokenAndProfile(t *testing.T) {
 	if profileRec.Code != http.StatusOK {
 		t.Fatalf("login profile status = %d, want %d", profileRec.Code, http.StatusOK)
 	}
+
+	verifyRec := httptest.NewRecorder()
+	mux.ServeHTTP(verifyRec, httptest.NewRequest(http.MethodGet, "/line/oauth2/v2.1/verify?access_token="+url.QueryEscape(accessToken), nil))
+	if verifyRec.Code != http.StatusOK || !strings.Contains(verifyRec.Body.String(), `"client_id":"`+clientID+`"`) {
+		t.Fatalf("verify token = status %d body %s", verifyRec.Code, verifyRec.Body.String())
+	}
 }
 
 func TestLoginTokenRequiresAuthorizationCode(t *testing.T) {
@@ -367,6 +374,16 @@ func TestLoginTokenRequiresAuthorizationCode(t *testing.T) {
 	mux.ServeHTTP(rec, req)
 	if rec.Code != http.StatusBadRequest || !strings.Contains(rec.Body.String(), "invalid_grant") {
 		t.Fatalf("token without code = status %d body %s", rec.Code, rec.Body.String())
+	}
+}
+
+func TestLoginAuthorizeRequiresClientID(t *testing.T) {
+	mux := newLineMux(t, adapter.Config{BasePath: "/line", Scenario: "line_success"})
+
+	rec := httptest.NewRecorder()
+	mux.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/line/oauth2/v2.1/authorize?redirect_uri=http://localhost/callback&state=abc", nil))
+	if rec.Code != http.StatusBadRequest || !strings.Contains(rec.Body.String(), "invalid_request") {
+		t.Fatalf("authorize without client_id = status %d body %s", rec.Code, rec.Body.String())
 	}
 }
 
@@ -384,6 +401,32 @@ func TestLoginTokenRejectsClientIDMismatch(t *testing.T) {
 	mux.ServeHTTP(rec, req)
 	if rec.Code != http.StatusUnauthorized || !strings.Contains(rec.Body.String(), "invalid_client") {
 		t.Fatalf("mismatch token = status %d body %s", rec.Code, rec.Body.String())
+	}
+
+	valid := url.Values{"grant_type": {"authorization_code"}, "code": {code}, "client_id": {"mockport_line_channel"}, "redirect_uri": {"http://localhost/callback"}}
+	validRec := httptest.NewRecorder()
+	validReq := httptest.NewRequest(http.MethodPost, "/line/oauth2/v2.1/token", strings.NewReader(valid.Encode()))
+	validReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	mux.ServeHTTP(validRec, validReq)
+	if validRec.Code != http.StatusOK {
+		t.Fatalf("valid retry status = %d, want %d: %s", validRec.Code, http.StatusOK, validRec.Body.String())
+	}
+}
+
+func TestLoginTokenRequiresClientID(t *testing.T) {
+	mux := newLineMux(t, adapter.Config{BasePath: "/line", Scenario: "line_success"})
+
+	authorize := httptest.NewRecorder()
+	mux.ServeHTTP(authorize, httptest.NewRequest(http.MethodGet, "/line/oauth2/v2.1/authorize?client_id=mockport_line_channel&redirect_uri=http://localhost/callback&state=abc", nil))
+	code := redirectCodeFromLocation(t, authorize.Header().Get("Location"))
+
+	missing := url.Values{"grant_type": {"authorization_code"}, "code": {code}, "redirect_uri": {"http://localhost/callback"}}
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "/line/oauth2/v2.1/token", strings.NewReader(missing.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	mux.ServeHTTP(rec, req)
+	if rec.Code != http.StatusUnauthorized || !strings.Contains(rec.Body.String(), "invalid_client") {
+		t.Fatalf("missing client_id token = status %d body %s", rec.Code, rec.Body.String())
 	}
 
 	valid := url.Values{"grant_type": {"authorization_code"}, "code": {code}, "client_id": {"mockport_line_channel"}, "redirect_uri": {"http://localhost/callback"}}
