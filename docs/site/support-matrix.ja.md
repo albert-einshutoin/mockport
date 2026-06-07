@@ -12,4 +12,10 @@ Mockport の support は explicit かつ scenario-driven です。adapter ごと
 - `workflow-compatible`: fake state、error、replayable behavior を含む状態。
 - `provider-compatible`: manifest、SDK contract、fixture、known-gap report で支えられた状態。
 
-詳細な adapter coverage は英語版を正とします。
+## Adapter coverage
+
+Built-in adapter は `stripe`、`openai`、`github-oauth`、`slack`、`line` です。
+
+SDK evidence は English support matrix と compatibility report を正とし、current SDK contract は `stripe@22.2.0` と `openai@6.39.1` です。
+
+詳細な endpoint、scenario、known gap は英語版を正とします。

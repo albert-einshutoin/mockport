@@ -13,6 +13,7 @@ body:
         - openai
         - github-oauth
         - slack
+        - line
         - cli
         - docs
         - other

@@ -9,7 +9,7 @@ body:
     attributes:
       label: Target adapter
       description: Name the target adapter for this request.
-      placeholder: "stripe, openai, github-oauth, slack, or new adapter"
+      placeholder: "stripe, openai, github-oauth, slack, line, or new adapter"
     validations:
       required: true
   - type: textarea
