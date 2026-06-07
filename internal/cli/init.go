@@ -11,9 +11,11 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+const defaultDockerImage = "ghcr.io/albert-einshutoin/mockport:0.1.0-alpha"
+
 const defaultCompose = `services:
   mockport:
-    image: ghcr.io/albert-einshutoin/mockport:latest
+    image: ` + defaultDockerImage + `
     command: ["run", "--config", "/etc/mockport/mockport.yml", "--host", "0.0.0.0"]
     ports:
       - "127.0.0.1:43101:43101"

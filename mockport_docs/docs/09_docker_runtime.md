@@ -15,7 +15,7 @@ Primary usage:
 ```bash
 docker run --rm -p 127.0.0.1:43101:43101 \
   -v $(pwd)/mockport.yml:/etc/mockport/mockport.yml \
-  ghcr.io/albert-einshutoin/mockport:latest run --config /etc/mockport/mockport.yml --host 0.0.0.0
+  ghcr.io/albert-einshutoin/mockport:0.1.0-alpha run --config /etc/mockport/mockport.yml --host 0.0.0.0
 ```
 
 ## Docker Compose usage
@@ -23,7 +23,7 @@ docker run --rm -p 127.0.0.1:43101:43101 \
 ```yaml
 services:
   mockport:
-    image: ghcr.io/albert-einshutoin/mockport:latest
+    image: ghcr.io/albert-einshutoin/mockport:0.1.0-alpha
     command: ["run", "--config", "/etc/mockport/mockport.yml", "--host", "0.0.0.0"]
     ports:
       - "127.0.0.1:43101:43101"
@@ -52,8 +52,10 @@ STRIPE_SECRET_KEY=mockport_stripe_secret
 Use one all-in-one image:
 
 ```txt
-ghcr.io/albert-einshutoin/mockport:latest
+ghcr.io/albert-einshutoin/mockport:0.1.0-alpha
 ```
+
+Use explicit release image tags for reproducible preview installs. The `latest` tag follows the default branch image and is not the preview release contract.
 
 All MVP adapters are compiled in, but disabled unless config enables them.
 

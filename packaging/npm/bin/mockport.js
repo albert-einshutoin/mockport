@@ -7,6 +7,7 @@ const { join } = require("node:path");
 
 const args = process.argv.slice(2);
 const explicitBinary = process.env.MOCKPORT_BIN;
+const dockerImage = process.env.MOCKPORT_IMAGE || "ghcr.io/albert-einshutoin/mockport:0.1.0-alpha";
 const packageBinary = join(__dirname, "..", "vendor", process.platform, process.arch, "mockport");
 const binary = explicitBinary || packageBinary;
 const fallbackArgs = args.length === 0
@@ -25,7 +26,7 @@ const dockerArgs = [
   "127.0.0.1:43101:43101",
   "-v",
   `${process.cwd()}/mockport.yml:/etc/mockport/mockport.yml`,
-  "ghcr.io/albert-einshutoin/mockport:latest",
+  dockerImage,
   ...fallbackArgs,
 ];
 const result = spawnSync("docker", dockerArgs, { stdio: "inherit" });

@@ -39,6 +39,12 @@ func TestInitGeneratesStripeFiles(t *testing.T) {
 	if !strings.Contains(string(composeData), "127.0.0.1:43101:43101") {
 		t.Fatalf("compose missing loopback port binding: %s", string(composeData))
 	}
+	if !strings.Contains(string(composeData), "ghcr.io/albert-einshutoin/mockport:0.1.0-alpha") {
+		t.Fatalf("compose missing pinned preview image: %s", string(composeData))
+	}
+	if strings.Contains(string(composeData), "ghcr.io/albert-einshutoin/mockport:latest") {
+		t.Fatalf("compose should not default to mutable latest image: %s", string(composeData))
+	}
 	envData, err := os.ReadFile(filepath.Join(dir, ".env.mockport"))
 	if err != nil {
 		t.Fatalf("read env: %v", err)
