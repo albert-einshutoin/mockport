@@ -11,8 +11,10 @@ adapters:
     enabled: true
     base_path: /stripe
     scenario: payment_success
+    # mockport-public-safety: allow-begin unsafe-config-fixture
     fake_secret: sk_live_example_should_not_be_used
     api_url: https://api.stripe.com
+    # mockport-public-safety: allow-end
     webhook:
       target_url: http://app:3000/webhooks/stripe
       signing_secret: whsec_mockport

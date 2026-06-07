@@ -44,4 +44,14 @@ Do not commit:
 bash scripts/check-public-env.sh
 ```
 
-This check scans public env examples and docs for real-looking provider credentials, production provider URLs, and ambiguous placeholders.
+This check scans public docs, `.ja.md` translations, GitHub templates/workflows, example configs, packaging docs, and contract docs for real-looking provider credentials, production provider URLs, and ambiguous placeholders.
+
+Detector-reference docs and intentionally unsafe warning fixtures must wrap unsafe examples in a narrow `mockport-public-safety` allow block:
+
+```md
+<!-- mockport-public-safety: allow-begin detector-reference -->
+unsafe detector example only
+<!-- mockport-public-safety: allow-end -->
+```
+
+Do not use allow blocks for normal setup instructions, generated examples, or user-facing quickstarts.

@@ -27,6 +27,7 @@ mode: ai-safe
 
 Initial examples:
 
+<!-- mockport-public-safety: allow-begin detector-reference -->
 ```txt
 sk_live_
 sk_test_
@@ -39,6 +40,7 @@ xoxp-
 AIza
 whsec_
 ```
+<!-- mockport-public-safety: allow-end -->
 
 Important nuance:
 
@@ -67,6 +69,7 @@ LINE_CHANNEL_SECRET=mockport_line_secret
 
 Examples:
 
+<!-- mockport-public-safety: allow-begin detector-reference -->
 ```txt
 https://api.stripe.com
 https://api.openai.com
@@ -74,6 +77,7 @@ https://api.github.com
 https://api.line.me
 https://slack.com/api
 ```
+<!-- mockport-public-safety: allow-end -->
 
 ## Strict mode
 
@@ -91,9 +95,11 @@ Never output full secret values.
 
 Bad:
 
+<!-- mockport-public-safety: allow-begin detector-reference -->
 ```txt
 STRIPE_SECRET_KEY=sk_live_xxxxx
 ```
+<!-- mockport-public-safety: allow-end -->
 
 Good:
 

@@ -53,5 +53,6 @@ require_text ".github/pull_request_template.md" "Public env safety"
 
 require_text "README.md" "No local install required"
 require_text "README.md" "npm wrapper is experimental"
+require_text "docs/public-env-safety.md" "mockport-public-safety"
 require_text ".github/workflows/ci.yml" "bash scripts/check-public-trust.sh"
 require_text ".github/workflows/ci.yml" "bash scripts/check-distribution.sh"

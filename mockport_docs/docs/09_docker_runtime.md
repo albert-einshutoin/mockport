@@ -36,8 +36,8 @@ services:
 Production:
 
 ```env
-STRIPE_API_URL=https://api.stripe.com
-STRIPE_SECRET_KEY=sk_live_xxx
+STRIPE_API_URL=<provider Stripe API URL>
+STRIPE_SECRET_KEY=<redacted real provider key>
 ```
 
 Local/CI/AI:

@@ -70,8 +70,10 @@ config:
 - reject missing adapter base path
 
 security:
+<!-- mockport-public-safety: allow-begin detector-reference -->
 - detect sk_live_
 - detect AKIA
+<!-- mockport-public-safety: allow-end -->
 - allow mockport_ prefix
 - redact secret
 
@@ -99,7 +101,9 @@ func TestDetectSecret(t *testing.T) {
         value string
         want bool
     }{
+        // mockport-public-safety: allow-begin detector-reference
         {"stripe live", "sk_live_xxx", true},
+        // mockport-public-safety: allow-end
         {"mockport fake", "mockport_stripe_secret", false},
     }
 
