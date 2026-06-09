@@ -29,6 +29,7 @@ Then verify the local API:
 
 ```bash
 curl http://localhost:43101/health
+mockport healthcheck --url http://localhost:43101/health
 curl -X POST http://localhost:43101/stripe/v1/checkout/sessions
 curl http://localhost:43101/_mockport/report
 ```
@@ -56,6 +57,7 @@ Test a Stripe-like checkout session:
 
 ```bash
 curl -X POST http://localhost:43101/stripe/v1/checkout/sessions
+mockport healthcheck --url http://localhost:43101/health
 ```
 
 View the request and safety report:

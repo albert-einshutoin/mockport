@@ -29,6 +29,7 @@ docker run --rm -p 127.0.0.1:43101:43101 \
 
 ```bash
 curl http://localhost:43101/health
+mockport healthcheck --url http://localhost:43101/health
 curl -X POST http://localhost:43101/stripe/v1/checkout/sessions
 curl http://localhost:43101/_mockport/report
 ```
@@ -56,6 +57,7 @@ Stripe 風 checkout session を試します。
 
 ```bash
 curl -X POST http://localhost:43101/stripe/v1/checkout/sessions
+mockport healthcheck --url http://localhost:43101/health
 ```
 
 リクエストと安全性レポートを確認します。

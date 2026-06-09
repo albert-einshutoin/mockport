@@ -12,6 +12,7 @@ func NewRootCommand() *cobra.Command {
 		Short: "Secret-free service emulation for local and CI integration tests",
 	}
 	cmd.AddCommand(newVersionCommand())
+	cmd.AddCommand(newHealthcheckCommand())
 	cmd.AddCommand(newRunCommand())
 	cmd.AddCommand(newInitCommand())
 	cmd.AddCommand(newAddCommand())
