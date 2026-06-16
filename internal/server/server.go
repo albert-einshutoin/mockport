@@ -5,12 +5,19 @@ import (
 	"fmt"
 	"net/http"
 	"sort"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/albert-einshutoin/mockport/internal/adapter"
 	"github.com/albert-einshutoin/mockport/internal/compat"
 	"github.com/albert-einshutoin/mockport/internal/config"
 	"github.com/albert-einshutoin/mockport/internal/report"
+)
+
+const (
+	delayHeader = "X-Mockport-Delay"
+	maxDelay    = 30 * time.Second
 )
 
 func NewConfiguredHandler(cfg config.Config, reg *adapter.Registry, rec *report.Recorder) (http.Handler, error) {
@@ -87,7 +94,7 @@ func NewConfiguredHandler(cfg config.Config, reg *adapter.Registry, rec *report.
 		_ = json.NewEncoder(w).Encode(rec.Snapshot())
 	})
 
-	return recordMiddleware(mux, rec, adapterStatuses), nil
+	return recordMiddleware(delayMiddleware(mux), rec, adapterStatuses), nil
 }
 
 func compatibilityStatus(manifest compat.Manifest) report.CompatibilityStatus {
@@ -195,4 +202,28 @@ func classifyAdapter(path string, adapters []report.AdapterStatus) (string, stri
 		}
 	}
 	return "", ""
+}
+
+func delayMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		rawDelay := strings.TrimSpace(r.Header.Get(delayHeader))
+		if rawDelay == "" {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		delayMs, err := strconv.ParseInt(rawDelay, 10, 64)
+		if err != nil || delayMs < 0 || delayMs > int64(maxDelay/time.Millisecond) {
+			http.Error(w, "invalid X-Mockport-Delay: must be 0-30000 (milliseconds)", http.StatusBadRequest)
+			return
+		}
+
+		delay := time.Duration(delayMs) * time.Millisecond
+		select {
+		case <-time.After(delay):
+			next.ServeHTTP(w, r)
+		case <-r.Context().Done():
+			return
+		}
+	})
 }

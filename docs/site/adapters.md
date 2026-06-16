@@ -12,6 +12,8 @@
 
 Adapters are scenario-driven today and are moving toward provider-compatible local APIs for selected workflows. Use the [support matrix](support-matrix.md) and report behavior matrix to confirm supported paths.
 
+`timeout` scenarios return an immediate 504-style response shape. To test client-side timeout behavior, add `X-Mockport-Delay: <milliseconds>` (server-wide header, max 30000) to the request to inject realistic latency.
+
 Detailed adapter specifications:
 
 - [Stripe adapter](../adapters/stripe.md)
