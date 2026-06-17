@@ -1,6 +1,7 @@
 package report
 
 import (
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -45,7 +46,7 @@ func (r *Recorder) SetMode(mode string) {
 func (r *Recorder) SetAdapters(adapters []AdapterStatus) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	r.adapters = append([]AdapterStatus(nil), adapters...)
+	r.adapters = slices.Clone(adapters)
 }
 
 func (r *Recorder) SetScenarioCoverage(coverage []ScenarioCoverage) {
@@ -108,9 +109,9 @@ func (r *Recorder) Snapshot() Snapshot {
 	return Snapshot{
 		Mode:                 r.mode,
 		Safety:               safetySummary(r.mode, r.safetyWarnings),
-		Adapters:             append([]AdapterStatus(nil), r.adapters...),
-		Requests:             append([]Request(nil), r.requests...),
-		SafetyWarnings:       append([]SafetyWarning(nil), r.safetyWarnings...),
+		Adapters:             slices.Clone(r.adapters),
+		Requests:             slices.Clone(r.requests),
+		SafetyWarnings:       slices.Clone(r.safetyWarnings),
 		ScenarioCoverage:     cloneScenarioCoverage(r.coverage),
 		BehaviorMatrix:       cloneBehaviorMatrix(r.matrix),
 		Compatibility:        cloneCompatibility(r.compatibility),
@@ -149,42 +150,42 @@ func unsupportedEndpoints(requests []Request) []UnsupportedEndpoint {
 }
 
 func cloneScenarioCoverage(in []ScenarioCoverage) []ScenarioCoverage {
-	out := append([]ScenarioCoverage(nil), in...)
+	out := slices.Clone(in)
 	for i := range out {
-		out[i].Scenarios = append([]ScenarioSupport(nil), out[i].Scenarios...)
+		out[i].Scenarios = slices.Clone(out[i].Scenarios)
 	}
 	return out
 }
 
 func cloneBehaviorMatrix(in []BehaviorMatrixEntry) []BehaviorMatrixEntry {
-	out := append([]BehaviorMatrixEntry(nil), in...)
+	out := slices.Clone(in)
 	for i := range out {
-		out[i].SupportedScenarios = append([]string(nil), out[i].SupportedScenarios...)
+		out[i].SupportedScenarios = slices.Clone(out[i].SupportedScenarios)
 	}
 	return out
 }
 
 func cloneCompatibility(in []CompatibilityStatus) []CompatibilityStatus {
-	out := append([]CompatibilityStatus(nil), in...)
+	out := slices.Clone(in)
 	for i := range out {
-		out[i].SDKVersions = append([]string(nil), out[i].SDKVersions...)
-		out[i].ClientEvidence = append([]string(nil), out[i].ClientEvidence...)
+		out[i].SDKVersions = slices.Clone(out[i].SDKVersions)
+		out[i].ClientEvidence = slices.Clone(out[i].ClientEvidence)
 		if out[i].ContractEvidence != nil {
 			out[i].ContractEvidence = &ContractEvidence{
-				Fixtures:     append([]string(nil), out[i].ContractEvidence.Fixtures...),
-				SDKContracts: append([]string(nil), out[i].ContractEvidence.SDKContracts...),
-				KnownGaps:    append([]string(nil), out[i].ContractEvidence.KnownGaps...),
+				Fixtures:     slices.Clone(out[i].ContractEvidence.Fixtures),
+				SDKContracts: slices.Clone(out[i].ContractEvidence.SDKContracts),
+				KnownGaps:    slices.Clone(out[i].ContractEvidence.KnownGaps),
 			}
 		}
-		out[i].UnsupportedEndpoints = append([]string(nil), out[i].UnsupportedEndpoints...)
+		out[i].UnsupportedEndpoints = slices.Clone(out[i].UnsupportedEndpoints)
 	}
 	return out
 }
 
 func cloneStateCoverage(in []StateCoverageStatus) []StateCoverageStatus {
-	out := append([]StateCoverageStatus(nil), in...)
+	out := slices.Clone(in)
 	for i := range out {
-		out[i].StatefulResources = append([]string(nil), out[i].StatefulResources...)
+		out[i].StatefulResources = slices.Clone(out[i].StatefulResources)
 	}
 	return out
 }

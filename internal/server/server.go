@@ -3,8 +3,9 @@ package server
 import (
 	"encoding/json"
 	"fmt"
+	"maps"
 	"net/http"
-	"sort"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -37,11 +38,7 @@ func NewConfiguredHandler(cfg config.Config, reg *adapter.Registry, rec *report.
 		rec.RecordSafetyWarning(warning.Field, warning.Category, warning.Message)
 	}
 
-	adapterNames := make([]string, 0, len(cfg.Adapters))
-	for name := range cfg.Adapters {
-		adapterNames = append(adapterNames, name)
-	}
-	sort.Strings(adapterNames)
+	adapterNames := slices.Sorted(maps.Keys(cfg.Adapters))
 
 	for _, name := range adapterNames {
 		adapterCfg := cfg.Adapters[name]
@@ -62,7 +59,7 @@ func NewConfiguredHandler(cfg config.Config, reg *adapter.Registry, rec *report.
 			Enabled:      true,
 			Scenario:     adapterCfg.Scenario,
 			Maturity:     string(meta.Maturity),
-			Capabilities: append([]string(nil), meta.Capabilities...),
+			Capabilities: slices.Clone(meta.Capabilities),
 		})
 		coverage = append(coverage, scenarioCoverage(meta))
 		matrix = append(matrix, behaviorMatrix(meta)...)
@@ -120,9 +117,9 @@ func compatibilityStatus(manifest compat.Manifest) report.CompatibilityStatus {
 	status.ClientEvidence = append(status.ClientEvidence, manifest.ClientEvidence...)
 	if manifest.ContractEvidence != nil {
 		status.ContractEvidence = &report.ContractEvidence{
-			Fixtures:     append([]string(nil), manifest.ContractEvidence.Fixtures...),
-			SDKContracts: append([]string(nil), manifest.ContractEvidence.SDKContracts...),
-			KnownGaps:    append([]string(nil), manifest.ContractEvidence.KnownGaps...),
+			Fixtures:     slices.Clone(manifest.ContractEvidence.Fixtures),
+			SDKContracts: slices.Clone(manifest.ContractEvidence.SDKContracts),
+			KnownGaps:    slices.Clone(manifest.ContractEvidence.KnownGaps),
 		}
 	}
 	for _, unsupported := range manifest.Unsupported {
@@ -188,7 +185,7 @@ func behaviorMatrix(meta adapter.Metadata) []report.BehaviorMatrixEntry {
 			Maturity:           string(meta.Maturity),
 			Method:             endpoint.Method,
 			Path:               endpoint.Path,
-			SupportedScenarios: append([]string(nil), endpoint.SupportedScenarios...),
+			SupportedScenarios: slices.Clone(endpoint.SupportedScenarios),
 			Notes:              endpoint.Notes,
 		})
 	}
@@ -201,7 +198,7 @@ func stateCoverage(meta adapter.Metadata) (report.StateCoverageStatus, bool) {
 	}
 	return report.StateCoverageStatus{
 		Adapter:           meta.Name,
-		StatefulResources: append([]string(nil), meta.StatefulResources...),
+		StatefulResources: slices.Clone(meta.StatefulResources),
 		Idempotency:       meta.Idempotency,
 		Reset:             meta.Reset,
 	}, true

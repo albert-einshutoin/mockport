@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/albert-einshutoin/mockport/internal/adapter"
@@ -196,7 +197,7 @@ func FromMetadata(meta adapter.Metadata) Manifest {
 	}
 	if len(meta.StatefulResources) > 0 || meta.Idempotency || meta.Reset {
 		manifest.StateEvidence = &StateEvidence{
-			StatefulResources: append([]string(nil), meta.StatefulResources...),
+			StatefulResources: slices.Clone(meta.StatefulResources),
 			Idempotency:       meta.Idempotency,
 			Reset:             meta.Reset,
 		}

@@ -1,6 +1,9 @@
 package security
 
-import "strings"
+import (
+	"slices"
+	"strings"
+)
 
 var dangerousSecretPrefixes = []string{
 	"sk_live_",
@@ -27,15 +30,12 @@ func LooksLikeSecret(value string) bool {
 	if value == "whsec_mockport" {
 		return false
 	}
-	for _, prefix := range fakeSecretPrefixes {
-		if strings.HasPrefix(value, prefix) {
-			return false
-		}
+	hasPrefix := func(prefix string) bool { return strings.HasPrefix(value, prefix) }
+	if slices.ContainsFunc(fakeSecretPrefixes, hasPrefix) {
+		return false
 	}
-	for _, prefix := range dangerousSecretPrefixes {
-		if strings.HasPrefix(value, prefix) {
-			return true
-		}
+	if slices.ContainsFunc(dangerousSecretPrefixes, hasPrefix) {
+		return true
 	}
 	return false
 }

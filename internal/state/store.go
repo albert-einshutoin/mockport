@@ -3,7 +3,7 @@ package state
 import (
 	"fmt"
 	"regexp"
-	"sort"
+	"slices"
 	"strings"
 	"sync"
 )
@@ -98,7 +98,7 @@ func (s *Store) List(adapter, resourceType string) []Resource {
 	for id := range entries {
 		ids = append(ids, id)
 	}
-	sort.Strings(ids)
+	slices.Sort(ids)
 	out := make([]Resource, 0, len(ids))
 	for _, id := range ids {
 		out = append(out, cloneResource(entries[id]))
@@ -211,7 +211,7 @@ func evictOldestLocked(resources map[string]Resource, max int) {
 	for id := range resources {
 		ids = append(ids, id)
 	}
-	sort.Strings(ids)
+	slices.Sort(ids)
 	for len(resources) > max {
 		delete(resources, ids[0])
 		ids = ids[1:]

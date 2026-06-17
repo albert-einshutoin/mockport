@@ -1,6 +1,9 @@
 package compat
 
-import "strings"
+import (
+	"slices"
+	"strings"
+)
 
 type Score struct {
 	Adapter          string `json:"adapter"`
@@ -97,12 +100,9 @@ func isErrorScenario(scenario Scenario) bool {
 		return true
 	}
 	name := strings.ToLower(scenario.Name)
-	for _, marker := range errorScenarioMarkers {
-		if strings.Contains(name, marker) {
-			return true
-		}
-	}
-	return false
+	return slices.ContainsFunc(errorScenarioMarkers, func(marker string) bool {
+		return strings.Contains(name, marker)
+	})
 }
 
 // hasSDKEvidence reports whether at least one SDK version carries a concrete,
@@ -205,10 +205,5 @@ func highestLevel(levels []Level) Level {
 }
 
 func hasLevel(levels []Level, want Level) bool {
-	for _, level := range levels {
-		if level == want {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(levels, want)
 }

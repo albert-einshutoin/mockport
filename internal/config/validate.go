@@ -2,7 +2,7 @@ package config
 
 import (
 	"fmt"
-	"sort"
+	"slices"
 	"strings"
 
 	"github.com/albert-einshutoin/mockport/internal/security"
@@ -58,7 +58,7 @@ func Validate(cfg *Config) error {
 		for _, warning := range warnings {
 			fields = append(fields, warning.Field)
 		}
-		sort.Strings(fields)
+		slices.Sort(fields)
 		return fmt.Errorf("strict mode rejected unsafe config fields: %s", strings.Join(fields, ", "))
 	}
 	cfg.SafetyWarnings = warnings
@@ -108,6 +108,6 @@ func sortedAdapterNames(adapters map[string]AdapterConfig) []string {
 	for name := range adapters {
 		names = append(names, name)
 	}
-	sort.Strings(names)
+	slices.Sort(names)
 	return names
 }

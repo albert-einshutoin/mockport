@@ -2,6 +2,7 @@ package state
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 	"sync"
 )
@@ -194,7 +195,7 @@ func (s *IdempotencyStore) evictOldestLocked(scope string) {
 	for _, recordKey := range ordered[:evictCount] {
 		delete(s.records, recordKey)
 	}
-	s.order[scope] = append([]string(nil), ordered[evictCount:]...)
+	s.order[scope] = slices.Clone(ordered[evictCount:])
 }
 
 func idempotencyRecordKey(scope, key string) string {

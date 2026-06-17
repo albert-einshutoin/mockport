@@ -3,7 +3,8 @@ package cli
 import (
 	"fmt"
 	"io"
-	"sort"
+	"maps"
+	"slices"
 	"strings"
 
 	"github.com/albert-einshutoin/mockport/internal/adapter"
@@ -173,12 +174,7 @@ func sdkVersionNames(versions []adapter.SDKVersion) []string {
 }
 
 func sortedMapKeys(values map[string]string) []string {
-	keys := make([]string, 0, len(values))
-	for key := range values {
-		keys = append(keys, key)
-	}
-	sort.Strings(keys)
-	return keys
+	return slices.Sorted(maps.Keys(values))
 }
 
 func supportedServiceNames() []string {
@@ -186,6 +182,6 @@ func supportedServiceNames() []string {
 	for _, adapterImpl := range builtinAdapters() {
 		names = append(names, adapterImpl.Name())
 	}
-	sort.Strings(names)
+	slices.Sort(names)
 	return names
 }
