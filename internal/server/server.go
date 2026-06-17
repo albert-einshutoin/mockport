@@ -133,12 +133,21 @@ func compatibilityStatus(manifest compat.Manifest) report.CompatibilityStatus {
 
 type statusRecorder struct {
 	http.ResponseWriter
-	status int
+	status      int
+	wroteHeader bool
 }
 
 func (r *statusRecorder) WriteHeader(status int) {
+	r.wroteHeader = true
 	r.status = status
 	r.ResponseWriter.WriteHeader(status)
+}
+
+func (r *statusRecorder) Write(data []byte) (int, error) {
+	if !r.wroteHeader {
+		r.WriteHeader(http.StatusOK)
+	}
+	return r.ResponseWriter.Write(data)
 }
 
 func (r *statusRecorder) Unwrap() http.ResponseWriter {
@@ -150,6 +159,9 @@ func recordMiddleware(next http.Handler, rec *report.Recorder, adapters []report
 		sr := &statusRecorder{ResponseWriter: w, status: http.StatusOK}
 		next.ServeHTTP(sr, r)
 		if r.URL.Path != "/_mockport/report" {
+			if !sr.wroteHeader {
+				return
+			}
 			adapterName, scenario := classifyAdapter(r.URL.Path, adapters)
 			reason := ""
 			if sr.status == http.StatusNotFound || sr.status == http.StatusMethodNotAllowed {

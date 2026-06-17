@@ -127,6 +127,30 @@ func TestDelayMiddlewareAppliesDelayHeader(t *testing.T) {
 	}
 }
 
+func TestRecordMiddlewareSkipsCancelledDelayRequestFromReport(t *testing.T) {
+	recorder := report.NewRecorder()
+	handler := recordMiddleware(
+		delayMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+		})),
+		recorder,
+		nil,
+	)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	req := httptest.NewRequest(http.MethodGet, "/timeout", nil).WithContext(ctx)
+	req.Header.Set(delayHeader, "120")
+
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+
+	snapshot := recorder.Snapshot()
+	if len(snapshot.Requests) != 0 {
+		t.Fatalf("requests = %#v, want empty", snapshot.Requests)
+	}
+}
+
 func TestDelayMiddlewareRejectsBadDelay(t *testing.T) {
 	for _, tc := range []struct {
 		name    string
