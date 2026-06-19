@@ -23,11 +23,6 @@ has_adapter() {
   return 1
 }
 
-if ! command -v rg >/dev/null 2>&1; then
-  echo "ripgrep (rg) is required" >&2
-  exit 1
-fi
-
 # Discover built-in adapter names from `builtinAdapters()` registration.
 while IFS= read -r package_name; do
   adapter_file="adapters/${package_name}/adapter.go"
@@ -63,19 +58,29 @@ require_file "docs/site/support-matrix.md"
 for adapter in "${ADAPTERS[@]}"; do
   require_file "docs/adapters/${adapter}.md"
 
-  if ! rg -qF "\`${adapter}\`" docs/site/support-matrix.md; then
+  if ! grep -Fq "\`${adapter}\`" docs/site/support-matrix.md; then
     echo "missing support-matrix entry for adapter: ${adapter}" >&2
     MISSING=1
   fi
 
-  if ! rg -qF "  ${adapter}:" configs/mockport.example.yml; then
+  if ! grep -Fq "  ${adapter}:" configs/mockport.example.yml; then
     echo "configs/mockport.example.yml missing adapter entry: ${adapter}" >&2
     MISSING=1
   fi
 
-  if [[ ! -d "examples/${adapter}" ]] && ! rg -q "^  ${adapter}:" examples/**/mockport.yml; then
-    echo "missing example config containing adapter name: ${adapter}" >&2
-    MISSING=1
+  if [[ ! -d "examples/${adapter}" ]]; then
+    found_example=0
+    while IFS= read -r example_file; do
+      if grep -q "^  ${adapter}:" "$example_file"; then
+        found_example=1
+        break
+      fi
+    done < <(find examples -type f -name mockport.yml)
+
+    if [[ $found_example -eq 0 ]]; then
+      echo "missing example config containing adapter name: ${adapter}" >&2
+      MISSING=1
+    fi
   fi
 done
 
