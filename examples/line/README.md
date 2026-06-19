@@ -25,7 +25,7 @@ Smoke test:
 ```bash
 curl -X POST "http://localhost:43101/line/v2/bot/message/push" \
   -H "Content-Type: application/json" \
-  -d '{"to":"C_MOCKPORT","messages":[{"type":"text","text":"Mockport"}]}'
+  --data-raw '{"to":"C_MOCKPORT","messages":[{"type":"text","text":"Mockport"}]}'
 curl -X GET "http://localhost:43101/line/v2/bot/info"
 curl http://localhost:43101/_mockport/report
 ```

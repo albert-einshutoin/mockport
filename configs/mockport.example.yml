@@ -20,6 +20,11 @@ adapters:
     base_path: /openai
     scenario: chat_success
     fake_secret: mockport_openai_key
+  zoho-oauth:
+    enabled: true
+    base_path: /zoho
+    scenario: zoho_oauth_success
+    fake_secret: mockport_zoho_secret
   github-oauth:
     enabled: true
     base_path: /github
@@ -38,7 +43,6 @@ adapters:
     webhook:
       target_url: http://app:3000/webhooks/line
       signing_secret: mockport_line_secret
-
 scenarios:
   payment_success:
     adapter: stripe
@@ -62,10 +66,6 @@ scenarios:
     webhook:
       event: payment_intent.payment_failed
 
-  oauth_success:
-    adapter: github-oauth
-    response:
-      status: 200
 
   message_success:
     adapter: slack
@@ -74,5 +74,16 @@ scenarios:
 
   line_success:
     adapter: line
+    response:
+      status: 200
+
+  zoho_oauth_success:
+    adapter: zoho-oauth
+    response:
+      status: 200
+      access_token: mockport_access_token
+
+  oauth_success:
+    adapter: github-oauth
     response:
       status: 200
