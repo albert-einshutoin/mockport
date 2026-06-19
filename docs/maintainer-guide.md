@@ -57,6 +57,8 @@ Use this loop for new behavior and bug fixes:
 7. Synchronize the public claim: adapter `Metadata()`, `mockport add <adapter>`, `mockport help <service>`, docs, fixtures, manifests, support matrix, and generated compatibility reports must describe the same surface.
 8. Run the relevant package tests, then the repo gates listed in the release process before merging.
 
+For the full onboarding checklist, see [`docs/adding-an-adapter.md`](adding-an-adapter.md).
+
 Recommended TDD command sequence:
 
 ```bash

@@ -15,6 +15,29 @@ adapters:
     webhook:
       target_url: http://app:3000/webhooks/stripe
       signing_secret: whsec_mockport
+  openai:
+    enabled: true
+    base_path: /openai
+    scenario: chat_success
+    fake_secret: mockport_openai_key
+  github-oauth:
+    enabled: true
+    base_path: /github
+    scenario: oauth_success
+    fake_secret: mockport_github_secret
+  slack:
+    enabled: true
+    base_path: /slack
+    scenario: message_success
+    fake_secret: mockport_slack_token
+  line:
+    enabled: true
+    base_path: /line
+    scenario: line_success
+    fake_secret: mockport_line_channel_token
+    webhook:
+      target_url: http://app:3000/webhooks/line
+      signing_secret: mockport_line_secret
 
 scenarios:
   payment_success:
@@ -25,6 +48,12 @@ scenarios:
     webhook:
       event: checkout.session.completed
 
+  chat_success:
+    adapter: openai
+    response:
+      status: 200
+      object: chat.completion
+
   payment_failed:
     adapter: stripe
     response:
@@ -32,3 +61,18 @@ scenarios:
       error_code: card_declined
     webhook:
       event: payment_intent.payment_failed
+
+  oauth_success:
+    adapter: github-oauth
+    response:
+      status: 200
+
+  message_success:
+    adapter: slack
+    response:
+      status: 200
+
+  line_success:
+    adapter: line
+    response:
+      status: 200

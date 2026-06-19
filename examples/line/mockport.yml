@@ -1,0 +1,23 @@
+version: "0.1"
+
+server:
+  host: 127.0.0.1
+  port: 43101
+
+mode: ai-safe
+
+adapters:
+  line:
+    enabled: true
+    base_path: /line
+    scenario: line_success
+    fake_secret: mockport_line_channel_token
+    webhook:
+      target_url: http://app:3000/webhooks/line
+      signing_secret: mockport_line_secret
+
+scenarios:
+  line_success:
+    adapter: line
+    response:
+      status: 200

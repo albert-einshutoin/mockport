@@ -26,6 +26,14 @@ Production changes must follow spec-first TDD. Start from the written Mockport c
 
 Do not widen provider surface just to make an example pass. Mockport supports selected deterministic local workflows, not full provider internals.
 
+### New adapter onboarding
+
+For adapter PRs, follow the onboarding guide before implementation:
+
+- [`docs/adding-an-adapter.md`](docs/adding-an-adapter.md)
+- [`docs/scenario-policy.md`](docs/scenario-policy.md)
+- [`docs/compatibility-model.md`](docs/compatibility-model.md)
+
 ## Public Trust Checks
 
 Run these before opening a pull request:

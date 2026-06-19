@@ -13,6 +13,7 @@ Project planning and maintenance:
 - [Roadmap](ROADMAP.md)
 - [Maintainer Guide](docs/maintainer-guide.md)
 - [Support Policy](docs/public-support-policy.md)
+- [Adapter onboarding guide](docs/adding-an-adapter.md)
 
 ## Quickstart
 

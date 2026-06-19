@@ -6,6 +6,7 @@ Mockport is a Docker-first local emulator for external service integration tests
 
 - [Quickstart](quickstart.md)
 - [Adapters](adapters.md)
+- [Adapter onboarding](../adding-an-adapter.md)
 - [Support matrix](support-matrix.md)
 - [Examples](examples.md)
 - [Limitations](limitations.md)

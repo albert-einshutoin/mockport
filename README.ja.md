@@ -13,6 +13,7 @@ Mockport は、外部サービス連携をローカル Docker 環境で再現す
 - [Roadmap](ROADMAP.ja.md)
 - [Maintainer Guide](docs/maintainer-guide.ja.md)
 - [Support Policy](docs/public-support-policy.ja.md)
+- [Adapter onboarding guide](docs/adding-an-adapter.md)
 
 ## Quickstart
 

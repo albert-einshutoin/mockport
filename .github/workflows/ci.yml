@@ -35,5 +35,6 @@ jobs:
       - run: bash scripts/run-sdk-contracts.sh all
       - run: bash scripts/check-public-trust.sh
       - run: bash scripts/check-public-env.sh
+      - run: bash scripts/check-adapter-completeness.sh
       - run: bash scripts/check-distribution.sh
       - run: bash scripts/check-maintenance-policy.sh
