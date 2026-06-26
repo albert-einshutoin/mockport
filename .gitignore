@@ -36,17 +36,7 @@ coverage.out
 
 # Local TAKT/devloop state
 /.devloop/
-/.takt/*
-!/.takt/.gitignore
-!/.takt/README.md
-!/.takt/config.yaml
-!/.takt/devloopd.yaml
-!/.takt/automation/
-!/.takt/quality-gates/
-!/.takt/workflows/
-!/.takt/facets/
-/.takt/.gocache/
+/.takt/
 /.takt/runs/
-/.takt/quality-gates/logs/
 /.takt/persona_sessions.json
 /.takt/session-state.json
