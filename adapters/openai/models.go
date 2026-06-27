@@ -69,3 +69,23 @@ type usage struct {
 	PromptTokens int `json:"prompt_tokens"`
 	TotalTokens  int `json:"total_tokens"`
 }
+
+type chatCompletionChunk struct {
+	ID                string                      `json:"id"`
+	Object            string                      `json:"object"`
+	Created           int64                       `json:"created"`
+	Model             string                      `json:"model"`
+	SystemFingerprint string                      `json:"system_fingerprint"`
+	Choices           []chatCompletionChunkChoice `json:"choices"`
+}
+
+type chatCompletionChunkChoice struct {
+	Index        int                      `json:"index"`
+	Delta        chatCompletionChunkDelta `json:"delta"`
+	FinishReason *string                  `json:"finish_reason"`
+}
+
+type chatCompletionChunkDelta struct {
+	Role    string  `json:"role,omitempty"`
+	Content *string `json:"content,omitempty"`
+}

@@ -114,17 +114,108 @@ func TestChatCompletionStreamSuccessReturnsSSE(t *testing.T) {
 	if !strings.HasPrefix(contentType, "text/event-stream") {
 		t.Fatalf("Content-Type = %q, want text/event-stream", contentType)
 	}
-	body := rec.Body.String()
-	for _, want := range []string{
-		"data: {",
-		`"object":"chat.completion.chunk"`,
-		`"delta":{"content":"Mockport response"}`,
-		"data: [DONE]",
-	} {
-		if !strings.Contains(body, want) {
-			t.Fatalf("body missing %q: %s", want, body)
+
+	events := parseSSEDataEvents(rec.Body.String())
+	if len(events) < 3 {
+		t.Fatalf("data event count = %d, want >= 3", len(events))
+	}
+	if events[len(events)-1] != "[DONE]" {
+		t.Fatalf("last event = %q, want [DONE]", events[len(events)-1])
+	}
+
+	dataEvents := events[:len(events)-1]
+	streamID := ""
+	var assembled strings.Builder
+	for i, raw := range dataEvents {
+		var chunk chatCompletionChunk
+		if err := json.Unmarshal([]byte(raw), &chunk); err != nil {
+			t.Fatalf("decode chunk %d: %v", i, err)
+		}
+		if chunk.Object != "chat.completion.chunk" {
+			t.Fatalf("chunk %d object = %q, want chat.completion.chunk", i, chunk.Object)
+		}
+		if chunk.Model != streamCompletionModel {
+			t.Fatalf("chunk %d model = %q, want %s", i, chunk.Model, streamCompletionModel)
+		}
+		if chunk.Created != streamCompletionCreated {
+			t.Fatalf("chunk %d created = %d, want %d", i, chunk.Created, streamCompletionCreated)
+		}
+		if chunk.SystemFingerprint != streamCompletionFingerprint {
+			t.Fatalf("chunk %d system_fingerprint = %q, want %s", i, chunk.SystemFingerprint, streamCompletionFingerprint)
+		}
+		if streamID == "" {
+			streamID = chunk.ID
+		} else if chunk.ID != streamID {
+			t.Fatalf("chunk %d id = %q, want %q", i, chunk.ID, streamID)
+		}
+		if len(chunk.Choices) != 1 {
+			t.Fatalf("chunk %d choices = %d, want 1", i, len(chunk.Choices))
+		}
+		choice := chunk.Choices[0]
+		switch {
+		case i == 0:
+			if choice.Delta.Role != "assistant" {
+				t.Fatalf("role chunk delta.role = %q, want assistant", choice.Delta.Role)
+			}
+			if choice.Delta.Content == nil || *choice.Delta.Content != "" {
+				t.Fatalf("role chunk delta.content = %#v, want empty string", choice.Delta.Content)
+			}
+			if choice.FinishReason != nil {
+				t.Fatalf("role chunk finish_reason = %#v, want null", choice.FinishReason)
+			}
+		case i == len(dataEvents)-1:
+			if choice.Delta.Role != "" || choice.Delta.Content != nil {
+				t.Fatalf("finish chunk delta = %#v, want empty", choice.Delta)
+			}
+			if choice.FinishReason == nil || *choice.FinishReason != "stop" {
+				t.Fatalf("finish chunk finish_reason = %#v, want stop", choice.FinishReason)
+			}
+		default:
+			if choice.Delta.Content == nil {
+				t.Fatalf("content chunk %d missing delta.content", i)
+			}
+			assembled.WriteString(*choice.Delta.Content)
+			if choice.FinishReason != nil {
+				t.Fatalf("content chunk %d finish_reason = %#v, want null", i, choice.FinishReason)
+			}
 		}
 	}
+	if assembled.String() != streamCompletionFullText {
+		t.Fatalf("assembled content = %q, want %q", assembled.String(), streamCompletionFullText)
+	}
+}
+
+func TestResponsesStreamSuccessReturnsJSON(t *testing.T) {
+	rec := performRequest(t, adapter.Config{BasePath: "/openai", Scenario: "stream_success"}, http.MethodPost, "/openai/v1/responses")
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d", rec.Code, http.StatusOK)
+	}
+	contentType := rec.Header().Get("Content-Type")
+	if !strings.HasPrefix(contentType, "application/json") {
+		t.Fatalf("Content-Type = %q, want application/json", contentType)
+	}
+	if strings.Contains(rec.Body.String(), "data: [DONE]") {
+		t.Fatalf("responses stream_success returned SSE: %s", rec.Body.String())
+	}
+	var body map[string]any
+	if err := json.Unmarshal(rec.Body.Bytes(), &body); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	if body["object"] != "response" {
+		t.Fatalf("object = %v, want response", body["object"])
+	}
+}
+
+func parseSSEDataEvents(body string) []string {
+	lines := strings.Split(body, "\n")
+	events := make([]string, 0, len(lines))
+	for _, line := range lines {
+		if !strings.HasPrefix(line, "data: ") {
+			continue
+		}
+		events = append(events, strings.TrimPrefix(line, "data: "))
+	}
+	return events
 }
 
 func TestChatCompletionStreamSuccessFlushesSSE(t *testing.T) {

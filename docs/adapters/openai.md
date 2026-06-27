@@ -79,6 +79,7 @@ Use this table to jump from Mockport's supported local surface to the closest of
 
 | Priority | Task | Current source of truth |
 | --- | --- | --- |
+| P1 | Responses API SSE streaming (`stream: true`) is not implemented. `/v1/responses` always returns JSON, including when the `stream_success` scenario is active. Named events such as `response.output_text.delta` are out of scope for this adapter track. | `adapters/openai/adapter_test.go` (`TestResponsesStreamSuccessReturnsJSON`) and `docs/site/limitations.md` |
 | P1 | Define selected OpenAI workflows in `compat/manifests/openai.json`, including explicit non-goals for model quality, tokenization parity, hosted tools, vector stores, and provider scheduling. | `tasks/phase28_openai_provider_compatible_track.md` |
 | P1 | Deepen SDK contracts for SSE chunk shape, terminal completion, content accumulation, malformed input, unsupported parameters, invalid model, context length, auth, and rate limit behavior. | `contract/sdk/openai-smoke.test.js` and `compat/fixtures/openai/` |
 | P1 | Verify response retrieve and batch retrieve consistency before any maturity promotion. | `tasks/phase28_openai_provider_compatible_track.md` |

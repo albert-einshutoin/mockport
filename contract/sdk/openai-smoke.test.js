@@ -29,7 +29,9 @@ async function runOpenAISmoke(options) {
     stream: true,
   });
   let streamed = "";
+  let streamChunkCount = 0;
   for await (const chunk of stream) {
+    streamChunkCount++;
     streamed += chunk.choices?.[0]?.delta?.content || "";
   }
   const response = await client.responses.create({
@@ -60,8 +62,11 @@ async function runOpenAISmoke(options) {
   }
   assertEqual(file.purpose, "batch", "file purpose");
   assertEqual(batch.input_file_id, file.id, "batch input file id");
-  if (!streamed.includes("Mockport response")) {
-    throw new Error(`streamed content missing Mockport response: ${streamed}`);
+  if (streamChunkCount < 3) {
+    throw new Error(`stream chunk count too small: ${streamChunkCount}`);
+  }
+  if (streamed !== "Mockport simulated streaming response.") {
+    throw new Error(`streamed content mismatch: ${streamed}`);
   }
 
   return {

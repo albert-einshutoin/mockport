@@ -3,13 +3,13 @@
   "provider_version": "2025-02-01",
   "sdk": {
     "name": "openai",
-    "version": "6.39.0"
+    "version": "6.42.0"
   },
   "source": {
     "type": "docs",
-    "title": "OpenAI Streaming Responses",
-    "url_or_path": "https://platform.openai.com/docs/api-reference/streaming",
-    "retrieved_at": "2026-05-26"
+    "title": "OpenAI Chat Completions streaming",
+    "url_or_path": "https://platform.openai.com/docs/api-reference/chat/streaming",
+    "retrieved_at": "2026-06-27"
   },
   "scenario": "stream_success",
   "request": {
@@ -37,14 +37,18 @@
     },
     "body": {
       "events": [
-        "data: {\"object\":\"chat.completion.chunk\"}",
+        "data: {\"id\":\"chatcmpl-mockport\",\"object\":\"chat.completion.chunk\",\"created\":1700000000,\"model\":\"gpt-mockport\",\"system_fingerprint\":\"fp_mockport\",\"choices\":[{\"index\":0,\"delta\":{\"role\":\"assistant\",\"content\":\"\"},\"finish_reason\":null}]}",
+        "data: {\"id\":\"chatcmpl-mockport\",\"object\":\"chat.completion.chunk\",\"created\":1700000000,\"model\":\"gpt-mockport\",\"system_fingerprint\":\"fp_mockport\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"Mockport simulated \"},\"finish_reason\":null}]}",
+        "data: {\"id\":\"chatcmpl-mockport\",\"object\":\"chat.completion.chunk\",\"created\":1700000000,\"model\":\"gpt-mockport\",\"system_fingerprint\":\"fp_mockport\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"streaming response.\"},\"finish_reason\":null}]}",
+        "data: {\"id\":\"chatcmpl-mockport\",\"object\":\"chat.completion.chunk\",\"created\":1700000000,\"model\":\"gpt-mockport\",\"system_fingerprint\":\"fp_mockport\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}",
         "data: [DONE]"
       ]
     }
   },
   "normalization": [
     "credentials use the mockport_ fake namespace",
-    "stream chunks contain deterministic fake content",
+    "stream chunks contain deterministic fake content split into role, content, and finish_reason phases",
+    "created timestamp and chunk IDs are fixed for reproducibility",
     "no external OpenAI API calls are made"
   ]
 }
