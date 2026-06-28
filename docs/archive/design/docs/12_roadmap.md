@@ -1,3 +1,8 @@
+> **⚠️ Archive notice — Not maintained, may diverge, do not cite as authoritative.**
+>
+> Pre-implementation design archive. This is **not** the authoritative source for current implementation.
+> For current specs see [docs/site/](../../../site/index.md).
+
 # 12. Roadmap
 
 [日本語版](12_roadmap.ja.md)

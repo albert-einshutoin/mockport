@@ -1,3 +1,8 @@
+> **⚠️ Archive notice — Not maintained, may diverge, do not cite as authoritative.**
+>
+> Pre-implementation design archive. This is **not** the authoritative source for current implementation.
+> For current specs see [docs/site/](../../../site/index.md).
+
 # 14. Open Questions
 
 [日本語版](14_open_questions.ja.md)

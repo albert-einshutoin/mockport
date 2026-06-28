@@ -1,4 +1,9 @@
-> **⚠️ アーカイブ**: このディレクトリは実装開始前(2026-05)の設計ドキュメントの保存版です。現在の仕様は [docs/site/](../../site/index.ja.md) を参照してください。内容は保守されておらず、実装と乖離している可能性があります。
+> **⚠️ アーカイブ注意 — Not maintained, may diverge, do not cite as authoritative.**
+>
+> 実装開始前(2026-05)の設計アーカイブです。**実装の正本ではありません。**
+> 現行仕様は [docs/site/](../../site/index.ja.md) を参照してください。
+>
+> `last_verified: 2026-06-29`
 
 # Mockport Development Documentation Pack 日本語版
 

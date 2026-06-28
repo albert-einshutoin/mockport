@@ -1,3 +1,8 @@
+> **⚠️ Archive notice — Not maintained, may diverge, do not cite as authoritative.**
+>
+> Pre-implementation design archive. This is **not** the authoritative source for current implementation.
+> For current specs see [docs/site/](../../../site/index.md).
+
 # 05. Repository Structure
 
 [日本語版](05_repository_structure.ja.md)

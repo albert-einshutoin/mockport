@@ -1,3 +1,8 @@
+> **⚠️ アーカイブ注意 — Not maintained, may diverge, do not cite as authoritative.**
+>
+> 実装開始前の設計アーカイブです。**実装の正本ではありません。**
+> 現行仕様は [docs/site/](../../../site/index.ja.md) を参照してください。
+
 # Product Vision 日本語版
 
 [English](00_product_vision.md)
