@@ -13,7 +13,27 @@
 
 Adapters are scenario-driven today and are moving toward provider-compatible local APIs for selected workflows. Use the [support matrix](support-matrix.md) and report behavior matrix to confirm supported paths.
 
-`timeout` scenarios return an immediate 504-style response shape. To test client-side timeout behavior, add `X-Mockport-Delay: <milliseconds>` (server-wide header, max 30000) to the request to inject realistic latency.
+`timeout` scenarios return an immediate 504-style response shape. To test client-side timeout behavior, add the server-wide `X-Mockport-Delay` header with a delay in milliseconds before Mockport handles the request.
+
+| Header value | Behavior |
+| --- | --- |
+| Missing | No artificial delay; request proceeds immediately. |
+| `0` | Accepted; no sleep before handling. |
+| Positive (`1`–`30000`) | Sleep for the given milliseconds, then handle the request. |
+| Negative | Rejected with `400 Bad Request`; no sleep. |
+| Above `30000` | Rejected with `400 Bad Request`; no sleep. |
+
+Invalid values return:
+
+```text
+invalid X-Mockport-Delay: must be 0-30000 (milliseconds)
+```
+
+Example delayed request:
+
+```bash
+curl -H "X-Mockport-Delay: 250" http://localhost:43101/stripe/v1/customers
+```
 
 Detailed adapter specifications:
 

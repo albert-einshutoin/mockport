@@ -216,6 +216,103 @@ func TestRecordMiddlewareSkipsCancelledDelayRequestFromReport(t *testing.T) {
 	}
 }
 
+func TestDelayMiddlewareBoundaryValues(t *testing.T) {
+	for _, tc := range []struct {
+		name        string
+		delay       string
+		missing     bool
+		cancelCtx   bool
+		wantStatus  int
+		wantHandled bool
+		maxElapsed  time.Duration
+	}{
+		{
+			name:        "missing header",
+			missing:     true,
+			wantStatus:  http.StatusOK,
+			wantHandled: true,
+		},
+		{
+			name:        "zero",
+			delay:       "0",
+			wantStatus:  http.StatusOK,
+			wantHandled: true,
+		},
+		{
+			name:        "one millisecond",
+			delay:       "1",
+			wantStatus:  http.StatusOK,
+			wantHandled: true,
+		},
+		{
+			name:        "max boundary 30000",
+			delay:       "30000",
+			cancelCtx:   true,
+			wantStatus:  http.StatusOK,
+			wantHandled: false,
+		},
+		{
+			name:        "over max 30001",
+			delay:       "30001",
+			wantStatus:  http.StatusBadRequest,
+			wantHandled: false,
+			maxElapsed:  50 * time.Millisecond,
+		},
+		{
+			name:        "negative one",
+			delay:       "-1",
+			wantStatus:  http.StatusBadRequest,
+			wantHandled: false,
+			maxElapsed:  50 * time.Millisecond,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			handled := make(chan struct{}, 1)
+			handler := delayMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				select {
+				case handled <- struct{}{}:
+				default:
+				}
+				w.WriteHeader(http.StatusOK)
+			}))
+
+			var req *http.Request
+			if tc.cancelCtx {
+				ctx, cancel := context.WithCancel(context.Background())
+				cancel()
+				req = httptest.NewRequest(http.MethodGet, "/", nil).WithContext(ctx)
+			} else {
+				req = httptest.NewRequest(http.MethodGet, "/", nil)
+			}
+			if !tc.missing {
+				req.Header.Set(delayHeader, tc.delay)
+			}
+
+			start := time.Now()
+			rec := httptest.NewRecorder()
+			handler.ServeHTTP(rec, req)
+			elapsed := time.Since(start)
+
+			if rec.Code != tc.wantStatus {
+				t.Fatalf("status = %d, want %d", rec.Code, tc.wantStatus)
+			}
+			if tc.maxElapsed > 0 && elapsed > tc.maxElapsed {
+				t.Fatalf("elapsed = %s, want <= %s for invalid delay", elapsed, tc.maxElapsed)
+			}
+
+			gotHandled := false
+			select {
+			case <-handled:
+				gotHandled = true
+			default:
+			}
+			if gotHandled != tc.wantHandled {
+				t.Fatalf("handled = %v, want %v", gotHandled, tc.wantHandled)
+			}
+		})
+	}
+}
+
 func TestDelayMiddlewareRejectsBadDelay(t *testing.T) {
 	for _, tc := range []struct {
 		name    string
