@@ -23,14 +23,22 @@ func (a Adapter) Register(mux *http.ServeMux, cfg adapter.Config) error {
 	if basePath == "" {
 		basePath = "/stripe"
 	}
-	routes := &routes{
+	rt := &routes{
 		basePath:    strings.TrimRight(basePath, "/"),
 		cfg:         cfg,
 		store:       state.NewStore(),
 		idempotency: state.NewIdempotencyStore(),
 	}
-	mux.HandleFunc(routes.basePath+"/", routes.handle)
-	mux.HandleFunc("/v1/", routes.handleRoot)
+	// Register the same routes under basePath and at /v1 for Stripe SDK clients that
+	// hit the API root directly. When basePath trims to empty, register once to avoid
+	// duplicate ServeMux patterns that would panic.
+	prefixes := []string{rt.basePath, ""}
+	if rt.basePath == "" {
+		prefixes = []string{""}
+	}
+	for _, prefix := range prefixes {
+		rt.register(mux, prefix)
+	}
 	return nil
 }
 

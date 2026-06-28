@@ -38,6 +38,49 @@ func TestHealthReturnsOK(t *testing.T) {
 	}
 }
 
+func TestHealthRejectsNonGETMethod(t *testing.T) {
+	handler, err := NewConfiguredHandler(config.Config{}, adapter.NewRegistry(), report.NewRecorder())
+	if err != nil {
+		t.Fatalf("configure handler: %v", err)
+	}
+	req := httptest.NewRequest(http.MethodPost, "/health", nil)
+	rec := httptest.NewRecorder()
+
+	handler.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusMethodNotAllowed {
+		t.Fatalf("status = %d, want %d", rec.Code, http.StatusMethodNotAllowed)
+	}
+	if got := strings.TrimSpace(rec.Body.String()); got != "Method Not Allowed" {
+		t.Fatalf("body = %q, want Method Not Allowed", got)
+	}
+	// Go 1.22 ServeMux auto-includes HEAD for GET routes in the Allow header.
+	if allow := rec.Header().Get("Allow"); !strings.Contains(allow, http.MethodGet) {
+		t.Fatalf("Allow = %q, want contains %q", allow, http.MethodGet)
+	}
+}
+
+func TestReportRejectsNonGETMethod(t *testing.T) {
+	handler, err := NewConfiguredHandler(config.Config{}, adapter.NewRegistry(), report.NewRecorder())
+	if err != nil {
+		t.Fatalf("configure handler: %v", err)
+	}
+	req := httptest.NewRequest(http.MethodPost, "/_mockport/report", nil)
+	rec := httptest.NewRecorder()
+
+	handler.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusMethodNotAllowed {
+		t.Fatalf("status = %d, want %d", rec.Code, http.StatusMethodNotAllowed)
+	}
+	if got := strings.TrimSpace(rec.Body.String()); got != "Method Not Allowed" {
+		t.Fatalf("body = %q, want Method Not Allowed", got)
+	}
+	if allow := rec.Header().Get("Allow"); !strings.Contains(allow, http.MethodGet) {
+		t.Fatalf("Allow = %q, want contains %q", allow, http.MethodGet)
+	}
+}
+
 func TestNewConfiguredHandlerUnregisteredAdapterReturnsErrAdapterNotRegistered(t *testing.T) {
 	cfg := config.Config{
 		Adapters: map[string]config.AdapterConfig{

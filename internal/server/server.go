@@ -27,7 +27,7 @@ var ErrAdapterNotRegistered = errors.New("adapter is enabled but not registered"
 
 func NewConfiguredHandler(cfg config.Config, reg *adapter.Registry, rec *report.Recorder) (http.Handler, error) {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/health", healthHandler)
+	mux.HandleFunc("GET /health", healthHandler)
 	if rec == nil {
 		rec = report.NewRecorder()
 	}
@@ -86,11 +86,7 @@ func NewConfiguredHandler(cfg config.Config, reg *adapter.Registry, rec *report.
 	rec.SetBehaviorMatrix(matrix)
 	rec.SetCompatibility(compatibility)
 	rec.SetStateCoverage(state)
-	mux.HandleFunc("/_mockport/report", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-			return
-		}
+	mux.HandleFunc("GET /_mockport/report", func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		_ = json.NewEncoder(w).Encode(rec.Snapshot())
 	})

@@ -411,6 +411,65 @@ func TestResetClearsStateAndRequiresLoopback(t *testing.T) {
 	assertStripeErrorCode(t, remoteReset, "local_request_required")
 }
 
+func TestUnsupportedMethodReturns405(t *testing.T) {
+	mux := newStripeMux(t, adapter.Config{BasePath: "/stripe", Scenario: "payment_success"})
+
+	for _, path := range []string{"/stripe/v1/customers", "/v1/customers"} {
+		rec := serveStripeRequest(mux, http.MethodDelete, path, "", nil)
+		if rec.Code != http.StatusMethodNotAllowed {
+			t.Fatalf("DELETE %s status = %d, want %d", path, rec.Code, http.StatusMethodNotAllowed)
+		}
+		if allow := rec.Header().Get("Allow"); !strings.Contains(allow, http.MethodGet) || !strings.Contains(allow, http.MethodPost) {
+			t.Fatalf("DELETE %s Allow = %q, want GET and POST", path, allow)
+		}
+	}
+}
+
+func TestRootAliasPaths(t *testing.T) {
+	mux := newStripeMux(t, adapter.Config{BasePath: "/stripe", Scenario: "payment_success"})
+
+	create := serveStripeRequest(mux, http.MethodPost, "/v1/customers", "email=alias@example.test", nil)
+	if create.Code != http.StatusOK {
+		t.Fatalf("create via /v1 alias status = %d, body=%s", create.Code, create.Body.String())
+	}
+	var customer map[string]any
+	if err := json.Unmarshal(create.Body.Bytes(), &customer); err != nil {
+		t.Fatalf("decode create: %v", err)
+	}
+	id, _ := customer["id"].(string)
+	if id == "" {
+		t.Fatalf("created customer without id: %#v", customer)
+	}
+
+	retrieved := serveStripeRequest(mux, http.MethodGet, "/v1/customers/"+id, "", nil)
+	if retrieved.Code != http.StatusOK {
+		t.Fatalf("retrieve via /v1 alias status = %d, body=%s", retrieved.Code, retrieved.Body.String())
+	}
+}
+
+func TestGenericResourceDoesNotLeakFormFieldsBetweenRequests(t *testing.T) {
+	mux := newStripeMux(t, adapter.Config{BasePath: "/stripe", Scenario: "payment_success"})
+
+	first := serveStripeRequest(mux, http.MethodPost, "/stripe/v1/products", "name=First+Product&description=leak-me", nil)
+	if first.Code != http.StatusOK {
+		t.Fatalf("first create status = %d, body=%s", first.Code, first.Body.String())
+	}
+	second := serveStripeRequest(mux, http.MethodPost, "/stripe/v1/products", "name=Second+Product", nil)
+	if second.Code != http.StatusOK {
+		t.Fatalf("second create status = %d, body=%s", second.Code, second.Body.String())
+	}
+	var body map[string]any
+	if err := json.Unmarshal(second.Body.Bytes(), &body); err != nil {
+		t.Fatalf("decode second response: %v", err)
+	}
+	if _, ok := body["description"]; ok {
+		t.Fatalf("second product leaked description from first request: %#v", body)
+	}
+	if body["name"] != "Second Product" {
+		t.Fatalf("name = %#v, want Second Product", body["name"])
+	}
+}
+
 func performStripeRequest(t *testing.T, cfg adapter.Config, method, path string) *httptest.ResponseRecorder {
 	t.Helper()
 	mux := newStripeMux(t, cfg)
