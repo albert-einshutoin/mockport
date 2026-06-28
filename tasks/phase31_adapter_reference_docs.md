@@ -6,7 +6,7 @@
 
 **Goal:** Find the issues and tasks for every currently registered adapter, and make the reproduced provider domains/endpoints traceable to official documentation.
 
-**Current registered adapters:** `stripe`, `openai`, `github-oauth`, `slack`, and `line`.
+**Current registered adapters:** `stripe`, `openai`, `github-oauth`, `slack`, `line`, and `zoho-oauth`.
 
 **Implementation source of truth:** `internal/cli/run.go` registers adapters in `defaultRegistry()`.
 
@@ -14,9 +14,9 @@
 
 | ID | Task | Status | Evidence |
 | --- | --- | --- | --- |
-| P31-T01 | Inventory adapters registered by the CLI default registry | done | `internal/cli/run.go` registers `stripe`, `openai`, `github-oauth`, `slack`, and `line` |
+| P31-T01 | Inventory adapters registered by the CLI default registry | done | `internal/cli/run.go` registers `stripe`, `openai`, `github-oauth`, `slack`, `line`, and `zoho-oauth` |
 | P31-T02 | Find existing open adapter work | done | Phase 26-29 remain pending in `tasks/status.md` |
-| P31-T03 | Add per-adapter official reference maps for missing adapter docs | done | `docs/adapters/stripe.md`, `docs/adapters/openai.md`, `docs/adapters/github-oauth.md`, `docs/adapters/slack.md` |
+| P31-T03 | Add per-adapter official reference maps for missing adapter docs | done | `docs/adapters/stripe.md`, `docs/adapters/openai.md`, `docs/adapters/github-oauth.md`, `docs/adapters/slack.md`, `docs/adapters/line.md`, `docs/adapters/zoho-oauth.md` |
 | P31-T04 | Link every per-adapter spec from the docs site adapter index | done | `docs/site/adapters.md` |
 | P31-T05 | Keep provider-compatible promotion blocked until manifests, fixtures, SDK/client contracts, and known-gap reports are wired | pending | `tasks/phase26_provider_compatible_manifest_promotion.md` |
 | P31-T06 | Freeze the implementation line for adapter work | done | `docs/compatibility-model.md` and this file define in-scope, out-of-scope, adapter-by-adapter boundaries, and work order |
@@ -30,6 +30,7 @@
 | `github-oauth` | P1 | OAuth/client contract coverage for state, redirect mismatch, invalid code, missing scope, bad credentials, and REST subset. | `docs/adapters/github-oauth.md` |
 | `slack` | P1 | Official SDK feasibility, deeper client contract, lifecycle assertions, Events API evidence, request signing evidence. | `docs/adapters/slack.md` |
 | `line` | P2 | Official LINE SDK contract harness and broader schema validation remain known gaps. | `docs/adapters/line.md` |
+| `zoho-oauth` | P2 | Keep Zoho login UI, MFA, data-center/org routing, token refresh, scope enforcement, and full user profile fields as explicit known gaps. | `docs/adapters/zoho-oauth.md` |
 
 ## Implementation Line
 
@@ -57,7 +58,7 @@ Out of scope:
 | Area | Boundary |
 | --- | --- |
 | Provider internals | No undocumented behavior, internal scheduling, risk engines, fraud checks, billing networks, settlement, or delivery guarantees. |
-| External calls | No calls to Stripe, OpenAI, GitHub, Slack, LINE, or related production services from runtime or contract tests. |
+| External calls | No calls to Stripe, OpenAI, GitHub, Slack, LINE, Zoho, or related production services from runtime or contract tests. |
 | Provider policy | No real account policy, SSO, enterprise enforcement, review workflows, app store/console behavior, or regional policy. |
 | UI/runtime surfaces | No provider login UI, QR/2FA screens, LIFF browser runtime, hosted tool runtime, or production webhook retry loops. |
 | Quality parity | No real model quality, tokenization parity, Slack delivery, Block Kit completeness, or full provider schema catalog. |
@@ -71,6 +72,7 @@ Adapter-specific line:
 | `github-oauth` | OAuth web app authorize/token flow plus `/user`, `/user/emails`, and `/user/orgs` bearer-token subset. | Repository APIs, GitHub Apps installation model, real org/enterprise policy, SSO, and permission graph enforcement. |
 | `slack` | Web API messaging subset, conversations list/history, request signing, Events API URL verification and message callback evidence, plus official SDK feasibility result. | Real message delivery, full Events API, Block Kit validation completeness, files, app scopes, enterprise policy, and workspace directory. |
 | `line` | Workflow-compatible manifest and known-gap evidence for the current Messaging API, Login, LIFF helper, MINI App service message, LINE Pay, and Mini Dapp helper surface. | Provider-compatible promotion until official SDK contract harness, LIFF runtime strategy, schema validation policy, and webhook redelivery boundary are defined. |
+| `zoho-oauth` | Minimal Zoho OAuth2 authorization-code workflow: immediate authorize redirect with `state` echo, token exchange, and user info using the `Zoho-oauthtoken` auth scheme. | Real Zoho login UI, MFA, data-center/org routing, token refresh, scope enforcement, and full user profile fields. |
 
 ## Official Documentation Coverage
 
@@ -81,6 +83,7 @@ Adapter-specific line:
 | `github-oauth` | OAuth app authorize/token flow, authenticated user, authenticated emails, authenticated organizations, token request errors. |
 | `slack` | `auth.test`, `chat.postMessage`, `chat.update`, `chat.delete`, `conversations.list`, `conversations.history`, `url_verification`, `message`, request signing. |
 | `line` | Messaging API, LINE Login, LIFF, LINE MINI App service messages, LINE Pay, Mini Dapp SDK helper context. |
+| `zoho-oauth` | OAuth authorize redirect, authorization-code token exchange, user info with the `Zoho-oauthtoken` auth scheme, token request errors. |
 
 ## Next Adapter Work Order
 
@@ -89,6 +92,7 @@ Adapter-specific line:
 3. Continue Phase 28 for OpenAI streaming/error fidelity.
 4. Continue Phase 29 for GitHub OAuth and Slack client evidence.
 5. Add LINE manifest evidence, but keep LINE as workflow-compatible until an official SDK contract harness and broader schema validation exist.
+6. Keep `zoho-oauth` at workflow-compatible; do not expand Zoho surface area until manifest, fixture, and client-contract evidence justify it.
 
 ## Verification
 

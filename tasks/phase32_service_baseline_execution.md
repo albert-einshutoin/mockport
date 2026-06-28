@@ -4,7 +4,7 @@
 
 **Goal:** Close the minimum useful integration-test baseline for every committed adapter, then add SendGrid only after the current service baselines are explicit and verifiable.
 
-**Current registered adapters:** `stripe`, `openai`, `github-oauth`, `slack`, and `line`.
+**Current registered adapters:** `stripe`, `openai`, `github-oauth`, `slack`, `line`, and `zoho-oauth`.
 
 **Planned adapter:** `sendgrid`.
 
@@ -132,6 +132,24 @@ Execution:
 3. Add webhook redelivery scenario and common webhook event fixture catalog.
 4. Add official SDK or client-contract smoke when practical.
 
+### Zoho OAuth
+
+Minimum surface:
+
+- OAuth authorize redirect with immediate `302` and `state` echo (no login screen).
+- Access token exchange with invalid code, expired/reused code, and client-bound code handling.
+- User info: `/oauth/user/info` with the `Zoho-oauthtoken` auth scheme and deterministic `Email`/`Display_Name`.
+- Configurable user: env defaults and authorize query overrides via `mock_email`/`mock_name`.
+- Scenarios: `oauth_success`, `invalid_code`, and `invalid_token`.
+- Docs: explicit out-of-scope boundary for Zoho login UI, MFA, data-center/org routing, token refresh, scope enforcement, and full user profile fields.
+
+Execution:
+
+1. Keep `docs/adapters/zoho-oauth.md` as the canonical baseline spec.
+2. Add failing tests only for missing scope/error behavior that already exists in the implementation boundary.
+3. Verify metadata, support matrix, multi-adapter examples, and task inventory include `zoho-oauth`.
+4. Do not expand Zoho endpoint surface in this track.
+
 ### SendGrid
 
 Minimum surface:
@@ -163,8 +181,9 @@ Execution:
 4. OpenAI current SDK contract refresh.
 5. Stripe final audit against docs and idempotency/webhook evidence.
 6. GitHub OAuth scope/error hardening.
-7. SendGrid adapter from scratch.
-8. Generate/update compatibility reports and support matrix.
+7. Zoho OAuth baseline inventory and multi-adapter verification.
+8. SendGrid adapter from scratch.
+9. Generate/update compatibility reports and support matrix.
 
 ## Verification
 

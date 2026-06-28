@@ -98,6 +98,19 @@ function parseSupportMatrixAdapters(content) {
   return uniqueSorted([...content.matchAll(/^\| `([^`]+)` \|/gm)].map((match) => match[1]));
 }
 
+function parseTaskRegisteredAdapters(path) {
+  const content = read(path);
+  const match = content.match(/\*\*Current registered adapters:\*\* ([^\n]+)/);
+  if (!match) {
+    throw new Error(`${path} missing **Current registered adapters:** line`);
+  }
+  const names = [...match[1].matchAll(/`([a-z0-9-]+)`/g)].map((entry) => entry[1]);
+  if (names.length === 0) {
+    throw new Error(`${path} **Current registered adapters:** has no adapter names`);
+  }
+  return uniqueSorted(names);
+}
+
 function splitPackageVersion(value) {
   const index = value.lastIndexOf("@");
   if (index <= 0) {
@@ -119,6 +132,16 @@ const report = JSON.parse(read(reportPath));
 const packageJson = JSON.parse(read("contract/sdk/package.json"));
 
 assertSameSet("compatibility report adapters", report.adapters.map((adapter) => adapter.name), builtInAdapters);
+assertSameSet(
+  "phase31 registered adapters",
+  parseTaskRegisteredAdapters("tasks/phase31_adapter_reference_docs.md"),
+  builtInAdapters,
+);
+assertSameSet(
+  "phase32 registered adapters",
+  parseTaskRegisteredAdapters("tasks/phase32_service_baseline_execution.md"),
+  builtInAdapters,
+);
 assertSameSet(
   "support matrix adapters",
   parseSupportMatrixAdapters(supportMatrix).filter((name) => builtInAdapters.includes(name)),

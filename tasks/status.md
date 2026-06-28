@@ -53,7 +53,7 @@
 | Phase 28 | OpenAI provider-compatible track | pending | OpenAI selected workflows have contract-level evidence or explicit blockers |
 | Phase 29 | GitHub OAuth and Slack client evidence | pending | GitHub OAuth and Slack client/SDK evidence is strong enough for honest scoring |
 | Phase 30 | v0.2.0-preview release | pending | Release artifacts, GHCR image, compatibility report, and post-release smoke are verified |
-| Phase 31 | Adapter reference docs | done | Registered adapter docs include official reference maps and implementation boundaries |
+| Phase 31 | Adapter reference docs | done | Registered adapter docs include official reference maps and implementation boundaries for `stripe`, `openai`, `github-oauth`, `slack`, `line`, and `zoho-oauth` |
 | Phase 32 | Service baseline execution | pending | Registered adapter baselines and SendGrid execution order are explicit and verifiable |
 
 ## Phase 0 Tasks
@@ -410,9 +410,9 @@
 
 | ID | Task | Status | Test First |
 | --- | --- | --- | --- |
-| P31-T01 | Inventory registered adapters and open adapter work | done | Task audit fails if `internal/cli/run.go` has an adapter missing from docs/task inventory |
+| P31-T01 | Inventory registered adapters and open adapter work | done | Task audit fails if `internal/cli/run.go` has an adapter missing from docs/task inventory; current inventory covers `stripe`, `openai`, `github-oauth`, `slack`, `line`, and `zoho-oauth` |
 | P31-T02 | Add official reference maps for adapter docs | done | Docs link check fails on missing per-adapter spec links |
-| P31-T03 | Keep adapter task inventory current | pending | Future adapter additions require matching `docs/adapters/*.md` and task inventory entries |
+| P31-T03 | Keep adapter task inventory current | done | `scripts/check-support-surfaces.mjs` fails when Phase 31/32 registered-adapter lists drift from built-ins |
 | P31-T04 | Freeze adapter implementation line | done | Compatibility model and Phase 31 define in-scope/out-of-scope boundaries before adapter implementation continues |
 
 ## Verification Notes
@@ -424,7 +424,7 @@
 - Passed: `docker build -t mockport:local -f docker/Dockerfile .`.
 - Passed with `mockport:local`: `GET /health`, `POST /stripe/v1/checkout/sessions`, `GET /_mockport/report`.
 - Passed: `bash scripts/smoke-empty-dir.sh`.
-- Passed: `bash scripts/smoke-multi-adapter.sh` with Stripe, OpenAI, GitHub OAuth, and Slack endpoints.
+- Passed: `bash scripts/smoke-multi-adapter.sh` with Stripe, OpenAI, GitHub OAuth, Slack, LINE, and Zoho OAuth endpoints.
 - Passed: `bash scripts/check-distribution.sh`.
 - Passed: `bash scripts/test-release-archives.sh`.
 - Passed: `(cd packaging/npm && npm test)`.

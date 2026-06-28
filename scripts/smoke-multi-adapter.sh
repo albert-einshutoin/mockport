@@ -62,10 +62,16 @@ curl -fsS -X POST http://localhost:43101/slack/api/auth.test
 printf '\n'
 curl -fsS -X POST http://localhost:43101/line/v2/bot/message/push
 printf '\n'
+zoho_status="$(curl -sS -o /dev/null -w '%{http_code}' "http://localhost:43101/zoho/oauth/v2/auth?client_id=mockport_zoho_client&redirect_uri=http://localhost/callback&state=s1")"
+if [[ "$zoho_status" != "302" ]]; then
+  echo "expected zoho authorize redirect to return 302, got $zoho_status" >&2
+  exit 1
+fi
+printf '\n'
 report="$(curl -fsS http://localhost:43101/_mockport/report)"
 printf '%s\n' "$report"
 
-for adapter in stripe openai github-oauth slack line; do
+for adapter in stripe openai github-oauth slack line zoho-oauth; do
   if ! printf '%s' "$report" | grep -q "\"name\":\"$adapter\""; then
     echo "missing adapter in report: $adapter" >&2
     exit 1

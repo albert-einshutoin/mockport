@@ -12,6 +12,7 @@ import (
 	"github.com/albert-einshutoin/mockport/adapters/openai"
 	"github.com/albert-einshutoin/mockport/adapters/slack"
 	"github.com/albert-einshutoin/mockport/adapters/stripe"
+	"github.com/albert-einshutoin/mockport/adapters/zohooauth"
 	"github.com/albert-einshutoin/mockport/internal/adapter"
 	"github.com/albert-einshutoin/mockport/internal/config"
 	"github.com/albert-einshutoin/mockport/internal/report"
@@ -27,6 +28,7 @@ func TestConfiguredHandlerServesMultipleAdapters(t *testing.T) {
 			"github-oauth": {Enabled: true, BasePath: "/github", Scenario: "oauth_success", FakeSecret: "mockport_github_secret"},
 			"slack":        {Enabled: true, BasePath: "/slack", Scenario: "message_success", FakeSecret: "mockport_slack_token"},
 			"line":         {Enabled: true, BasePath: "/line", Scenario: "line_success", FakeSecret: "mockport_line_channel_token"},
+			"zoho-oauth":   {Enabled: true, BasePath: "/zoho", Scenario: "oauth_success", FakeSecret: "mockport_zoho_secret"},
 		},
 	}
 	if err := config.Validate(&cfg); err != nil {
@@ -49,6 +51,7 @@ func TestConfiguredHandlerServesMultipleAdapters(t *testing.T) {
 		{http.MethodGet, "/github/login/oauth/authorize?client_id=mockport_github_client", http.StatusFound},
 		{http.MethodPost, "/slack/api/auth.test", http.StatusOK},
 		{http.MethodPost, "/line/v2/bot/message/push", http.StatusOK},
+		{http.MethodGet, "/zoho/oauth/v2/auth?client_id=mockport_zoho_client&redirect_uri=http://localhost/callback&state=s1", http.StatusFound},
 	} {
 		rec := httptest.NewRecorder()
 		handler.ServeHTTP(rec, httptest.NewRequest(tc.method, tc.path, nil))
@@ -63,11 +66,11 @@ func TestConfiguredHandlerServesMultipleAdapters(t *testing.T) {
 	if err := json.Unmarshal(reportRec.Body.Bytes(), &snapshot); err != nil {
 		t.Fatalf("decode report: %v", err)
 	}
-	if len(snapshot.Adapters) != 5 {
-		t.Fatalf("adapter count = %d, want 5: %#v", len(snapshot.Adapters), snapshot.Adapters)
+	if len(snapshot.Adapters) != 6 {
+		t.Fatalf("adapter count = %d, want 6: %#v", len(snapshot.Adapters), snapshot.Adapters)
 	}
-	if len(snapshot.ScenarioCoverage) != 5 {
-		t.Fatalf("coverage count = %d, want 5", len(snapshot.ScenarioCoverage))
+	if len(snapshot.ScenarioCoverage) != 6 {
+		t.Fatalf("coverage count = %d, want 6", len(snapshot.ScenarioCoverage))
 	}
 }
 
@@ -81,12 +84,13 @@ func TestConfiguredHandlerReportOrderIsDeterministic(t *testing.T) {
 			"github-oauth": {Enabled: true, BasePath: "/github", Scenario: "oauth_success", FakeSecret: "mockport_github_secret"},
 			"slack":        {Enabled: true, BasePath: "/slack", Scenario: "message_success", FakeSecret: "mockport_slack_token"},
 			"line":         {Enabled: true, BasePath: "/line", Scenario: "line_success", FakeSecret: "mockport_line_channel_token"},
+			"zoho-oauth":   {Enabled: true, BasePath: "/zoho", Scenario: "oauth_success", FakeSecret: "mockport_zoho_secret"},
 		},
 	}
 	if err := config.Validate(&cfg); err != nil {
 		t.Fatalf("validate config: %v", err)
 	}
-	want := []string{"github-oauth", "line", "openai", "slack", "stripe"}
+	want := []string{"github-oauth", "line", "openai", "slack", "stripe", "zoho-oauth"}
 	for i := 0; i < 25; i++ {
 		reg := adapter.NewRegistry()
 		registerTestAdapters(t, reg)
@@ -113,7 +117,7 @@ func TestConfiguredHandlerReportOrderIsDeterministic(t *testing.T) {
 
 func registerTestAdapters(t *testing.T, reg *adapter.Registry) {
 	t.Helper()
-	for _, adapterImpl := range []adapter.Adapter{stripe.New(), openai.New(), githuboauth.New(), slack.New(), line.New()} {
+	for _, adapterImpl := range []adapter.Adapter{stripe.New(), openai.New(), githuboauth.New(), slack.New(), line.New(), zohooauth.New()} {
 		if err := reg.Register(adapterImpl); err != nil {
 			t.Fatalf("register %s: %v", adapterImpl.Name(), err)
 		}
