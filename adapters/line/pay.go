@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/albert-einshutoin/mockport/internal/adapter"
 	"github.com/albert-einshutoin/mockport/internal/adapter/httpx"
 )
 
@@ -101,7 +102,7 @@ func (r *routes) writePayRequest(w http.ResponseWriter, req *http.Request) {
 				"transactionId":      resource.ID,
 				"paymentAccessToken": "mockport_line_pay_access_token",
 				"paymentUrl": map[string]string{
-					"web": "http://localhost:43101" + r.basePath + "/line-pay/authorize/" + resource.ID,
+					"web": adapter.LocalBaseURL(r.basePath + "/line-pay/authorize/" + resource.ID),
 					"app": "line://pay/mockport/" + resource.ID,
 				},
 			},
@@ -182,7 +183,7 @@ func (r *routes) writeMiniDappPayment(w http.ResponseWriter, req *http.Request) 
 		}
 		body := resource.Data
 		body["id"] = resource.ID
-		body["checkoutUrl"] = "http://localhost:43101" + r.basePath + "/mini-dapp/checkout/" + resource.ID
+		body["checkoutUrl"] = adapter.LocalBaseURL(r.basePath + "/mini-dapp/checkout/" + resource.ID)
 		httpx.WriteJSON(w, http.StatusOK, body)
 	}
 }

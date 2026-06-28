@@ -1,5 +1,9 @@
 package config
 
+// DefaultPort is the default Mockport listen port used by generated
+// configs, FakeEnv URLs, and the report CLI.
+const DefaultPort = 43101
+
 type Config struct {
 	Version        string                   `yaml:"version" json:"version"`
 	Server         ServerConfig             `yaml:"server" json:"server"`

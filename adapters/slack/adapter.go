@@ -41,7 +41,7 @@ func (a Adapter) FakeEnv(cfg adapter.Config) map[string]string {
 		basePath = "/slack"
 	}
 	return map[string]string{
-		"SLACK_API_URL":   "http://localhost:43101" + basePath + "/api",
+		"SLACK_API_URL":   adapter.LocalBaseURL(basePath + "/api"),
 		"SLACK_BOT_TOKEN": "mockport_slack_token",
 	}
 }

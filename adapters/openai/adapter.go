@@ -39,7 +39,7 @@ func (a Adapter) FakeEnv(cfg adapter.Config) map[string]string {
 		basePath = "/openai"
 	}
 	return map[string]string{
-		"OPENAI_BASE_URL": "http://localhost:43101" + basePath + "/v1",
+		"OPENAI_BASE_URL": adapter.LocalBaseURL(basePath + "/v1"),
 		"OPENAI_API_KEY":  "mockport_openai_key",
 	}
 }

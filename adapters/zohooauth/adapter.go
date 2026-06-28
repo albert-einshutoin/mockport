@@ -39,7 +39,7 @@ func (a Adapter) Register(mux *http.ServeMux, cfg adapter.Config) error {
 func (a Adapter) FakeEnv(cfg adapter.Config) map[string]string {
 	basePath := resolveBasePath(cfg.BasePath)
 	return map[string]string{
-		"ZOHO_AUTH_BASE_URL":       "http://localhost:43101" + basePath,
+		"ZOHO_AUTH_BASE_URL":       adapter.LocalBaseURL(basePath),
 		"ZOHO_OAUTH_CLIENT_ID":     "mockport_zoho_client",
 		"ZOHO_OAUTH_CLIENT_SECRET": "mockport_zoho_secret",
 		"ZOHO_USER_EMAIL":          defaultUserEmail,

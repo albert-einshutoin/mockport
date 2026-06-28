@@ -5,8 +5,10 @@ import (
 	"maps"
 	"os"
 	"slices"
+	"strconv"
 	"strings"
 
+	"github.com/albert-einshutoin/mockport/internal/adapter"
 	"github.com/albert-einshutoin/mockport/internal/config"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
@@ -14,15 +16,20 @@ import (
 
 const defaultDockerImage = "ghcr.io/albert-einshutoin/mockport:0.1.0-alpha"
 
-const defaultCompose = `services:
+var initFilePaths = []string{"mockport.yml", ".env.mockport", "docker-compose.mockport.yml"}
+
+func defaultCompose() string {
+	port := strconv.Itoa(config.DefaultPort)
+	return fmt.Sprintf(`services:
   mockport:
-    image: ` + defaultDockerImage + `
+    image: %s
     command: ["run", "--config", "/etc/mockport/mockport.yml", "--host", "0.0.0.0"]
     ports:
-      - "127.0.0.1:43101:43101"
+      - "127.0.0.1:%s:%s"
     volumes:
       - ./mockport.yml:/etc/mockport/mockport.yml
-`
+`, defaultDockerImage, port, port)
+}
 
 type adapterSpec struct {
 	Name       string
@@ -31,6 +38,16 @@ type adapterSpec struct {
 	FakeSecret string
 	Webhook    config.WebhookConfig
 	Env        map[string]string
+}
+
+func (s adapterSpec) adapterConfig() config.AdapterConfig {
+	return config.AdapterConfig{
+		Enabled:    true,
+		BasePath:   s.BasePath,
+		Scenario:   s.Scenario,
+		FakeSecret: s.FakeSecret,
+		Webhook:    s.Webhook,
+	}
 }
 
 func newInitCommand() *cobra.Command {
@@ -52,10 +69,10 @@ func newInitCommand() *cobra.Command {
 			files := map[string]string{
 				"mockport.yml":                configContent,
 				".env.mockport":               generatedEnv(specs),
-				"docker-compose.mockport.yml": defaultCompose,
+				"docker-compose.mockport.yml": defaultCompose(),
 			}
 			if !force {
-				for path := range files {
+				for _, path := range initFilePaths {
 					if _, err := os.Stat(path); err == nil {
 						return fmt.Errorf("%s already exists; rerun with --force to overwrite", path)
 					} else if !os.IsNotExist(err) {
@@ -73,7 +90,7 @@ func newInitCommand() *cobra.Command {
 			fmt.Fprintln(cmd.OutOrStdout())
 			fmt.Fprintln(cmd.OutOrStdout(), "Next steps:")
 			fmt.Fprintln(cmd.OutOrStdout(), "  docker compose -f docker-compose.mockport.yml up")
-			fmt.Fprintln(cmd.OutOrStdout(), "  curl http://localhost:43101/health")
+			fmt.Fprintf(cmd.OutOrStdout(), "  curl http://localhost:%d/health\n", config.DefaultPort)
 			fmt.Fprintln(cmd.OutOrStdout(), "  mockport report")
 			return nil
 		},
@@ -113,7 +130,7 @@ func adapterSpecFor(name string) (adapterSpec, bool) {
 			FakeSecret: "mockport_stripe_secret",
 			Webhook:    config.WebhookConfig{TargetURL: "http://app:3000/webhooks/stripe", SigningSecret: "whsec_mockport"},
 			Env: map[string]string{
-				"STRIPE_API_URL":        "http://localhost:43101/stripe",
+				"STRIPE_API_URL":        adapter.LocalBaseURL("/stripe"),
 				"STRIPE_SECRET_KEY":     "mockport_stripe_secret",
 				"STRIPE_WEBHOOK_SECRET": "whsec_mockport",
 			},
@@ -125,7 +142,7 @@ func adapterSpecFor(name string) (adapterSpec, bool) {
 			Scenario:   "chat_success",
 			FakeSecret: "mockport_openai_key",
 			Env: map[string]string{
-				"OPENAI_BASE_URL": "http://localhost:43101/openai/v1",
+				"OPENAI_BASE_URL": adapter.LocalBaseURL("/openai/v1"),
 				"OPENAI_API_KEY":  "mockport_openai_key",
 			},
 		}, true
@@ -136,7 +153,7 @@ func adapterSpecFor(name string) (adapterSpec, bool) {
 			Scenario:   "oauth_success",
 			FakeSecret: "mockport_github_secret",
 			Env: map[string]string{
-				"GITHUB_OAUTH_BASE_URL":      "http://localhost:43101/github",
+				"GITHUB_OAUTH_BASE_URL":      adapter.LocalBaseURL("/github"),
 				"GITHUB_OAUTH_CLIENT_ID":     "mockport_github_client",
 				"GITHUB_OAUTH_CLIENT_SECRET": "mockport_github_secret",
 			},
@@ -148,7 +165,7 @@ func adapterSpecFor(name string) (adapterSpec, bool) {
 			Scenario:   "message_success",
 			FakeSecret: "mockport_slack_token",
 			Env: map[string]string{
-				"SLACK_API_URL":   "http://localhost:43101/slack/api",
+				"SLACK_API_URL":   adapter.LocalBaseURL("/slack/api"),
 				"SLACK_BOT_TOKEN": "mockport_slack_token",
 			},
 		}, true
@@ -159,7 +176,7 @@ func adapterSpecFor(name string) (adapterSpec, bool) {
 			Scenario:   "line_success",
 			FakeSecret: "mockport_line_channel_token",
 			Env: map[string]string{
-				"LINE_API_BASE_URL":        "http://localhost:43101/line",
+				"LINE_API_BASE_URL":        adapter.LocalBaseURL("/line"),
 				"LINE_CHANNEL_ID":          "mockport_line_channel",
 				"LINE_CHANNEL_SECRET":      "mockport_line_secret",
 				"LINE_CHANNEL_TOKEN":       "mockport_line_channel_token",
@@ -176,7 +193,7 @@ func adapterSpecFor(name string) (adapterSpec, bool) {
 			Scenario:   "oauth_success",
 			FakeSecret: "mockport_zoho_secret",
 			Env: map[string]string{
-				"ZOHO_AUTH_BASE_URL":       "http://localhost:43101/zoho",
+				"ZOHO_AUTH_BASE_URL":       adapter.LocalBaseURL("/zoho"),
 				"ZOHO_OAUTH_CLIENT_ID":     "mockport_zoho_client",
 				"ZOHO_OAUTH_CLIENT_SECRET": "mockport_zoho_secret",
 				"ZOHO_USER_EMAIL":          "mockport@example.test",
@@ -191,18 +208,12 @@ func adapterSpecFor(name string) (adapterSpec, bool) {
 func generatedConfig(specs []adapterSpec) (string, error) {
 	cfg := config.Config{
 		Version:  "0.1",
-		Server:   config.ServerConfig{Host: "127.0.0.1", Port: 43101},
+		Server:   config.ServerConfig{Host: "127.0.0.1", Port: config.DefaultPort},
 		Mode:     "ai-safe",
 		Adapters: map[string]config.AdapterConfig{},
 	}
 	for _, spec := range specs {
-		cfg.Adapters[spec.Name] = config.AdapterConfig{
-			Enabled:    true,
-			BasePath:   spec.BasePath,
-			Scenario:   spec.Scenario,
-			FakeSecret: spec.FakeSecret,
-			Webhook:    spec.Webhook,
-		}
+		cfg.Adapters[spec.Name] = spec.adapterConfig()
 	}
 	data, err := yaml.Marshal(cfg)
 	if err != nil {

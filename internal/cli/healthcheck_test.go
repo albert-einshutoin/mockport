@@ -12,6 +12,8 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/albert-einshutoin/mockport/internal/config"
 )
 
 func TestHealthcheckCommandChecksConfiguredHealthURL(t *testing.T) {
@@ -70,8 +72,8 @@ func TestLoadHealthcheckConfigFallsBackToDefaultWithoutConfig(t *testing.T) {
 	if err != nil {
 		t.Fatalf("loadHealthcheckConfig fallback: %v", err)
 	}
-	if cfg.Server.Host != "127.0.0.1" || cfg.Server.Port != 43101 {
-		t.Fatalf("fallback config = %+v, want host=127.0.0.1 port=43101", cfg.Server)
+	if cfg.Server.Host != "127.0.0.1" || cfg.Server.Port != config.DefaultPort {
+		t.Fatalf("fallback config = %+v, want host=127.0.0.1 port=%d", cfg.Server, config.DefaultPort)
 	}
 }
 

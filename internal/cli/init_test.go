@@ -95,6 +95,24 @@ func TestInitGeneratesMultipleAdapters(t *testing.T) {
 	}
 }
 
+func TestInitExistingFileErrorPrefersMockportYml(t *testing.T) {
+	dir := chdirTemp(t)
+	for _, name := range []string{".env.mockport", "docker-compose.mockport.yml", "mockport.yml"} {
+		if err := os.WriteFile(filepath.Join(dir, name), []byte("keep\n"), 0o644); err != nil {
+			t.Fatalf("write %s: %v", name, err)
+		}
+	}
+
+	cmd, _ := newTestCommand(t, "init", "--adapter", "stripe")
+	err := cmd.Execute()
+	if err == nil {
+		t.Fatal("expected error when all init files exist")
+	}
+	if !strings.Contains(err.Error(), "mockport.yml already exists") {
+		t.Fatalf("error = %q, want mockport.yml reported first", err)
+	}
+}
+
 func TestInitDoesNotOverwriteExistingFiles(t *testing.T) {
 	dir := chdirTemp(t)
 	existingPath := filepath.Join(dir, "mockport.yml")

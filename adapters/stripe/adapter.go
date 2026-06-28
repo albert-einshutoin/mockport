@@ -48,7 +48,7 @@ func (a Adapter) FakeEnv(cfg adapter.Config) map[string]string {
 		signingSecret = "whsec_mockport"
 	}
 	return map[string]string{
-		"STRIPE_API_URL":        "http://localhost:43101" + basePath,
+		"STRIPE_API_URL":        adapter.LocalBaseURL(basePath),
 		"STRIPE_SECRET_KEY":     secret,
 		"STRIPE_WEBHOOK_SECRET": signingSecret,
 	}

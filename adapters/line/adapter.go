@@ -31,7 +31,7 @@ func (a Adapter) FakeEnv(cfg adapter.Config) map[string]string {
 		basePath = "/line"
 	}
 	return map[string]string{
-		"LINE_API_BASE_URL":        "http://localhost:43101" + basePath,
+		"LINE_API_BASE_URL":        adapter.LocalBaseURL(basePath),
 		"LINE_CHANNEL_ID":          "mockport_line_channel",
 		"LINE_CHANNEL_SECRET":      "mockport_line_secret",
 		"LINE_CHANNEL_TOKEN":       "mockport_line_channel_token",

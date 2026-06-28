@@ -33,7 +33,7 @@ func (a Adapter) FakeEnv(cfg adapter.Config) map[string]string {
 		basePath = "/github"
 	}
 	return map[string]string{
-		"GITHUB_OAUTH_BASE_URL":      "http://localhost:43101" + basePath,
+		"GITHUB_OAUTH_BASE_URL":      adapter.LocalBaseURL(basePath),
 		"GITHUB_OAUTH_CLIENT_ID":     "mockport_github_client",
 		"GITHUB_OAUTH_CLIENT_SECRET": "mockport_github_secret",
 	}

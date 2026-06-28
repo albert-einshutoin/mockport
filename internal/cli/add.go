@@ -14,32 +14,19 @@ func newAddCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "add [adapter...]",
 		Short: "Add adapter config to mockport.yml",
+		Args:  cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			silenceUsageForRuntimeError(cmd)
-			if len(args) == 0 {
-				return fmt.Errorf("at least one adapter is required")
-			}
 			specs, err := specsFor(args)
 			if err != nil {
 				return err
 			}
-			data, err := os.ReadFile(configPath)
+			cfg, err := config.LoadFile(configPath)
 			if err != nil {
-				return fmt.Errorf("read %s: %w", configPath, err)
+				return err
 			}
-			var cfg config.Config
-			if err := yaml.Unmarshal(data, &cfg); err != nil {
-				return fmt.Errorf("parse %s: %w", configPath, err)
-			}
-			config.ApplyDefaults(&cfg)
 			for _, spec := range specs {
-				cfg.Adapters[spec.Name] = config.AdapterConfig{
-					Enabled:    true,
-					BasePath:   spec.BasePath,
-					Scenario:   spec.Scenario,
-					FakeSecret: spec.FakeSecret,
-					Webhook:    spec.Webhook,
-				}
+				cfg.Adapters[spec.Name] = spec.adapterConfig()
 			}
 			if err := config.Validate(&cfg); err != nil {
 				return err

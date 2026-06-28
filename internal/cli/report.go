@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/albert-einshutoin/mockport/internal/config"
 	"github.com/albert-einshutoin/mockport/internal/report"
 	"github.com/spf13/cobra"
 )
@@ -47,7 +48,7 @@ func newReportCommand() *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().StringVar(&reportURL, "url", "http://localhost:43101/_mockport/report", "Mockport report endpoint URL")
+	cmd.Flags().StringVar(&reportURL, "url", fmt.Sprintf("http://localhost:%d/_mockport/report", config.DefaultPort), "Mockport report endpoint URL")
 	cmd.Flags().StringVar(&format, "format", "text", "Report format: text or json")
 	return cmd
 }

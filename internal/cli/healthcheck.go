@@ -13,10 +13,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const (
-	defaultHealthcheckHost = "127.0.0.1"
-	defaultHealthcheckPort = 43101
-)
+const defaultHealthcheckHost = "127.0.0.1"
 
 func newHealthcheckCommand() *cobra.Command {
 	var configPath string
@@ -80,7 +77,7 @@ func loadHealthcheckConfig(configPath string) (config.Config, error) {
 		if os.IsNotExist(err) {
 			return config.Config{Server: config.ServerConfig{
 				Host: defaultHealthcheckHost,
-				Port: defaultHealthcheckPort,
+				Port: config.DefaultPort,
 			}}, nil
 		}
 		return config.Config{}, fmt.Errorf("load config %s: %w", configPath, err)

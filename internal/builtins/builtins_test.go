@@ -5,6 +5,18 @@ import (
 	"testing"
 )
 
+func TestAdaptersReturnsClone(t *testing.T) {
+	first := Adapters()
+	if len(first) == 0 {
+		t.Fatal("Adapters() returned empty slice")
+	}
+	first[0] = nil
+	second := Adapters()
+	if second[0] == nil {
+		t.Fatal("mutating Adapters() return value affected builtinAdapterList")
+	}
+}
+
 func TestAdaptersReturnsUniqueNames(t *testing.T) {
 	adapters := Adapters()
 	names := make([]string, 0, len(adapters))
