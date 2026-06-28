@@ -144,6 +144,8 @@ See [Reports](docs/site/reports.md) and [Support matrix](docs/site/support-matri
 
 Full docs, install paths, and release verification live under [docs/site/](docs/site/index.md). Current preview: `v0.1.0-alpha` via [Docker / GHCR](docs/site/distribution.md) and [GitHub release archives](docs/site/distribution.md). The npm wrapper is experimental; Go binary and Docker remain primary.
 
+> **⚠️ Archive**: Pre-implementation design documents (May 2026) are preserved in [docs/archive/design/](docs/archive/design/README.md). They are not maintained and may diverge from the current implementation.
+
 ## Contribute
 
 Contributions follow spec-first TDD. See [CONTRIBUTING.md](CONTRIBUTING.md), [Adapter onboarding guide](docs/adding-an-adapter.md), [Maintainer Guide](docs/maintainer-guide.md), [Roadmap](ROADMAP.md), and [Support Policy](docs/public-support-policy.md).

@@ -144,6 +144,8 @@ mockport run --config examples/unsafe-config/mockport.yml --check
 
 docs、install 経路、release verification は [docs/site/](docs/site/index.ja.md) 配下にあります。現在の preview は `v0.1.0-alpha`（[Docker / GHCR](docs/site/distribution.ja.md)、[GitHub release archives](docs/site/distribution.ja.md)）。npm wrapper は experimental。Go binary と Docker が主経路です。
 
+> **⚠️ アーカイブ**: 実装開始前(2026-05)の設計ドキュメントは [docs/archive/design/](docs/archive/design/README.ja.md) に保存されています。内容は保守されておらず、実装と乖離している可能性があります。
+
 ## コントリビュート
 
 開発は spec-first TDD に従います。[CONTRIBUTING.ja.md](CONTRIBUTING.ja.md)、[Adapter onboarding guide](docs/adding-an-adapter.md)、[Maintainer Guide](docs/maintainer-guide.ja.md)、[Roadmap](ROADMAP.ja.md)、[Support Policy](docs/public-support-policy.ja.md) を参照してください。

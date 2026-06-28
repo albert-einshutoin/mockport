@@ -1,3 +1,5 @@
+> **⚠️ アーカイブ**: このディレクトリは実装開始前(2026-05)の設計ドキュメントの保存版です。現在の仕様は [docs/site/](../../site/index.md) を参照してください。内容は保守されておらず、実装と乖離している可能性があります。
+
 # Mockport Development Documentation Pack
 
 [日本語版](README.ja.md)

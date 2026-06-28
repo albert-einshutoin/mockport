@@ -489,7 +489,7 @@ Expected: all commands pass.
 
 - [x] **Step 1: Create README**
 
-Create `README.md` from `mockport_docs/docs/13_readme_draft.md`, but limit supported adapters to Stripe-like payment adapter for the current state.
+Create `README.md` from `docs/archive/design/docs/13_readme_draft.md`, but limit supported adapters to Stripe-like payment adapter for the current state.
 
 - [x] **Step 2: Verify docs command consistency**
 

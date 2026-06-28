@@ -3,6 +3,6 @@
 bin
 dist
 coverage.out
-mockport_docs
 contract/sdk/node_modules
 tasks
+docs/archive/design

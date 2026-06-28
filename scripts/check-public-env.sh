@@ -24,7 +24,6 @@ collect_public_files() {
     "contract"
     "docs"
     "examples"
-    "mockport_docs"
     "packaging"
   )
 

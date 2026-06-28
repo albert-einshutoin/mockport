@@ -414,7 +414,7 @@ Expected: fail because `init` is not registered.
 
 - [x] **Step 3: Implement init command**
 
-Create `internal/cli/init.go`. Support only `--adapter stripe` in Minimal MVP. Write deterministic files matching `mockport_docs/configs/mockport.example.yml`, `mockport_docs/configs/env.mockport.example`, and `mockport_docs/examples/docker-compose.mockport.yml`.
+Create `internal/cli/init.go`. Support only `--adapter stripe` in Minimal MVP. Write deterministic files matching `configs/mockport.example.yml`, `docs/archive/design/configs/env.mockport.example`, and `docs/archive/design/examples/docker-compose.mockport.yml`.
 
 - [x] **Step 4: Verify GREEN**
 
