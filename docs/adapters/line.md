@@ -220,14 +220,12 @@ Run the adapter and package tests:
 go test ./adapters/line ./internal/server ./internal/cli ./internal/config
 ```
 
-Run all tests:
+Run the public trust gate:
 
 ```bash
-go test ./...
+bash scripts/check-public-trust.sh
 ```
 
-Run the engineering gate:
+Compatibility status and known gaps are tracked in [`docs/site/support-matrix.md`](../site/support-matrix.md).
 
-```bash
-bash scripts/check-go-engineering.sh
-```
+LINE is not yet supported by the SDK contract harness. `bash scripts/run-sdk-contracts.sh line` exits with `unsupported provider: line`. Use the adapter tests above until a LINE smoke test exists in [`contract/sdk/README.md`](../../contract/sdk/README.md).
