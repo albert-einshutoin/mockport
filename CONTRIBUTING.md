@@ -42,8 +42,11 @@ Run these before opening a pull request:
 bash scripts/check-public-trust.sh
 bash scripts/check-distribution.sh
 go test ./...
+go test -race ./...
 go vet ./...
 ```
+
+Race tests are expected for adapter changes or shared state modifications.
 
 ## Adapter Changes
 
