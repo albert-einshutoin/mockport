@@ -88,13 +88,15 @@ Use this table to jump from Mockport's supported local surface to the closest of
 
 ## Scenarios
 
-| Scenario | Behavior |
-| --- | --- |
-| `payment_success` | Default successful local workflow. |
-| `payment_failed` | Returns Stripe-like card decline behavior for payment creation and webhook helper paths. |
-| `auth_error` | Returns authentication-style failures. |
-| `rate_limited` | Returns rate limit behavior. |
-| `timeout` | Returns deterministic timeout behavior immediately (504 response shape). For real latency, add `X-Mockport-Delay: <ms>` (`0`–`30000`; invalid values return `400`). See [Adapters](../site/adapters.md). |
+| Scenario | Response shape | Latency behavior |
+| --- | --- | --- |
+| `payment_success` | `200` / Stripe-like success object | No scenario-induced sleep. Real latency via `X-Mockport-Delay` (`0`–`30000` ms; see [Adapters](../site/adapters.md)). |
+| `payment_failed` | `402` / `card_declined` | No scenario-induced sleep. Real latency via `X-Mockport-Delay` (`0`–`30000` ms; see [Adapters](../site/adapters.md)). |
+| `auth_error` | `401` / `invalid_api_key` | No scenario-induced sleep. Real latency via `X-Mockport-Delay` (`0`–`30000` ms; see [Adapters](../site/adapters.md)). |
+| `rate_limited` | `429` / `rate_limited` | No scenario-induced sleep. Real latency via `X-Mockport-Delay` (`0`–`30000` ms; see [Adapters](../site/adapters.md)). |
+| `timeout` | `504` / `mockport_timeout` | Immediate `504` response shape only; scenario does **not** sleep or delay handling. Real latency via `X-Mockport-Delay` (`0`–`30000` ms; see [Adapters](../site/adapters.md)). |
+
+The `timeout` scenario controls response shape, not request duration. Use `X-Mockport-Delay` to inject realistic latency before Mockport handles the request.
 
 ## Current Gaps And Tasks
 
