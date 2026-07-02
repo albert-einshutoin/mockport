@@ -70,6 +70,9 @@ func TestResponsesCreateAndRetrieveState(t *testing.T) {
 	if created["id"] != "openai_response_000001" {
 		t.Fatalf("created id = %#v", created["id"])
 	}
+	if created["object"] != "response" {
+		t.Fatalf("created object = %#v, want response", created["object"])
+	}
 
 	retrieve := serveOpenAIRequest(mux, http.MethodGet, "/openai/v1/responses/openai_response_000001", "")
 	if retrieve.Code != http.StatusOK {
@@ -79,11 +82,88 @@ func TestResponsesCreateAndRetrieveState(t *testing.T) {
 	if err := json.Unmarshal(retrieve.Body.Bytes(), &got); err != nil {
 		t.Fatalf("decode retrieve: %v", err)
 	}
-	if got["id"] != created["id"] || got["model"] != "gpt-mockport" {
-		t.Fatalf("retrieved = %#v", got)
+
+	assertResponseCreateRetrieveConsistent(t, created, got)
+}
+
+func assertResponseCreateRetrieveConsistent(t *testing.T, created, got map[string]any) {
+	t.Helper()
+
+	for _, field := range []string{"id", "object", "model", "status", "output_text"} {
+		if created[field] != got[field] {
+			t.Fatalf("%s mismatch: created=%#v got=%#v", field, created[field], got[field])
+		}
 	}
-	if _, ok := got["output"].([]any); !ok {
-		t.Fatalf("response output is missing or not array: %#v", got)
+	if got["model"] != "gpt-mockport" {
+		t.Fatalf("model = %#v, want gpt-mockport", got["model"])
+	}
+	if got["status"] != "completed" {
+		t.Fatalf("status = %#v, want completed", got["status"])
+	}
+	if got["output_text"] != "Mockport response" {
+		t.Fatalf("output_text = %#v, want Mockport response", got["output_text"])
+	}
+
+	createdChoices, err := json.Marshal(created["choices"])
+	if err != nil {
+		t.Fatalf("marshal created choices: %v", err)
+	}
+	gotChoices, err := json.Marshal(got["choices"])
+	if err != nil {
+		t.Fatalf("marshal retrieved choices: %v", err)
+	}
+	if string(createdChoices) != string(gotChoices) {
+		t.Fatalf("choices mismatch: created=%s got=%s", createdChoices, gotChoices)
+	}
+
+	createdOutput, ok := created["output"].([]any)
+	if !ok || len(createdOutput) == 0 {
+		t.Fatalf("created output is missing or empty: %#v", created["output"])
+	}
+	gotOutput, ok := got["output"].([]any)
+	if !ok || len(gotOutput) == 0 {
+		t.Fatalf("retrieved output is missing or empty: %#v", got["output"])
+	}
+	createdItem, ok := createdOutput[0].(map[string]any)
+	if !ok {
+		t.Fatalf("created output[0] is not an object: %#v", createdOutput[0])
+	}
+	gotItem, ok := gotOutput[0].(map[string]any)
+	if !ok {
+		t.Fatalf("retrieved output[0] is not an object: %#v", gotOutput[0])
+	}
+	for _, field := range []string{"type", "status", "role"} {
+		if createdItem[field] != gotItem[field] {
+			t.Fatalf("output[0].%s mismatch: created=%#v got=%#v", field, createdItem[field], gotItem[field])
+		}
+	}
+	if gotItem["type"] != "message" || gotItem["status"] != "completed" || gotItem["role"] != "assistant" {
+		t.Fatalf("output[0] deterministic fields = %#v", gotItem)
+	}
+
+	createdContent, ok := createdItem["content"].([]any)
+	if !ok || len(createdContent) == 0 {
+		t.Fatalf("created output[0].content is missing or empty: %#v", createdItem["content"])
+	}
+	gotContent, ok := gotItem["content"].([]any)
+	if !ok || len(gotContent) == 0 {
+		t.Fatalf("retrieved output[0].content is missing or empty: %#v", gotItem["content"])
+	}
+	createdContentItem, ok := createdContent[0].(map[string]any)
+	if !ok {
+		t.Fatalf("created output[0].content[0] is not an object: %#v", createdContent[0])
+	}
+	gotContentItem, ok := gotContent[0].(map[string]any)
+	if !ok {
+		t.Fatalf("retrieved output[0].content[0] is not an object: %#v", gotContent[0])
+	}
+	for _, field := range []string{"type", "text"} {
+		if createdContentItem[field] != gotContentItem[field] {
+			t.Fatalf("output[0].content[0].%s mismatch: created=%#v got=%#v", field, createdContentItem[field], gotContentItem[field])
+		}
+	}
+	if gotContentItem["type"] != "output_text" || gotContentItem["text"] != "Mockport response" {
+		t.Fatalf("output[0].content[0] deterministic fields = %#v", gotContentItem)
 	}
 }
 
@@ -388,9 +468,9 @@ func TestOpenAIResetClearsState(t *testing.T) {
 		t.Fatalf("reset body = %#v", resetBody)
 	}
 
-	lookupAfter := serveOpenAIRequest(mux, http.MethodGet, "/openai/v1/responses/"+responseID, "")
-	if lookupAfter.Code != http.StatusNotFound {
-		t.Fatalf("response lookup after reset status = %d, body=%s", lookupAfter.Code, lookupAfter.Body.String())
+	lookupAfterReset := serveOpenAIRequest(mux, http.MethodGet, "/openai/v1/responses/"+responseID, "")
+	if lookupAfterReset.Code != http.StatusNotFound {
+		t.Fatalf("created response must not be retrievable after reset: status = %d, body=%s", lookupAfterReset.Code, lookupAfterReset.Body.String())
 	}
 
 	remoteReset := httptest.NewRequest(http.MethodPost, "/openai/test/reset", nil)
