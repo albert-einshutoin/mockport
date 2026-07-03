@@ -88,6 +88,8 @@ else
   echo "check-adapter-helpers: ${duplicate_count} duplicated helper name(s) tracked (threshold=${threshold})"
 fi
 
+echo "See docs/adapter-helper-policy.md for when adapter-local helpers should stay local versus become shared."
+
 if [[ "$threshold_exceeded" -ne 0 ]]; then
   echo "check-adapter-helpers failed: one or more helpers exceed DUPLICATE_ADAPTER_THRESHOLD=${threshold}" >&2
   exit 1

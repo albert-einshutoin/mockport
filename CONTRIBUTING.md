@@ -33,6 +33,7 @@ For adapter PRs, follow the onboarding guide before implementation:
 - [`docs/adding-an-adapter.md`](docs/adding-an-adapter.md)
 - [`docs/scenario-policy.md`](docs/scenario-policy.md)
 - [`docs/compatibility-model.md`](docs/compatibility-model.md)
+- [`docs/adapter-helper-policy.md`](docs/adapter-helper-policy.md)
 
 ## Public Trust Checks
 
