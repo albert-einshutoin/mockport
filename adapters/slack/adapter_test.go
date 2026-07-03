@@ -90,6 +90,97 @@ func TestPostMessagePersistsConversationHistory(t *testing.T) {
 	}
 }
 
+func TestMessageLifecycleHistoryVisibility(t *testing.T) {
+	mux := newSlackMux(t, adapter.Config{BasePath: "/slack", Scenario: "message_success"})
+	const channel = "C_TEST"
+
+	post := serveSlackRequest(mux, http.MethodPost, "/slack/api/chat.postMessage", "channel="+channel+"&text=hello")
+	if post.Code != http.StatusOK {
+		t.Fatalf("post status = %d, want %d, body=%s", post.Code, http.StatusOK, post.Body.String())
+	}
+	var posted map[string]any
+	if err := json.Unmarshal(post.Body.Bytes(), &posted); err != nil {
+		t.Fatalf("decode post: %v", err)
+	}
+	ts, _ := posted["ts"].(string)
+	if ts != "slack_message_000001" {
+		t.Fatalf("post ts = %q, want slack_message_000001", ts)
+	}
+
+	historyAfterPost := serveSlackRequest(mux, http.MethodGet, "/slack/api/conversations.history?channel="+channel, "")
+	if historyAfterPost.Code != http.StatusOK {
+		t.Fatalf("history after post status = %d, want %d, body=%s", historyAfterPost.Code, http.StatusOK, historyAfterPost.Body.String())
+	}
+	var afterPost struct {
+		OK       bool             `json:"ok"`
+		Messages []map[string]any `json:"messages"`
+	}
+	if err := json.Unmarshal(historyAfterPost.Body.Bytes(), &afterPost); err != nil {
+		t.Fatalf("decode history after post: %v", err)
+	}
+	if !afterPost.OK || len(afterPost.Messages) != 1 {
+		t.Fatalf("history after post = %#v", afterPost)
+	}
+	if afterPost.Messages[0]["ts"] != "slack_message_000001" || afterPost.Messages[0]["text"] != "hello" {
+		t.Fatalf("history after post message = %#v", afterPost.Messages[0])
+	}
+
+	update := serveSlackRequest(mux, http.MethodPost, "/slack/api/chat.update", "channel="+channel+"&ts="+ts+"&text=edited")
+	if update.Code != http.StatusOK {
+		t.Fatalf("update status = %d, want %d, body=%s", update.Code, http.StatusOK, update.Body.String())
+	}
+
+	historyAfterUpdate := serveSlackRequest(mux, http.MethodPost, "/slack/api/conversations.history", "channel="+channel)
+	if historyAfterUpdate.Code != http.StatusOK {
+		t.Fatalf("history after update status = %d, want %d, body=%s", historyAfterUpdate.Code, http.StatusOK, historyAfterUpdate.Body.String())
+	}
+	var afterUpdate struct {
+		OK       bool             `json:"ok"`
+		Messages []map[string]any `json:"messages"`
+	}
+	if err := json.Unmarshal(historyAfterUpdate.Body.Bytes(), &afterUpdate); err != nil {
+		t.Fatalf("decode history after update: %v", err)
+	}
+	if !afterUpdate.OK || len(afterUpdate.Messages) != 1 {
+		t.Fatalf("history after update = %#v", afterUpdate)
+	}
+	if afterUpdate.Messages[0]["ts"] != ts || afterUpdate.Messages[0]["text"] != "edited" {
+		t.Fatalf("history after update message = %#v", afterUpdate.Messages[0])
+	}
+
+	del := serveSlackRequest(mux, http.MethodPost, "/slack/api/chat.delete", "channel="+channel+"&ts="+ts)
+	if del.Code != http.StatusOK {
+		t.Fatalf("delete status = %d, want %d, body=%s", del.Code, http.StatusOK, del.Body.String())
+	}
+	var deleted struct {
+		OK bool `json:"ok"`
+	}
+	if err := json.Unmarshal(del.Body.Bytes(), &deleted); err != nil {
+		t.Fatalf("decode delete: %v", err)
+	}
+	if !deleted.OK {
+		t.Fatalf("delete ok = false, body=%s", del.Body.String())
+	}
+
+	historyAfterDelete := serveSlackRequest(mux, http.MethodPost, "/slack/api/conversations.history", "channel="+channel)
+	if historyAfterDelete.Code != http.StatusOK {
+		t.Fatalf("history after delete status = %d, want %d, body=%s", historyAfterDelete.Code, http.StatusOK, historyAfterDelete.Body.String())
+	}
+	var afterDelete struct {
+		OK       bool             `json:"ok"`
+		Messages []map[string]any `json:"messages"`
+	}
+	if err := json.Unmarshal(historyAfterDelete.Body.Bytes(), &afterDelete); err != nil {
+		t.Fatalf("decode history after delete: %v", err)
+	}
+	if !afterDelete.OK {
+		t.Fatalf("history after delete ok = false, body=%s", historyAfterDelete.Body.String())
+	}
+	if len(afterDelete.Messages) != 0 {
+		t.Fatalf("history after delete should be empty, got %#v", afterDelete.Messages)
+	}
+}
+
 func TestConversationsListUpdateAndDelete(t *testing.T) {
 	mux := newSlackMux(t, adapter.Config{BasePath: "/slack", Scenario: "message_success"})
 
