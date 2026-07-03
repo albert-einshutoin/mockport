@@ -10,7 +10,7 @@ Mockport is a Docker-first local API environment for AI-native development and C
 
 ## Current Mainline
 
-- Workflow-compatible local adapters for Stripe-like payments, OpenAI-compatible API, GitHub OAuth-like API, Slack-like messaging API, and LINE-like platform APIs.
+- Workflow-compatible local adapters for Stripe-like payments, OpenAI-compatible API, GitHub OAuth-like API, Slack-like messaging API, LINE-like platform APIs, and Zoho OAuth-like API.
 - Compatibility reports are generated from runtime metadata and known-gap mappings.
 - Shared deterministic state, idempotency primitives, report hooks, and Go engineering hardening are in place.
 
@@ -38,6 +38,7 @@ Current adapters:
 - GitHub OAuth-like API.
 - Slack-like messaging API.
 - LINE-like platform APIs.
+- Zoho OAuth-like API.
 
 Candidate adapters after the compatibility foundation:
 
