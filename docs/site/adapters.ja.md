@@ -15,6 +15,36 @@ Mockport の adapter は scenario-driven です。現時点では、選択され
 
 対応範囲を判断するときは、[support matrix](support-matrix.ja.md) と compatibility report を確認してください。Mockport は外部 provider の内部実装や未公開仕様を再現するものではなく、ローカル統合テストで必要になる成功、失敗、認証エラー、rate limit、timeout、webhook/callback などの検証に集中しています。
 
+## X-Mockport-Delay
+
+`X-Mockport-Delay` は、Mockport がリクエストを処理する**前**に人工レイテンシを注入する server-wide な request header です。adapter scenario を変えずに、クライアント側の timeout 処理、リトライ間隔、ローディング表示などを検証するために使います。
+
+受け付ける範囲: `0`–`30000` ミリ秒。
+
+adapter の `timeout` scenario（Stripe の `timeout` など）は即時の 504 風レスポンス shape を返します。**sleep や遅延処理は行いません**。timeout レスポンスと実レイテンシを組み合わせる場合は、scenario を `timeout` のままにして、リクエストに `X-Mockport-Delay` を付けてください。
+
+| Header 値 | 動作 |
+| --- | --- |
+| 未指定 | 人工遅延なし。即時に処理へ進む。 |
+| `0` | 受理。処理前の sleep なし。 |
+| 正の整数（`1`–`30000`） | 指定ミリ秒だけ sleep してから処理する。 |
+| 空または空白のみ | `400 Bad Request` で拒否。sleep なし。 |
+| 整数以外 | `400 Bad Request` で拒否。sleep なし。 |
+| 負の値 | `400 Bad Request` で拒否。sleep なし。 |
+| `30000` 超 | `400 Bad Request` で拒否。sleep なし。 |
+
+不正な値のときは次を返します。
+
+```text
+invalid X-Mockport-Delay: must be 0-30000 (milliseconds)
+```
+
+遅延付きリクエストの例:
+
+```bash
+curl -H "X-Mockport-Delay: 250" http://localhost:43101/stripe/v1/customers
+```
+
 ## シナリオの切り替え方
 
 シナリオは2通りの方法で切り替えられます。

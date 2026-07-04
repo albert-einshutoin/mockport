@@ -13,7 +13,13 @@
 
 Adapters are scenario-driven today and are moving toward provider-compatible local APIs for selected workflows. See the [scenario matrix](scenarios.md) for built-in scenario names across adapters. Use the [support matrix](support-matrix.md) and report behavior matrix to confirm supported paths.
 
-`timeout` scenarios return an immediate 504-style response shape. To test client-side timeout behavior, add the server-wide `X-Mockport-Delay` header with a delay in milliseconds before Mockport handles the request.
+## X-Mockport-Delay
+
+`X-Mockport-Delay` is a server-wide request header that injects artificial latency **before** Mockport handles the request. Use it to exercise client-side timeout handling, retry timing, and loading states without changing adapter scenarios.
+
+Accepted range: `0`–`30000` milliseconds.
+
+Adapter `timeout` scenarios (for example Stripe's `timeout`) return an immediate 504-style response shape; they do **not** sleep or delay handling. To combine a timeout response with realistic latency, keep the scenario on `timeout` and add `X-Mockport-Delay` on the request.
 
 | Header value | Behavior |
 | --- | --- |
