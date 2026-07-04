@@ -12,14 +12,47 @@ import (
 	"github.com/albert-einshutoin/mockport/internal/adapter/adaptertest"
 )
 
-func TestAuthorizeRedirect(t *testing.T) {
-	rec := performRequest(t, adapter.Config{BasePath: "/github", Scenario: "oauth_success"}, http.MethodGet, "/github/login/oauth/authorize?client_id=mockport_github_client&redirect_uri=http://localhost/callback&state=s1")
-	if rec.Code != http.StatusFound {
-		t.Fatalf("status = %d, want %d", rec.Code, http.StatusFound)
+func TestAuthorizeRedirectStateContract(t *testing.T) {
+	base := "/github/login/oauth/authorize?client_id=mockport_github_client&redirect_uri=http://localhost/callback"
+	cfg := adapter.Config{BasePath: "/github", Scenario: "oauth_success"}
+
+	for _, state := range []string{"state-123", "state with spaces & symbols/+"} {
+		t.Run("echoes non-empty state on success redirect/"+url.QueryEscape(state), func(t *testing.T) {
+			rec := performRequest(t, cfg, http.MethodGet, base+"&state="+url.QueryEscape(state))
+			if rec.Code != http.StatusFound {
+				t.Fatalf("status = %d, want %d", rec.Code, http.StatusFound)
+			}
+			loc := parseRedirectLocation(t, rec)
+			if loc.Query().Get("code") == "" {
+				t.Fatal("missing code in Location")
+			}
+			if got := loc.Query().Get("state"); got != state {
+				t.Fatalf("state = %q, want %q", got, state)
+			}
+		})
 	}
-	if rec.Header().Get("Location") == "" {
-		t.Fatal("missing Location header")
-	}
+
+	t.Run("omits state query when state is missing", func(t *testing.T) {
+		rec := performRequest(t, cfg, http.MethodGet, base)
+		if rec.Code != http.StatusFound {
+			t.Fatalf("status = %d, want %d", rec.Code, http.StatusFound)
+		}
+		loc := parseRedirectLocation(t, rec)
+		if _, ok := loc.Query()["state"]; ok {
+			t.Fatalf("state query should be omitted, location = %q", loc.String())
+		}
+	})
+
+	t.Run("omits state query when state is empty", func(t *testing.T) {
+		rec := performRequest(t, cfg, http.MethodGet, base+"&state=")
+		if rec.Code != http.StatusFound {
+			t.Fatalf("status = %d, want %d", rec.Code, http.StatusFound)
+		}
+		loc := parseRedirectLocation(t, rec)
+		if _, ok := loc.Query()["state"]; ok {
+			t.Fatalf("state query should be omitted, location = %q", loc.String())
+		}
+	})
 }
 
 func TestAuthorizeRequiresClientID(t *testing.T) {
@@ -456,16 +489,24 @@ func issueGitHubToken(t *testing.T, mux http.Handler, scope string) string {
 	return accessToken
 }
 
-func redirectCode(t *testing.T, rec *httptest.ResponseRecorder) string {
+func parseRedirectLocation(t *testing.T, rec *httptest.ResponseRecorder) *url.URL {
 	t.Helper()
 	location := rec.Header().Get("Location")
+	if location == "" {
+		t.Fatal("missing Location header")
+	}
 	parsed, err := url.Parse(location)
 	if err != nil {
 		t.Fatalf("parse redirect location: %v", err)
 	}
-	code := parsed.Query().Get("code")
+	return parsed
+}
+
+func redirectCode(t *testing.T, rec *httptest.ResponseRecorder) string {
+	t.Helper()
+	code := parseRedirectLocation(t, rec).Query().Get("code")
 	if code == "" {
-		t.Fatalf("missing code in location: %q", location)
+		t.Fatalf("missing code in location: %q", rec.Header().Get("Location"))
 	}
 	return code
 }

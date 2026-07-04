@@ -59,6 +59,8 @@ Use this table to jump from Mockport's supported local surface to the closest of
 
 The default OAuth flow requires `client_id` on `/github/login/oauth/authorize`. Token exchange also requires `client_id`, and the value must match the authorization request that created the code.
 
+`state` is optional on authorize. When a non-empty `state` value is provided, Mockport echoes it in the success redirect query. When `state` is missing or empty, Mockport omits the `state` query parameter from the redirect.
+
 ## Scenarios
 
 | Scenario | Behavior |
@@ -73,7 +75,7 @@ The default OAuth flow requires `client_id` on `/github/login/oauth/authorize`. 
 
 | Priority | Task | Current source of truth |
 | --- | --- | --- |
-| P1 | Strengthen client contract assertions for `state`, redirect URI mismatch, invalid code, missing scope, and bad credentials. | `tasks/phase29_oauth_slack_client_evidence.md` |
+| P1 | Strengthen client contract assertions for redirect URI mismatch, invalid code, missing scope, and bad credentials. Authorize `state` echo is covered by `TestAuthorizeRedirectStateContract` and `compat/fixtures/github/oauth_authorize_redirect.json`. | `tasks/phase29_oauth_slack_client_evidence.md` |
 | P1 | Extend REST subset contract for `/user`, `/user/emails`, and `/user/orgs` using bearer token authentication. | `contract/sdk/github-oauth-smoke.test.js` and `compat/fixtures/github/` |
 | P1 | Add manifest evidence for OAuth/client contract status before considering provider-compatible promotion. | `tasks/phase26_provider_compatible_manifest_promotion.md` |
 | P2 | Keep GitHub policy, repository permissions, SSO, org/enterprise enforcement, and app installation model as explicit known gaps. | `docs/site/support-matrix.md` |
