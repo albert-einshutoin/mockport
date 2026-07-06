@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/albert-einshutoin/mockport/internal/adapter"
 	"github.com/albert-einshutoin/mockport/internal/adapter/adaptertest"
@@ -257,11 +258,24 @@ func TestStripeRejectsOversizedFormBody(t *testing.T) {
 }
 
 func TestTimeoutScenario(t *testing.T) {
-	rec := performStripeRequest(t, adapter.Config{BasePath: "/stripe", Scenario: "timeout"}, http.MethodPost, "/stripe/v1/checkout/sessions")
+	mux := newStripeMux(t, adapter.Config{BasePath: "/stripe", Scenario: "timeout"})
+
+	start := time.Now()
+	rec := serveStripeRequest(mux, http.MethodPost, "/stripe/v1/checkout/sessions", "", nil)
+	elapsed := time.Since(start)
+
 	if rec.Code != http.StatusGatewayTimeout {
 		t.Fatalf("status = %d, want %d", rec.Code, http.StatusGatewayTimeout)
 	}
 	assertStripeErrorCode(t, rec, "mockport_timeout")
+	adaptertest.AssertJSONField(t, rec, "error.type", "api_error")
+	adaptertest.AssertJSONField(t, rec, "error.message", "Mockport simulated timeout")
+
+	// Conservative budget for CI jitter; catches scenario-induced sleeps without flaking on slow runners.
+	const latencyBudget = 250 * time.Millisecond
+	if elapsed > latencyBudget {
+		t.Fatalf("timeout scenario handling took %s, want <= %s (scenario must not sleep)", elapsed, latencyBudget)
+	}
 }
 
 func TestWebhookSender(t *testing.T) {
