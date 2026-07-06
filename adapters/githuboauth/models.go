@@ -16,6 +16,10 @@ type apiErrorResponse struct {
 	Message          string `json:"message"`
 	DocumentationURL string `json:"documentation_url"`
 	Status           string `json:"status"`
+	// Error は Mockport 固有の機械可読なコードフィールド。実際の GitHub REST API の
+	// エラー本文には存在しないため omitempty で通常応答には出さず、
+	// unknown_mockport_scenario のような Mockport 共通コードを伝える場合のみ付与する。
+	Error string `json:"error,omitempty"`
 }
 
 type userResponse struct {

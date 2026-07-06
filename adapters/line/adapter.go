@@ -20,7 +20,12 @@ func (a Adapter) Register(mux *http.ServeMux, cfg adapter.Config) error {
 	if basePath == "" {
 		basePath = "/line"
 	}
-	r := &routes{basePath: strings.TrimRight(basePath, "/"), cfg: cfg, store: state.NewStore()}
+	r := &routes{
+		basePath: strings.TrimRight(basePath, "/"),
+		cfg:      cfg,
+		store:    state.NewStore(),
+		resolver: adapter.NewScenarioResolver(cfg, "line_success", a.Metadata()),
+	}
 	mux.HandleFunc(r.basePath+"/", r.handle)
 	return nil
 }
@@ -46,6 +51,7 @@ type routes struct {
 	basePath string
 	cfg      adapter.Config
 	store    *state.Store
+	resolver *adapter.ScenarioResolver
 
 	// mu guards the singleton mutable state below. net/http dispatches
 	// concurrent requests to the same routes instance, so these fields must

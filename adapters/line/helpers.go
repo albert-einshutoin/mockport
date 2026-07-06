@@ -83,12 +83,38 @@ func writeNoBody(w http.ResponseWriter, status int) {
 	w.WriteHeader(status)
 }
 
-func normalizeScenario(value string) string {
-	value = strings.TrimSpace(value)
-	if value == "" {
-		return "line_success"
+// resolveScenario はリクエストのヘッダまたは設定からシナリオを解決する。
+// LINE Messaging API 形式には機械可読な code 欄がないため、未知シナリオは
+// message の固定プレフィックスで返して既存レスポンス形状を維持する。
+func (r *routes) resolveScenario(w http.ResponseWriter, req *http.Request) (string, bool) {
+	scenario, err := r.resolver.Resolve(req)
+	if err != nil {
+		writeLINEError(w, http.StatusBadRequest, "unknown_mockport_scenario: "+err.Error())
+		return "", false
 	}
-	return value
+	return scenario, true
+}
+
+// resolveScenarioOAuth は OAuth エラー形式の error 欄に共通コードを入れる。
+// OAuth は machine-readable code を持つため、message prefix に逃がさない。
+func (r *routes) resolveScenarioOAuth(w http.ResponseWriter, req *http.Request) (string, bool) {
+	scenario, err := r.resolver.Resolve(req)
+	if err != nil {
+		writeOAuthError(w, http.StatusBadRequest, "unknown_mockport_scenario", err.Error())
+		return "", false
+	}
+	return scenario, true
+}
+
+// resolveScenarioPay は LINE Pay の数値 returnCode 契約を保つため、共通コードは
+// returnMessage の固定プレフィックスとして返す。
+func (r *routes) resolveScenarioPay(w http.ResponseWriter, req *http.Request) (string, bool) {
+	scenario, err := r.resolver.Resolve(req)
+	if err != nil {
+		writePayError(w, "2101", "unknown_mockport_scenario: "+err.Error())
+		return "", false
+	}
+	return scenario, true
 }
 
 func firstNonEmpty(values ...any) any {

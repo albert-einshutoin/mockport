@@ -165,6 +165,32 @@ func TestEmailsAndOrgsRequireScopes(t *testing.T) {
 	}
 }
 
+func TestEmailsAndOrgsHonorScopeMissingScenarioHeader(t *testing.T) {
+	mux := newGitHubMux(t, adapter.Config{BasePath: "/github", Scenario: "oauth_success"})
+
+	tests := []struct {
+		name  string
+		path  string
+		scope string
+	}{
+		{"emails", "/github/user/emails", "user:email"},
+		{"orgs", "/github/user/orgs", "read:org"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			token := issueGitHubToken(t, mux, tt.scope)
+			rec := serveGitHubRequest(mux, http.MethodGet, tt.path, "", map[string]string{
+				"Authorization":       "Bearer " + token,
+				"X-Mockport-Scenario": "scope_missing",
+			})
+			if rec.Code != http.StatusForbidden {
+				t.Fatalf("status = %d, want %d, body=%s", rec.Code, http.StatusForbidden, rec.Body.String())
+			}
+			assertGitHubMessage(t, rec, "Resource not accessible by token")
+		})
+	}
+}
+
 func TestTokenRejectsRedirectURIMismatch(t *testing.T) {
 	mux := newGitHubMux(t, adapter.Config{BasePath: "/github", Scenario: "oauth_success"})
 	auth := serveGitHubRequest(mux, http.MethodGet, "/github/login/oauth/authorize?client_id=mockport_github_client&redirect_uri=http://localhost/callback&state=s1", "", nil)

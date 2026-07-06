@@ -7,10 +7,3 @@ const (
 	scenarioRateLimited    = "rate_limited"
 	scenarioTimeout        = "timeout"
 )
-
-func normalizeScenario(scenario string) string {
-	if scenario == "" {
-		return scenarioPaymentSuccess
-	}
-	return scenario
-}

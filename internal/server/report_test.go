@@ -137,6 +137,78 @@ func TestReportEndpointRecordsUnsupportedEndpoint(t *testing.T) {
 	}
 }
 
+// newStripeHandler は X-Mockport-Scenario の記録を検証するための stripe 単体ハンドラを作る。
+func newStripeHandler(t *testing.T, recorder *report.Recorder) http.Handler {
+	t.Helper()
+	cfg := config.Config{
+		Mode:   "ai-safe",
+		Server: config.ServerConfig{Host: "127.0.0.1", Port: 43101},
+		Adapters: map[string]config.AdapterConfig{
+			"stripe": {Enabled: true, BasePath: "/stripe", Scenario: "payment_success", FakeSecret: "mockport_stripe_secret"},
+		},
+	}
+	if err := config.Validate(&cfg); err != nil {
+		t.Fatalf("validate config: %v", err)
+	}
+	reg := adapter.NewRegistry()
+	if err := reg.Register(stripe.New()); err != nil {
+		t.Fatalf("register stripe: %v", err)
+	}
+	handler, err := NewConfiguredHandler(cfg, reg, recorder)
+	if err != nil {
+		t.Fatalf("new handler: %v", err)
+	}
+	return handler
+}
+
+// TestReportRejectsUnknownScenarioHeaderInRecord は未知シナリオ→400 のリクエストで、
+// 不正なヘッダ値（totally_unknown）がレポートに混入せず、設定済みの有効なシナリオ
+// （payment_success）のまま記録されることを固定する（B1）。
+func TestReportRejectsUnknownScenarioHeaderInRecord(t *testing.T) {
+	recorder := report.NewRecorder()
+	handler := newStripeHandler(t, recorder)
+
+	req := httptest.NewRequest(http.MethodPost, "/stripe/v1/checkout/sessions", nil)
+	req.Header.Set(adapter.ScenarioHeader, "totally_unknown")
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("status = %d, want %d (unknown scenario should be rejected)", rec.Code, http.StatusBadRequest)
+	}
+
+	snapshot := recorder.Snapshot()
+	if len(snapshot.Requests) != 1 {
+		t.Fatalf("requests = %#v, want one", snapshot.Requests)
+	}
+	got := snapshot.Requests[0]
+	if got.Scenario == "totally_unknown" {
+		t.Fatalf("scenario = %q, must not record the unvalidated header value", got.Scenario)
+	}
+	if got.Scenario != "payment_success" {
+		t.Fatalf("scenario = %q, want payment_success (configured default)", got.Scenario)
+	}
+}
+
+// TestReportRecordsValidScenarioHeaderOverride は有効なヘッダ override が
+// レポートへ反映されることを固定する（B1）。
+func TestReportRecordsValidScenarioHeaderOverride(t *testing.T) {
+	recorder := report.NewRecorder()
+	handler := newStripeHandler(t, recorder)
+
+	req := httptest.NewRequest(http.MethodPost, "/stripe/v1/checkout/sessions", nil)
+	req.Header.Set(adapter.ScenarioHeader, "payment_failed")
+	handler.ServeHTTP(httptest.NewRecorder(), req)
+
+	snapshot := recorder.Snapshot()
+	if len(snapshot.Requests) != 1 {
+		t.Fatalf("requests = %#v, want one", snapshot.Requests)
+	}
+	if got := snapshot.Requests[0]; got.Scenario != "payment_failed" {
+		t.Fatalf("scenario = %q, want payment_failed (valid header override)", got.Scenario)
+	}
+}
+
 func TestReportEndpointRecordsUnsupportedMethodAs405(t *testing.T) {
 	cfg := config.Config{
 		Mode:   "ai-safe",
