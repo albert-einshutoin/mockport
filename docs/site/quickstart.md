@@ -13,6 +13,8 @@ docker run --rm -p 127.0.0.1:43101:43101 \
   run --config /etc/mockport/mockport.yml --host 0.0.0.0
 ```
 
+`-p 127.0.0.1:43101:43101` publishes port 43101 only on the host loopback address. `--host 0.0.0.0` makes the process listen on all interfaces inside the container so Docker can forward traffic to it. These settings work together; they are not contradictory.
+
 Use the explicit `0.1.0-alpha` image tag for preview installs. The `latest` tag follows the default branch image and is not the preview release contract.
 
 ### Option B: Release binary

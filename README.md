@@ -25,6 +25,8 @@ docker run --rm -p 127.0.0.1:43101:43101 \
   run --config /etc/mockport/mockport.yml --host 0.0.0.0
 ```
 
+`-p 127.0.0.1:43101:43101` publishes port 43101 only on the host loopback address. `--host 0.0.0.0` makes the process listen on all interfaces inside the container so Docker can forward traffic to it. These settings work together; they are not contradictory.
+
 In another terminal:
 
 ```bash
