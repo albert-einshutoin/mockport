@@ -10,6 +10,8 @@ docker compose -f docker-compose.mockport.yml up
 curl http://localhost:43101/health
 ```
 
+`mockport init` が生成する `docker-compose.mockport.yml` も同じ意図です。ホスト側では `127.0.0.1:43101` のみにポートを公開し、コンテナ内のプロセスは `--host 0.0.0.0` で全インターフェースを listen します。どちらか一方ではなく、意図的に組み合わせた設定です。
+
 複数 adapter をまとめて生成する場合:
 
 ```bash
