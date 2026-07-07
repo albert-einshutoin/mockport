@@ -7,6 +7,7 @@ type Snapshot struct {
 	Safety               SafetySummary         `json:"safety"`
 	Adapters             []AdapterStatus       `json:"adapters"`
 	Requests             []Request             `json:"requests"`
+	RequestHistory       RequestHistorySummary `json:"request_history"`
 	SafetyWarnings       []SafetyWarning       `json:"safety_warnings"`
 	ScenarioCoverage     []ScenarioCoverage    `json:"scenario_coverage"`
 	BehaviorMatrix       []BehaviorMatrixEntry `json:"behavior_matrix"`
@@ -41,6 +42,13 @@ type Request struct {
 	Adapter   string `json:"adapter,omitempty"`
 	Scenario  string `json:"scenario,omitempty"`
 	Reason    string `json:"reason,omitempty"`
+}
+
+type RequestHistorySummary struct {
+	Limit     int   `json:"limit"`
+	Retained  int   `json:"retained"`
+	Evicted   int64 `json:"evicted"`
+	Truncated bool  `json:"truncated"`
 }
 
 type SafetyWarning struct {

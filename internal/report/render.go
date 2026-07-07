@@ -33,6 +33,9 @@ func RenderText(snapshot Snapshot) string {
 		}
 		fmt.Fprintln(&out)
 	}
+	if snapshot.RequestHistory.Truncated {
+		fmt.Fprintf(&out, "Request history: truncated (limit=%d retained=%d evicted=%d)\n", snapshot.RequestHistory.Limit, snapshot.RequestHistory.Retained, snapshot.RequestHistory.Evicted)
+	}
 	fmt.Fprintln(&out)
 	fmt.Fprintln(&out, "Scenario coverage:")
 	for _, coverage := range snapshot.ScenarioCoverage {
