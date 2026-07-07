@@ -133,9 +133,7 @@ func (r *routes) writeCompletion(w http.ResponseWriter, req *http.Request, objec
 	case "auth_error":
 		writeError(w, http.StatusUnauthorized, "invalid_api_key", "Mockport simulated invalid API key")
 	case "rate_limited":
-		// Deterministic Retry-After keeps SDK/client retry behavior stable in local tests.
-		w.Header().Set("Retry-After", "1")
-		writeError(w, http.StatusTooManyRequests, "rate_limited", "Mockport simulated rate limit")
+		writeRateLimitError(w)
 	case "context_length_exceeded":
 		writeError(w, http.StatusBadRequest, "context_length_exceeded", "Mockport simulated context length error")
 	case "stream_success":
@@ -530,6 +528,16 @@ func normalizeScenario(s string) string {
 
 func writeError(w http.ResponseWriter, status int, code, message string) {
 	httpx.WriteJSON(w, status, errorBody{Error: errorDetail{Type: "mockport_error", Code: code, Message: message}})
+}
+
+// writeRateLimitError returns OpenAI's 429 envelope so SDK retry logic can key off rate_limit_error.
+func writeRateLimitError(w http.ResponseWriter) {
+	w.Header().Set("Retry-After", "1")
+	httpx.WriteJSON(w, http.StatusTooManyRequests, errorBody{Error: errorDetail{
+		Type:    "rate_limit_error",
+		Code:    "rate_limited",
+		Message: "Mockport simulated rate limit",
+	}})
 }
 
 func dataFromStruct(value any) map[string]any {

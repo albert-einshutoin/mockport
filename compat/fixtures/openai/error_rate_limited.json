@@ -37,7 +37,7 @@
     },
     "body": {
       "error": {
-        "type": "mockport_error",
+        "type": "rate_limit_error",
         "code": "rate_limited",
         "message": "Mockport simulated rate limit"
       }

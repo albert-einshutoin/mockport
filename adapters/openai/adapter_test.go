@@ -46,8 +46,8 @@ func TestRateLimitedResponseContract(t *testing.T) {
 	if !ok {
 		t.Fatalf("error = %#v, want object", body["error"])
 	}
-	if errObj["type"] != "mockport_error" {
-		t.Fatalf("error.type = %v, want mockport_error", errObj["type"])
+	if errObj["type"] != "rate_limit_error" {
+		t.Fatalf("error.type = %v, want rate_limit_error", errObj["type"])
 	}
 	if errObj["code"] != "rate_limited" {
 		t.Fatalf("error.code = %v, want rate_limited", errObj["code"])
