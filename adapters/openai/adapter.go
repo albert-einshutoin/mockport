@@ -133,6 +133,8 @@ func (r *routes) writeCompletion(w http.ResponseWriter, req *http.Request, objec
 	case "auth_error":
 		writeError(w, http.StatusUnauthorized, "invalid_api_key", "Mockport simulated invalid API key")
 	case "rate_limited":
+		// Deterministic Retry-After keeps SDK/client retry behavior stable in local tests.
+		w.Header().Set("Retry-After", "1")
 		writeError(w, http.StatusTooManyRequests, "rate_limited", "Mockport simulated rate limit")
 	case "context_length_exceeded":
 		writeError(w, http.StatusBadRequest, "context_length_exceeded", "Mockport simulated context length error")
