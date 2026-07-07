@@ -25,6 +25,38 @@ func TestModels(t *testing.T) {
 	}
 }
 
+func TestRateLimitedResponseContract(t *testing.T) {
+	mux := newOpenAIMux(t, adapter.Config{BasePath: "/openai", Scenario: "rate_limited"})
+	rec := serveOpenAIRequest(mux, http.MethodPost, "/openai/v1/chat/completions", `{"model":"gpt-mockport","messages":[{"role":"user","content":"hello"}]}`)
+
+	if rec.Code != http.StatusTooManyRequests {
+		t.Fatalf("status = %d, want %d", rec.Code, http.StatusTooManyRequests)
+	}
+	if got := rec.Header().Get("Retry-After"); got != "1" {
+		t.Fatalf("Retry-After = %q, want %q", got, "1")
+	}
+	if got := rec.Header().Get("Content-Type"); got != "application/json" {
+		t.Fatalf("Content-Type = %q, want application/json", got)
+	}
+	var body map[string]any
+	if err := json.Unmarshal(rec.Body.Bytes(), &body); err != nil {
+		t.Fatalf("decode response body: %v", err)
+	}
+	errObj, ok := body["error"].(map[string]any)
+	if !ok {
+		t.Fatalf("error = %#v, want object", body["error"])
+	}
+	if errObj["type"] != "mockport_error" {
+		t.Fatalf("error.type = %v, want mockport_error", errObj["type"])
+	}
+	if errObj["code"] != "rate_limited" {
+		t.Fatalf("error.code = %v, want rate_limited", errObj["code"])
+	}
+	if errObj["message"] != "Mockport simulated rate limit" {
+		t.Fatalf("error.message = %v, want Mockport simulated rate limit", errObj["message"])
+	}
+}
+
 func TestChatCompletionScenarios(t *testing.T) {
 	tests := []struct {
 		name     string
