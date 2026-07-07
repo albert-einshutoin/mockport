@@ -89,7 +89,7 @@ Requests:
 | Service | Adapter | Base path | Maturity | Supported workflows |
 | --- | --- | --- | --- | --- |
 | Stripe-like payments | `stripe` | `/stripe` と SDK-compatible な `/v1` alias | `workflow-compatible` | checkout sessions, payment intents, fake signed webhooks, …（[spec](docs/adapters/stripe.ja.md)） |
-| OpenAI-compatible API | `openai` | `/openai` | `workflow-compatible` | models, chat completions, streaming, embeddings, …（[spec](docs/adapters/openai.ja.md)） |
+| OpenAI-compatible API | `openai` | `/openai` | `workflow-compatible` | models, chat completions（Chat Completions streaming を含む）, embeddings, …（[spec](docs/adapters/openai.ja.md)） |
 | GitHub OAuth-like API | `github-oauth` | `/github` | `workflow-compatible` | authorize redirect, token exchange, user profile, …（[spec](docs/adapters/github-oauth.ja.md)） |
 | Slack-like messaging API | `slack` | `/slack` | `workflow-compatible` | auth test, conversations, message post/update/delete, …（[spec](docs/adapters/slack.ja.md)） |
 | LINE-like platform APIs | `line` | `/line` | `workflow-compatible` | Messaging API, LINE Login, LINE Pay, …（[spec](docs/adapters/line.ja.md)） |

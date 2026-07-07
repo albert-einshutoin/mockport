@@ -6,7 +6,7 @@ OpenAI adapter は、OpenAI-compatible な local API surface を使って、AI a
 
 ## 対応範囲
 
-- models、chat completions、responses、streaming、embeddings、files、batches。
+- models、chat completions（Chat Completions streaming を含む）、responses、embeddings、files、batches。
 - deterministic fake inference と stateful response lookup。
 - 実 model 品質、tokenization parity、hosted tools、provider scheduling の再現は対象外です。
 
