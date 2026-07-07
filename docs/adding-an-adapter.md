@@ -70,6 +70,7 @@ Use [`scripts/check-adapter-completeness.sh`](scripts/check-adapter-completeness
 Minimum pass conditions:
 
 - `docs/adapters/<name>.md` exists
+- `docs/adapters/<name>.ja.md` exists
 - `docs/site/support-matrix.md` has an adapter row
 - `configs/mockport.example.yml` has the adapter section
 - `examples/<name>/` exists

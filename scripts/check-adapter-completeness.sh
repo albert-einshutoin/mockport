@@ -57,12 +57,15 @@ require_file "configs/mockport.example.yml"
 require_file "docs/site/support-matrix.md"
 
 for adapter in "${ADAPTERS[@]}"; do
+  # Documentation is mandatory for every registered built-in adapter, even
+  # before that adapter is promoted into the sample configuration.
+  require_file "docs/adapters/${adapter}.md"
+  require_file "docs/adapters/${adapter}.ja.md"
+
   if ! grep -Fq "  ${adapter}:" configs/mockport.example.yml; then
     echo "skipping completeness check for ${adapter}: not listed in sample config"
     continue
   fi
-
-  require_file "docs/adapters/${adapter}.md"
 
   if ! grep -Fq "\`${adapter}\`" docs/site/support-matrix.md; then
     echo "missing support-matrix entry for adapter: ${adapter}" >&2
