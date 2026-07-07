@@ -88,6 +88,102 @@ func TestRecorderCapsStoredRequests(t *testing.T) {
 			t.Fatalf("requests[%d].Path = %q, want %q", i, req.Path, wantPath)
 		}
 	}
+	if !snapshot.RequestHistory.Truncated {
+		t.Fatal("request history truncated = false, want true")
+	}
+	if snapshot.RequestHistory.Limit != MaxRecordedRequests {
+		t.Fatalf("request history limit = %d, want %d", snapshot.RequestHistory.Limit, MaxRecordedRequests)
+	}
+	if snapshot.RequestHistory.Retained != MaxRecordedRequests {
+		t.Fatalf("request history retained = %d, want %d", snapshot.RequestHistory.Retained, MaxRecordedRequests)
+	}
+	if snapshot.RequestHistory.Evicted != 5 {
+		t.Fatalf("request history evicted = %d, want 5", snapshot.RequestHistory.Evicted)
+	}
+}
+
+func TestRecorderRespectsRequestHistoryEnvOverride(t *testing.T) {
+	t.Setenv("MOCKPORT_REQUEST_HISTORY", "3")
+
+	rec := NewRecorder()
+	for i := 0; i < 5; i++ {
+		rec.RecordRequest(http.MethodGet, fmt.Sprintf("/requests/%d", i+1), http.StatusOK)
+	}
+
+	snapshot := rec.Snapshot()
+	if len(snapshot.Requests) != 3 {
+		t.Fatalf("request count = %d, want 3", len(snapshot.Requests))
+	}
+	if snapshot.Requests[0].ID != 3 {
+		t.Fatalf("first retained request id = %d, want 3", snapshot.Requests[0].ID)
+	}
+	if snapshot.RequestHistory.Limit != 3 {
+		t.Fatalf("request history limit = %d, want 3", snapshot.RequestHistory.Limit)
+	}
+	if snapshot.RequestHistory.Retained != 3 {
+		t.Fatalf("request history retained = %d, want 3", snapshot.RequestHistory.Retained)
+	}
+	if snapshot.RequestHistory.Evicted != 2 {
+		t.Fatalf("request history evicted = %d, want 2", snapshot.RequestHistory.Evicted)
+	}
+	if !snapshot.RequestHistory.Truncated {
+		t.Fatal("request history truncated = false, want true")
+	}
+}
+
+func TestRecorderFallsBackToDefaultRequestHistoryLimitForInvalidEnv(t *testing.T) {
+	tests := []struct {
+		name string
+		env  string
+	}{
+		{name: "empty", env: ""},
+		{name: "zero", env: "0"},
+		{name: "negative", env: "-5"},
+		{name: "non_numeric", env: "abc"},
+		{name: "overflow", env: "999999999999999999999999"},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Setenv("MOCKPORT_REQUEST_HISTORY", tc.env)
+
+			rec := NewRecorder()
+			total := MaxRecordedRequests + 5
+			for i := 0; i < total; i++ {
+				rec.RecordRequest(http.MethodGet, fmt.Sprintf("/requests/%d", i+1), http.StatusOK)
+			}
+
+			snapshot := rec.Snapshot()
+			if len(snapshot.Requests) != MaxRecordedRequests {
+				t.Fatalf("request count = %d, want %d", len(snapshot.Requests), MaxRecordedRequests)
+			}
+			if snapshot.RequestHistory.Limit != MaxRecordedRequests {
+				t.Fatalf("request history limit = %d, want %d", snapshot.RequestHistory.Limit, MaxRecordedRequests)
+			}
+			if snapshot.RequestHistory.Evicted != 5 {
+				t.Fatalf("request history evicted = %d, want 5", snapshot.RequestHistory.Evicted)
+			}
+		})
+	}
+}
+
+func TestRecorderRequestHistoryNotTruncatedWithinLimit(t *testing.T) {
+	rec := NewRecorder()
+	rec.RecordRequest(http.MethodGet, "/health", http.StatusOK)
+
+	snapshot := rec.Snapshot()
+	if snapshot.RequestHistory.Truncated {
+		t.Fatal("request history truncated = true, want false")
+	}
+	if snapshot.RequestHistory.Evicted != 0 {
+		t.Fatalf("request history evicted = %d, want 0", snapshot.RequestHistory.Evicted)
+	}
+	if snapshot.RequestHistory.Retained != 1 {
+		t.Fatalf("request history retained = %d, want 1", snapshot.RequestHistory.Retained)
+	}
+	if snapshot.RequestHistory.Limit != MaxRecordedRequests {
+		t.Fatalf("request history limit = %d, want %d", snapshot.RequestHistory.Limit, MaxRecordedRequests)
+	}
 }
 
 func TestRecorderStoresCompatibility(t *testing.T) {

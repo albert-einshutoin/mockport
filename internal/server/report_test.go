@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/albert-einshutoin/mockport/adapters/stripe"
@@ -134,6 +135,43 @@ func TestReportEndpointRecordsUnsupportedEndpoint(t *testing.T) {
 	}
 	if snapshot.Requests[0].Adapter != "stripe" || snapshot.Requests[0].Scenario != "payment_success" {
 		t.Fatalf("request metadata = %#v", snapshot.Requests[0])
+	}
+}
+
+func TestReportEndpointOmitsRequestBodySecrets(t *testing.T) {
+	const secretInBody = "sk_live_request_body_secret_12345"
+
+	cfg := config.Config{
+		Mode:   "ai-safe",
+		Server: config.ServerConfig{Host: "127.0.0.1", Port: 43101},
+		Adapters: map[string]config.AdapterConfig{
+			"stripe": {Enabled: true, BasePath: "/stripe", Scenario: "payment_success", FakeSecret: "mockport_stripe_secret"},
+		},
+	}
+	if err := config.Validate(&cfg); err != nil {
+		t.Fatalf("validate config: %v", err)
+	}
+	reg := adapter.NewRegistry()
+	if err := reg.Register(stripe.New()); err != nil {
+		t.Fatalf("register stripe: %v", err)
+	}
+	handler, err := NewConfiguredHandler(cfg, reg, report.NewRecorder())
+	if err != nil {
+		t.Fatalf("new handler: %v", err)
+	}
+
+	req := httptest.NewRequest(http.MethodPost, "/stripe/v1/checkout/sessions", strings.NewReader(`{"api_key":"`+secretInBody+`"}`))
+	req.Header.Set("Content-Type", "application/json")
+	handler.ServeHTTP(httptest.NewRecorder(), req)
+
+	reportRec := httptest.NewRecorder()
+	handler.ServeHTTP(reportRec, httptest.NewRequest(http.MethodGet, "/_mockport/report", nil))
+
+	if reportRec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d", reportRec.Code, http.StatusOK)
+	}
+	if strings.Contains(reportRec.Body.String(), secretInBody) {
+		t.Fatalf("report leaked request body secret: %s", reportRec.Body.String())
 	}
 }
 

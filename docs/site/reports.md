@@ -12,7 +12,11 @@ The report includes safety status, enabled adapters, request metadata, scenario 
 
 ## Request history
 
-Request history keeps metadata for the most recent 1000 requests recorded during a run. When that limit is exceeded, older entries are pruned from the front so the report always returns the newest requests in chronological order. The same bounded history feeds `unsupportedEndpoints` in the report payload.
+Request history keeps metadata for the most recent 500 requests recorded during a run. When that limit is exceeded, older entries are pruned from the front so the report always returns the newest requests in chronological order. The same bounded history feeds `unsupportedEndpoints` in the report payload.
+
+Set `MOCKPORT_REQUEST_HISTORY` to a positive integer to override the default cap. Invalid values (empty, zero, negative, non-numeric, or overflow) fall back to 500.
+
+When history has been truncated, the report includes a `request_history` summary with `limit`, `retained`, `evicted`, and `truncated`. Text reports include a truncation line only when `truncated` is true.
 
 For CLI output:
 
