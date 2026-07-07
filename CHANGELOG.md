@@ -9,6 +9,7 @@
 - Added scheduled/manual compatibility CI for Stripe, OpenAI, GitHub OAuth, and Slack contract checks.
 - Added generated compatibility reports with compatibility scores, provider API versions, SDK/client evidence, and known gaps.
 - Added release checks for maturity labels: `experimental`, `sdk-compatible`, `workflow-compatible`, and `provider-compatible`.
+- Documented adapter maturity progression from the v0.1.0-alpha experimental wording to current mainline `workflow-compatible` support for documented selected workflows; this does not claim `provider-compatible` parity.
 
 ## v0.1.0-alpha - 2026-05-26
 
