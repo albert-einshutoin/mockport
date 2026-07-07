@@ -17,8 +17,19 @@ func TestAuthorizeRedirect(t *testing.T) {
 	if rec.Code != http.StatusFound {
 		t.Fatalf("status = %d, want %d", rec.Code, http.StatusFound)
 	}
-	if rec.Header().Get("Location") == "" {
+	location := rec.Header().Get("Location")
+	if location == "" {
 		t.Fatal("missing Location header")
+	}
+	parsed, err := url.Parse(location)
+	if err != nil {
+		t.Fatalf("parse redirect location: %v", err)
+	}
+	if got := parsed.Query().Get("state"); got != "s1" {
+		t.Fatalf("state = %q, want %q", got, "s1")
+	}
+	if code := parsed.Query().Get("code"); code == "" {
+		t.Fatalf("missing code in location: %q", location)
 	}
 }
 
