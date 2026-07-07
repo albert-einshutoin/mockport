@@ -11,3 +11,5 @@ OpenAI adapter は、OpenAI-compatible な local API surface を使って、AI a
 - 実 model 品質、tokenization parity、hosted tools、provider scheduling の再現は対象外です。
 
 詳細な request/response contract と known gap は英語版を正とします。
+
+See also: [Scenario Policy 日本語版](../scenario-policy.ja.md).

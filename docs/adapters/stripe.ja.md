@@ -23,4 +23,6 @@ Stripe adapter は、payment integration の selected workflow を local で検�
 
 `timeout` scenario はレスポンス shape を制御するもので、リクエスト処理時間は制御しない。実レイテンシを入れる場合は `X-Mockport-Delay` を使う。
 
+See also: [Scenario Policy 日本語版](../scenario-policy.ja.md).
+
 詳細な endpoint、SDK contract、known gap は英語版を正とします。

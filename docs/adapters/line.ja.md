@@ -30,6 +30,8 @@ endpoint の詳細、request/response shape、official reference map は英語�
 | `invalid_request` | request validation 風の失敗を返す。 |
 | `pay_failed` | LINE Pay または Mini Dapp payment の失敗挙動を返す。 |
 
+See also: [Scenario Policy 日本語版](../scenario-policy.ja.md).
+
 ## State
 
 adapter は次の local deterministic state を保持します。

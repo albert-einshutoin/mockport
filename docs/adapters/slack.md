@@ -76,6 +76,8 @@ Use this table to jump from Mockport's supported local surface to the closest of
 | `channel_not_found` | Returns Slack-like channel lookup failure behavior. |
 | `not_in_channel` | Returns Slack-like channel membership failure behavior. |
 
+See also: [Scenario Policy](../scenario-policy.md).
+
 ## Current Gaps And Tasks
 
 | Priority | Task | Current source of truth |

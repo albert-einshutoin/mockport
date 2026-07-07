@@ -63,4 +63,6 @@ adapters:
 | `invalid_code` | token 交換失敗（不正・未知 code）を強制。 |
 | `invalid_token` | user info の認証失敗（`401`）を強制。 |
 
+See also: [Scenario Policy 日本語版](../scenario-policy.ja.md).
+
 詳細な known gap は英語版を正とします。

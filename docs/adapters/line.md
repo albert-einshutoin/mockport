@@ -175,6 +175,8 @@ Two-factor authentication is also treated as a provider-side policy boundary. Mo
 | `invalid_request` | Returns request validation-style failures. |
 | `pay_failed` | Returns LINE Pay or Mini Dapp payment failure behavior. |
 
+See also: [Scenario Policy](../scenario-policy.md).
+
 ## State
 
 The adapter uses local deterministic state for:

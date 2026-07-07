@@ -69,6 +69,8 @@ The default OAuth flow requires `client_id` on `/github/login/oauth/authorize`. 
 | `scope_missing` | Returns scope-related failures for protected endpoints. |
 | `redirect_uri_mismatch` | Returns token exchange failure behavior when the posted `redirect_uri` does not match the authorization request. Unsafe authorize redirect URIs are rejected independently of scenario. |
 
+See also: [Scenario Policy](../scenario-policy.md).
+
 ## Current Gaps And Tasks
 
 | Priority | Task | Current source of truth |

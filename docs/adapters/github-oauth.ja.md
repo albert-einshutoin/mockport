@@ -12,3 +12,5 @@ GitHub OAuth adapter は、local OAuth flow の selected workflow を再現す�
 - GitHub policy、SSO、enterprise enforcement、repository permission の完全再現は対象外です。
 
 詳細な endpoint、known gap、contract は英語版を正とします。
+
+See also: [Scenario Policy 日本語版](../scenario-policy.ja.md).

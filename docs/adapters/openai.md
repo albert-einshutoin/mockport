@@ -75,6 +75,8 @@ Use this table to jump from Mockport's supported local surface to the closest of
 | `context_length_exceeded` | Returns OpenAI-like context length behavior. |
 | `auth_error` | Returns authentication-style failures. |
 
+See also: [Scenario Policy](../scenario-policy.md).
+
 ## Current Gaps And Tasks
 
 | Priority | Task | Current source of truth |

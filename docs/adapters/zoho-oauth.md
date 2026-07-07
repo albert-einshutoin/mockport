@@ -76,6 +76,8 @@ The returned `Email` / `Display_Name` are configurable so an application can mat
 | `invalid_code` | Forces token-exchange failure behavior for unknown or invalid codes. |
 | `invalid_token` | Forces user info authentication failure (`401`). |
 
+See also: [Scenario Policy](../scenario-policy.md).
+
 ## Current Gaps And Tasks
 
 | Priority | Task | Current source of truth |

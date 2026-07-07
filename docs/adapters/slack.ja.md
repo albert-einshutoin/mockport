@@ -11,3 +11,5 @@ Slack adapter は、messaging workflow と Events API の selected subset を lo
 - real delivery、Block Kit validation、files、enterprise policy、workspace directory の完全再現は対象外です。
 
 詳細な endpoint と error model は英語版を正とします。
+
+See also: [Scenario Policy 日本語版](../scenario-policy.ja.md).

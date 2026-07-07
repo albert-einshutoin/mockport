@@ -98,6 +98,8 @@ Use this table to jump from Mockport's supported local surface to the closest of
 
 The `timeout` scenario controls response shape, not request duration. Use `X-Mockport-Delay` to inject realistic latency before Mockport handles the request.
 
+See also: [Scenario Policy](../scenario-policy.md).
+
 ## Current Gaps And Tasks
 
 | Priority | Task | Current source of truth |
