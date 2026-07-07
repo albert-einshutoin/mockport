@@ -50,7 +50,7 @@ async function runSlackSmoke(options) {
   };
 }
 
-async function slackAPI(baseURL, method, token, params) {
+async function slackAPIRequest(baseURL, method, token, params) {
   const response = await fetch(new URL(method, baseURL), {
     method: "POST",
     headers: {
@@ -60,10 +60,37 @@ async function slackAPI(baseURL, method, token, params) {
     body: new URLSearchParams(params),
   });
   const body = await response.json();
+  return { response, body };
+}
+
+async function slackAPI(baseURL, method, token, params) {
+  const { response, body } = await slackAPIRequest(baseURL, method, token, params);
   if (!response.ok || body.ok !== true) {
     throw new Error(`${method} failed: status=${response.status} body=${JSON.stringify(body)}`);
   }
   return body;
+}
+
+async function runSlackRateLimitedContract(options) {
+  const baseURL = new URL("/slack/api/", options.baseURL).toString();
+  const token = "mockport_slack_token";
+
+  const { response, body } = await slackAPIRequest(baseURL, "chat.postMessage", token, {
+    channel: "C_MOCKPORT",
+    text: "hello from client",
+  });
+
+  assertEqual(response.status, 429, "rate limit status");
+  assertEqual(response.headers.get("Retry-After"), "1", "Retry-After header");
+  assertEqual(body.ok, false, "rate limit ok");
+  assertEqual(body.error, "ratelimited", "rate limit error");
+
+  return {
+    provider: "slack",
+    baseURL: options.baseURL,
+    status: "client-ok",
+    contract: "rate_limited",
+  };
 }
 
 function assertEqual(got, want, label) {
@@ -72,4 +99,4 @@ function assertEqual(got, want, label) {
   }
 }
 
-module.exports = { runSlackSmoke };
+module.exports = { runSlackSmoke, runSlackRateLimitedContract };
