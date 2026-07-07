@@ -27,15 +27,15 @@ func (rt *routes) register(mux *http.ServeMux, prefix string) {
 
 func (rt *routes) registerV1Routes(mux *http.ServeMux, prefix string) {
 	handleLimited(mux, "POST "+prefix+"/v1/checkout/sessions", rt.writeCheckoutSession)
-	handleLimited(mux, "GET "+prefix+"/v1/checkout/sessions", func(w http.ResponseWriter, _ *http.Request) {
-		rt.writeList(w, "checkout_session")
+	handleLimited(mux, "GET "+prefix+"/v1/checkout/sessions", func(w http.ResponseWriter, r *http.Request) {
+		rt.writeList(w, r, "checkout_session")
 	})
 	handleLimited(mux, "GET "+prefix+"/v1/checkout/sessions/{id}", func(w http.ResponseWriter, r *http.Request) {
 		rt.writeResource(w, "checkout_session", r.PathValue("id"), fallbackCheckoutSession)
 	})
 	handleLimited(mux, "POST "+prefix+"/v1/payment_intents", rt.writePaymentIntent)
-	handleLimited(mux, "GET "+prefix+"/v1/payment_intents", func(w http.ResponseWriter, _ *http.Request) {
-		rt.writeList(w, "payment_intent")
+	handleLimited(mux, "GET "+prefix+"/v1/payment_intents", func(w http.ResponseWriter, r *http.Request) {
+		rt.writeList(w, r, "payment_intent")
 	})
 	handleLimited(mux, "GET "+prefix+"/v1/payment_intents/{id}", func(w http.ResponseWriter, r *http.Request) {
 		rt.writeResource(w, "payment_intent", r.PathValue("id"), fallbackPaymentIntent)
@@ -58,8 +58,8 @@ func (rt *routes) registerResource(mux *http.ServeMux, prefix, resourceType, pat
 	handleLimited(mux, "POST "+prefix+path, func(w http.ResponseWriter, r *http.Request) {
 		rt.writeGenericResource(w, r, resourceType, body, required)
 	})
-	handleLimited(mux, "GET "+prefix+path, func(w http.ResponseWriter, _ *http.Request) {
-		rt.writeList(w, resourceType)
+	handleLimited(mux, "GET "+prefix+path, func(w http.ResponseWriter, r *http.Request) {
+		rt.writeList(w, r, resourceType)
 	})
 	handleLimited(mux, "GET "+prefix+path+"/{id}", func(w http.ResponseWriter, r *http.Request) {
 		rt.writeResource(w, resourceType, r.PathValue("id"), fallback)
@@ -193,14 +193,20 @@ func (rt *routes) writeResource(w http.ResponseWriter, resourceType, id string, 
 	rt.writeStripeError(w, http.StatusNotFound, "invalid_request_error", "resource_missing", "No such "+resourceType+": "+id)
 }
 
-func (rt *routes) writeList(w http.ResponseWriter, resourceType string) {
+func (rt *routes) writeList(w http.ResponseWriter, r *http.Request, resourceType string) {
 	var data []map[string]any
 	for _, resource := range rt.store.List("stripe", resourceType) {
 		body := resource.Data
 		body["id"] = resource.ID
 		data = append(data, body)
 	}
-	rt.writeJSON(w, http.StatusOK, listResponse{Object: "list", Data: data})
+	// has_more stays false until cursor/limit pagination is implemented.
+	rt.writeJSON(w, http.StatusOK, listResponse{
+		Object:  "list",
+		Data:    data,
+		HasMore: false,
+		URL:     r.URL.Path,
+	})
 }
 
 func fallbackCheckoutSession(id string) map[string]any {

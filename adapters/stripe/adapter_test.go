@@ -168,6 +168,57 @@ func TestCheckoutSessionIdempotencyIsAtomicUnderConcurrentRequests(t *testing.T)
 	}
 }
 
+func TestPaymentIntentListResponseShape(t *testing.T) {
+	mux := newStripeMux(t, adapter.Config{BasePath: "/stripe", Scenario: "payment_success"})
+
+	create := serveStripeRequest(mux, http.MethodPost, "/stripe/v1/payment_intents", "amount=1200&currency=usd", nil)
+	if create.Code != http.StatusOK {
+		t.Fatalf("create status = %d, want %d, body=%s", create.Code, http.StatusOK, create.Body.String())
+	}
+	var created map[string]any
+	if err := json.Unmarshal(create.Body.Bytes(), &created); err != nil {
+		t.Fatalf("decode create: %v", err)
+	}
+	if created["id"] != "stripe_payment_intent_000001" {
+		t.Fatalf("created id = %#v", created["id"])
+	}
+
+	list := serveStripeRequest(mux, http.MethodGet, "/stripe/v1/payment_intents", "", nil)
+	if list.Code != http.StatusOK {
+		t.Fatalf("list status = %d, want %d, body=%s", list.Code, http.StatusOK, list.Body.String())
+	}
+	var listed struct {
+		Object  string           `json:"object"`
+		Data    []map[string]any `json:"data"`
+		HasMore *bool            `json:"has_more"`
+		URL     string           `json:"url"`
+	}
+	if err := json.Unmarshal(list.Body.Bytes(), &listed); err != nil {
+		t.Fatalf("decode list: %v", err)
+	}
+	if listed.Object != "list" {
+		t.Fatalf("object = %#v, want list", listed.Object)
+	}
+	if listed.HasMore == nil {
+		t.Fatal("has_more field missing")
+	}
+	if *listed.HasMore {
+		t.Fatalf("has_more = true, want false")
+	}
+	if listed.URL != "/stripe/v1/payment_intents" {
+		t.Fatalf("url = %#v, want /stripe/v1/payment_intents", listed.URL)
+	}
+	if len(listed.Data) != 1 {
+		t.Fatalf("data length = %d, want 1", len(listed.Data))
+	}
+	if listed.Data[0]["id"] != created["id"] {
+		t.Fatalf("listed id = %#v, want %#v", listed.Data[0]["id"], created["id"])
+	}
+	if listed.Data[0]["object"] != "payment_intent" || listed.Data[0]["status"] != "succeeded" {
+		t.Fatalf("listed payment intent = %#v", listed.Data[0])
+	}
+}
+
 func TestPaymentIntentCreateRetrieveAndList(t *testing.T) {
 	mux := newStripeMux(t, adapter.Config{BasePath: "/stripe", Scenario: "payment_success"})
 

@@ -10,6 +10,7 @@ Stripe adapter は、payment integration の selected workflow を local で検�
 - fake signed webhook、validation error、stateful list/retrieve、idempotency replay。
 - `timeout` は即時の 504 レスポンス shape を返す。実レイテンシは server 全体の `X-Mockport-Delay`（`0`–`30000` ms、[Adapters](../site/adapters.md) 参照）で注入する。
 - real payment processing、fraud、settlement、tax、disputes、Connect、full Billing lifecycle は対象外です。
+- list レスポンスは `object`、`data`、`has_more`（常に `false`）、`url`（リクエスト path）を返す。cursor/limit ページングは未対応。
 
 ## Scenarios
 

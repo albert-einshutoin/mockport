@@ -86,6 +86,21 @@ Use this table to jump from Mockport's supported local surface to the closest of
 | `POST` | `/stripe/test/webhook/send` | Sends a fake signed webhook to the configured target URL. |
 | `POST` | `/stripe/test/reset` | Clears local state and idempotency records for test isolation. |
 
+## List Responses
+
+Stripe list endpoints return a Stripe-like envelope with `object`, `data`, `has_more`, and `url`. For example, `GET /stripe/v1/payment_intents` returns:
+
+```json
+{
+  "object": "list",
+  "data": [],
+  "has_more": false,
+  "url": "/stripe/v1/payment_intents"
+}
+```
+
+`has_more` is always `false` because Mockport does not implement cursor or limit pagination. `url` mirrors the request path.
+
 ## Scenarios
 
 | Scenario | Response shape | Latency behavior |
