@@ -48,6 +48,10 @@ docker compose -f docker-compose.mockport.yml up
 
 `mockport init` protects existing generated files by default. Use `--force` only when you intentionally want to replace `mockport.yml`, `.env.mockport`, and `docker-compose.mockport.yml`.
 
+### Known UX gaps
+
+This quickstart uses `docker compose -f docker-compose.mockport.yml up` rather than `mockport up`. The `mockport up` command is available today, but Docker Compose UX refinements—clearer errors and smoother `--detach` / `--build` handling—are tracked separately as [public preview follow-up #8](https://github.com/albert-einshutoin/mockport/issues/8). See the [roadmap](../../ROADMAP.md#public-preview-follow-up) for the broader follow-up list.
+
 ## Expected Output
 
 `mockport init --adapter stripe` creates:
