@@ -10,6 +10,8 @@ Mockport reports are trust artifacts. They explain what ran, what was safe, what
 mockport report --format json
 ```
 
+Field-level reference: [Report schema](site/report-schema.md).
+
 Important fields:
 
 - `safety`: AI-safe summary, including real-looking secret and external URL counts.
