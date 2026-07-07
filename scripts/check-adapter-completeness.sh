@@ -63,6 +63,7 @@ for adapter in "${ADAPTERS[@]}"; do
   fi
 
   require_file "docs/adapters/${adapter}.md"
+  require_file "docs/adapters/${adapter}.ja.md"
 
   if ! grep -Fq "\`${adapter}\`" docs/site/support-matrix.md; then
     echo "missing support-matrix entry for adapter: ${adapter}" >&2
