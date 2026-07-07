@@ -38,6 +38,17 @@ func TestAuthorizeRejectsExternalRedirectURI(t *testing.T) {
 	assertGitHubOAuthError(t, rec, "redirect_uri_mismatch")
 }
 
+func TestAuthorizeSafetyOverrideRejectsExternalRedirectURIInRedirectURIMismatchScenario(t *testing.T) {
+	rec := performRequest(t, adapter.Config{BasePath: "/github", Scenario: "redirect_uri_mismatch"}, http.MethodGet, "/github/login/oauth/authorize?client_id=mockport_github_client&redirect_uri=https://example.com/callback&state=s1")
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("status = %d, want %d, body=%s", rec.Code, http.StatusBadRequest, rec.Body.String())
+	}
+	assertGitHubOAuthError(t, rec, "redirect_uri_mismatch")
+	if rec.Header().Get("Location") != "" {
+		t.Fatalf("Location = %q, want empty", rec.Header().Get("Location"))
+	}
+}
+
 func TestAccessTokenScenarios(t *testing.T) {
 	tests := []struct {
 		name     string
