@@ -30,6 +30,7 @@ require_file "CONTRIBUTING.md"
 require_text "CONTRIBUTING.md" "TDD"
 require_text "CONTRIBUTING.md" "go test ./..."
 require_text "CONTRIBUTING.md" "bash scripts/check-public-trust.sh"
+require_text "CONTRIBUTING.md" "make verify"
 
 require_file "CODE_OF_CONDUCT.md"
 require_text "CODE_OF_CONDUCT.md" "Contributor Covenant"
