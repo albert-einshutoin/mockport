@@ -233,6 +233,7 @@ func TestResetClearsStateAndRequiresLoopback(t *testing.T) {
 	if body["reset"] != true || body["adapter"] != "zoho-oauth" {
 		t.Fatalf("reset body = %#v", body)
 	}
+	assertResetResponseDoesNotExposeSecrets(t, reset, token)
 
 	after := serve(mux, http.MethodGet, "/zoho/oauth/user/info", "", map[string]string{"Authorization": authScheme + token})
 	if after.Code != http.StatusUnauthorized {
@@ -245,6 +246,35 @@ func TestResetClearsStateAndRequiresLoopback(t *testing.T) {
 	}
 	if !strings.Contains(remote.Body.String(), "loopback") {
 		t.Fatalf("remote reset body = %s", remote.Body.String())
+	}
+	assertResetResponseDoesNotExposeSecrets(t, remote, token)
+}
+
+func assertResetResponseDoesNotExposeSecrets(t *testing.T, rec *httptest.ResponseRecorder, knownSecrets ...string) {
+	t.Helper()
+	body := rec.Body.String()
+
+	var parsed map[string]any
+	if err := json.Unmarshal(rec.Body.Bytes(), &parsed); err == nil {
+		for _, key := range []string{"access_token", "client_secret", "Email", "Display_Name", "email", "name"} {
+			if _, ok := parsed[key]; ok {
+				t.Fatalf("reset response exposes forbidden key %q: %s", key, body)
+			}
+		}
+	}
+
+	forbidden := append([]string{
+		"mockport_zoho_secret",
+		defaultUserEmail,
+		defaultUserName,
+	}, knownSecrets...)
+	for _, secret := range forbidden {
+		if secret == "" {
+			continue
+		}
+		if strings.Contains(body, secret) {
+			t.Fatalf("reset response leaks sensitive value: %s", body)
+		}
 	}
 }
 
