@@ -36,14 +36,20 @@ For adapter PRs, follow the onboarding guide before implementation:
 
 ## Public Trust Checks
 
-Run these before opening a pull request:
+Run these before opening a pull request. For the standard local gate, `make verify` chains the core checks below (without distribution or release validation):
 
 ```bash
-bash scripts/check-public-trust.sh
-bash scripts/check-distribution.sh
+make verify
+```
+
+Underlying commands (also run individually when needed):
+
+```bash
+go vet ./...
 go test ./...
 go test -race ./...
-go vet ./...
+bash scripts/check-public-trust.sh
+bash scripts/check-distribution.sh
 ```
 
 Race tests are expected for adapter changes or shared state modifications.
