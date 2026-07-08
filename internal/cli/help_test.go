@@ -35,15 +35,42 @@ func TestHelpServiceShowsAdapterImplementationAndSpec(t *testing.T) {
 func TestHelpServiceSupportsEveryBuiltInService(t *testing.T) {
 	for _, service := range supportedServiceNames() {
 		t.Run(service, func(t *testing.T) {
+			spec, ok := adapterSpecFor(service)
+			if !ok {
+				t.Fatalf("adapterSpecFor(%q) = false", service)
+			}
+			adapterImpl, ok := builtinAdapterFor(service)
+			if !ok {
+				t.Fatalf("builtinAdapterFor(%q) = false", service)
+			}
+			meta := adapterImpl.Metadata()
+
 			cmd, out := newTestCommand(t, "help", service)
 
 			if err := cmd.Execute(); err != nil {
 				t.Fatalf("execute service help: %v", err)
 			}
-			if got := out.String(); !strings.Contains(got, "Mockport service: "+service) {
-				t.Fatalf("service help missing title for %s:\n%s", service, got)
+			got := out.String()
+
+			assertHelpContains(t, service, got, "Mockport service: "+service)
+			if spec.BasePath != "" {
+				assertHelpContains(t, service, got, "base_path: "+spec.BasePath)
+			}
+			if len(meta.Scenarios) == 0 {
+				t.Fatalf("service %s metadata has no scenarios", service)
+			}
+			for _, scenario := range meta.Scenarios {
+				// Match Scenarios list items, not endpoint SupportedScenarios mentions.
+				assertHelpContains(t, service, got, "  - "+scenario.Name+" (")
 			}
 		})
+	}
+}
+
+func assertHelpContains(t *testing.T, service, got, want string) {
+	t.Helper()
+	if !strings.Contains(got, want) {
+		t.Fatalf("service help for %s missing %q:\n%s", service, want, got)
 	}
 }
 
