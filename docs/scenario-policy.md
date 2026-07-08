@@ -4,9 +4,11 @@
 
 Mockport supports built-in scenarios first. User-defined scenarios are future work and must stay separate from provider compatibility claims until they are promoted through the fixture and compatibility process.
 
+Built-in scenarios are **stable local contracts** for `workflow-compatible` testing. They define deterministic behavior inside Mockport, not full provider parity. User YAML scenarios may layer additional local behavior for app-specific tests, but they must not imply provider compatibility or hide documented gaps.
+
 ## Built-in Scenarios
 
-Built-in scenarios are maintained by Mockport. Each one is published as a deterministic contract in the adapter spec (`docs/adapters/<adapter>.md`). They must have:
+Built-in scenarios are maintained by Mockport. Each one is published as a deterministic contract in the adapter spec (`docs/adapters/<adapter>.md`). They are the source of truth for what a built-in adapter can reproduce locally. They must have:
 
 - A stable scenario name.
 - Adapter metadata.
@@ -18,7 +20,7 @@ Built-in scenarios can contribute to compatibility scores only when they are bac
 
 ## User-defined Scenarios
 
-User-defined scenarios are local project behavior. They are a **local test convenience** only and are **not a provider compatibility claim**. They may be useful for app-specific tests, but they do not prove provider compatibility by themselves.
+User-defined scenarios are local project behavior. They are a **local test convenience** only and are **not a provider compatibility claim**. They may layer extra local responses or state for app-specific tests, but they do not prove provider compatibility by themselves and must not be documented as if they were built-in adapter contracts.
 
 ### Built-in vs user-defined
 
@@ -31,7 +33,7 @@ User-defined scenarios are local project behavior. They are a **local test conve
 
 ### Minimal config example
 
-Built-in scenario selection uses the adapter's `scenario:` field. Use fake secrets and local URLs only:
+Built-in scenario selection uses the adapter's `scenario:` field. Examples in docs, fixtures, and config must use **fake local values only** (mock secrets, local URLs, synthetic IDs). Do not copy production credentials, customer payloads, or real provider endpoints into scenario examples.
 
 ```yaml
 adapters:
@@ -61,3 +63,5 @@ Compatibility scoring must distinguish:
 - User-defined local behavior.
 
 Only the first three can raise provider compatibility maturity. User-defined local behavior can be reported, but it must not hide unsupported provider behavior.
+
+Unsupported provider behavior must stay documented as **known gaps** in adapter specs, the support matrix, and compatibility reports. Scenario docs and examples must not overclaim coverage or imply that a user-defined override closes a documented gap.
