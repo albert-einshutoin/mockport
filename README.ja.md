@@ -150,7 +150,7 @@ docs、install 経路、release verification は [docs/site/](docs/site/index.ja
 
 ## コントリビュート
 
-開発は spec-first TDD に従います。[CONTRIBUTING.ja.md](CONTRIBUTING.ja.md)、[Adapter onboarding guide](docs/adding-an-adapter.md)、[Maintainer Guide](docs/maintainer-guide.ja.md)、[Roadmap](ROADMAP.ja.md)、[Support Policy](docs/public-support-policy.ja.md) を参照してください。
+開発は spec-first TDD に従います。[CONTRIBUTING.ja.md](CONTRIBUTING.ja.md)、[CHANGELOG.ja.md](CHANGELOG.ja.md)、[Adapter onboarding guide](docs/adding-an-adapter.md)、[Maintainer Guide](docs/maintainer-guide.ja.md)、[Roadmap](ROADMAP.ja.md)、[Support Policy](docs/public-support-policy.ja.md) を参照してください。
 
 Mockport は外部サービスの完全な clone ではありません。success、failure、auth error、rate limit、timeout、webhook/callback など、ローカル統合テストに必要な scenario に集中しています。
 
