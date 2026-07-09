@@ -53,7 +53,11 @@ func (r *routes) writeValidateMessage(w http.ResponseWriter, req *http.Request) 
 }
 
 func (r *routes) writeMessage(w http.ResponseWriter, req *http.Request, includeSentMessages bool, status int) {
-	switch normalizeScenario(r.cfg.Scenario) {
+	scenario, ok := r.resolveScenario(w, req)
+	if !ok {
+		return
+	}
+	switch scenario {
 	case "auth_error":
 		writeLINEError(w, http.StatusUnauthorized, "Mockport simulated invalid channel access token")
 	case "rate_limited":
@@ -98,8 +102,12 @@ func (r *routes) writeNarrowcastProgress(w http.ResponseWriter) {
 	})
 }
 
-func (r *routes) writeMessagingProfile(w http.ResponseWriter, userID string) {
-	if normalizeScenario(r.cfg.Scenario) == "auth_error" {
+func (r *routes) writeMessagingProfile(w http.ResponseWriter, req *http.Request, userID string) {
+	scenario, ok := r.resolveScenario(w, req)
+	if !ok {
+		return
+	}
+	if scenario == "auth_error" {
 		writeLINEError(w, http.StatusUnauthorized, "Mockport simulated invalid channel access token")
 		return
 	}

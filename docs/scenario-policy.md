@@ -18,6 +18,8 @@ Built-in scenarios are maintained by Mockport. Each one is published as a determ
 
 Built-in scenarios can contribute to compatibility scores only when they are backed by source metadata and visible in reports.
 
+Header override (`X-Mockport-Scenario`) is available for built-in scenarios only; user-defined scenarios are out of scope for per-request switching.
+
 ## User-defined Scenarios
 
 User-defined scenarios are local project behavior. They are a **local test convenience** only and are **not a provider compatibility claim**. They may layer extra local responses or state for app-specific tests, but they do not prove provider compatibility by themselves and must not be documented as if they were built-in adapter contracts.

@@ -18,6 +18,8 @@ built-in scenario は Mockport が保守します。各 scenario は adapter spe
 
 built-in scenario は source metadata と report で可視化された場合にのみ compatibility score に寄与できます。
 
+ヘッダ override（`X-Mockport-Scenario`）はビルトインシナリオのみ対象です。ユーザー定義シナリオへのリクエスト単位の切り替えはスコープ外です。
+
 ## User-defined Scenarios
 
 user-defined scenario はプロジェクトローカルの挙動です。**ローカルテストの便宜** に限られ、**provider compatibility の主張ではありません**。アプリ固有テスト向けにローカル応答や state を積み増しできますが、単体では provider compatibility を証明せず、built-in adapter 契約のように文書化してはいけません。

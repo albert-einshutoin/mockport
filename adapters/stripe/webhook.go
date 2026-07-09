@@ -26,8 +26,13 @@ func (rt *routes) sendWebhook(w http.ResponseWriter, r *http.Request) {
 	if secret == "" {
 		secret = "whsec_mockport"
 	}
+	scenario, err := rt.resolver.Resolve(r)
+	if err != nil {
+		rt.writeStripeError(w, http.StatusBadRequest, "invalid_request_error", "unknown_mockport_scenario", err.Error())
+		return
+	}
 	eventType := "checkout.session.completed"
-	if normalizeScenario(rt.cfg.Scenario) == scenarioPaymentFailed {
+	if scenario == scenarioPaymentFailed {
 		eventType = "payment_intent.payment_failed"
 	}
 	payload, err := json.Marshal(map[string]any{

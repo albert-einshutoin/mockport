@@ -39,8 +39,12 @@ func (r *routes) writeGetWebhookEndpoint(w http.ResponseWriter) {
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"endpoint": endpoint, "active": true})
 }
 
-func (r *routes) writeWebhookTest(w http.ResponseWriter) {
-	if normalizeScenario(r.cfg.Scenario) == "auth_error" {
+func (r *routes) writeWebhookTest(w http.ResponseWriter, req *http.Request) {
+	scenario, ok := r.resolveScenario(w, req)
+	if !ok {
+		return
+	}
+	if scenario == "auth_error" {
 		writeLINEError(w, http.StatusUnauthorized, "Mockport simulated invalid channel access token")
 		return
 	}

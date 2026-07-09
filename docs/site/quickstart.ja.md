@@ -26,3 +26,17 @@ docker compose -f docker-compose.mockport.yml up
 この Quickstart では `mockport up` ではなく、明示的な `docker compose -f docker-compose.mockport.yml up` を使っています。`mockport up` は利用可能ですが、Docker Compose まわりの UX 改善（エラー表示の明確化や `--detach` / `--build` の扱い）は [public preview follow-up #8](https://github.com/albert-einshutoin/mockport/issues/8) で別途追跡しています。一覧は [ロードマップ](../../ROADMAP.md#public-preview-follow-up) を参照してください。
 
 起動後は、`/_mockport/report` または `mockport report` で、実行された scenario と safety summary を確認できます。
+
+## シナリオの切り替え
+
+`mockport.yml` でシナリオを固定するほかに、リクエストごとに `X-Mockport-Scenario` ヘッダで切り替えられます（サーバー再起動不要）。
+
+```bash
+# Stripe の失敗系をテストする（サーバー再起動不要）
+curl -X POST http://localhost:43101/stripe/v1/checkout/sessions \
+  -H "X-Mockport-Scenario: payment_failed" \
+  -H "Authorization: Bearer $STRIPE_KEY" \
+  -d "mode=payment&success_url=http://localhost/success&cancel_url=http://localhost/cancel"
+```
+
+各アダプタの対応シナリオ一覧は [アダプタリファレンス](adapters.ja.md) を参照してください。
