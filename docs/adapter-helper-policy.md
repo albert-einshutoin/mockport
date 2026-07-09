@@ -25,8 +25,47 @@ Until then, adapters should prefer clear local helpers over broad abstraction.
 
 The script is a tracking aid, not a mandate to consolidate immediately:
 
+- Duplicate helper names are evidence for review, not proof that adapters should be refactored now.
 - Name duplication does not prove identical behavior across adapters.
-- Provider-specific response shape, headers, status codes, and scenario defaults still require adapter regression tests before any shared helper is introduced.
+- Provider-specific response shape, headers, status codes, and scenario defaults still require adapter regression tests before any shared helper is introduced. Do not hide provider-specific behavior behind a shared helper without those tests.
 - The script reports duplicates and exits successfully by default.
 
-It fails only when one helper name appears in more adapter packages than `DUPLICATE_ADAPTER_THRESHOLD`. The default threshold equals the current built-in adapter package count, so routine duplicates are reported without blocking CI. Raise the threshold only when broader duplication is expected and documented.
+### Sample output
+
+Each duplicated helper name is printed on its own line. A summary line follows, then a final pass or fail line:
+
+```text
+duplicate helper: bearerToken (2 adapters: githuboauth line)
+duplicate helper: clientIDMatches (3 adapters: githuboauth line zohooauth)
+duplicate helper: decodePayload (2 adapters: line openai)
+duplicate helper: firstNonEmpty (2 adapters: line zohooauth)
+duplicate helper: normalizeScenario (6 adapters: githuboauth line openai slack stripe zohooauth)
+duplicate helper: redirectWithQuery (3 adapters: githuboauth line zohooauth)
+duplicate helper: writeError (2 adapters: openai zohooauth)
+duplicate helper: writeOAuthError (2 adapters: githuboauth line)
+check-adapter-helpers: 8 duplicated helper name(s) tracked (threshold=6)
+check-adapter-helpers passed
+```
+
+When a helper appears in more adapter packages than `DUPLICATE_ADAPTER_THRESHOLD`, the script prints a threshold warning on stderr and exits with status 1:
+
+```text
+duplicate helper: normalizeScenario (7 adapters: ...)
+  exceeds DUPLICATE_ADAPTER_THRESHOLD=6
+check-adapter-helpers: 1 duplicated helper name(s) tracked (threshold=6)
+check-adapter-helpers failed: one or more helpers exceed DUPLICATE_ADAPTER_THRESHOLD=6
+```
+
+### `DUPLICATE_ADAPTER_THRESHOLD`
+
+The script fails only when one helper name appears in more adapter packages than `DUPLICATE_ADAPTER_THRESHOLD`. The default equals the current built-in adapter package count, so routine duplicates are reported without blocking CI.
+
+- Leave the default in place for normal development and CI.
+- Lower the threshold when you want the check to fail sooner and surface broader duplication during review.
+- Raise the threshold only temporarily, with a documented reason, when broader duplication is expected and you still want the script to pass.
+
+Example:
+
+```bash
+DUPLICATE_ADAPTER_THRESHOLD=4 bash scripts/check-adapter-helpers.sh
+```
