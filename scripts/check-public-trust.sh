@@ -57,5 +57,7 @@ require_text "README.md" "npm wrapper is experimental"
 require_text "docs/public-env-safety.md" "mockport-public-safety"
 require_text ".github/workflows/ci.yml" "bash scripts/check-public-trust.sh"
 require_text ".github/workflows/ci.yml" "bash scripts/check-distribution.sh"
+require_file "scripts/check-adapter-helpers.sh"
+bash scripts/check-adapter-helpers.sh
 require_file "scripts/check-support-surfaces.mjs"
 node scripts/check-support-surfaces.mjs
