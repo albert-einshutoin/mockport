@@ -33,7 +33,7 @@ func (rt *routes) registerV1Routes(mux *http.ServeMux, prefix string) {
 		if _, ok := rt.resolveScenario(w, r); !ok {
 			return
 		}
-		rt.writeList(w, "checkout_session")
+		rt.writeList(w, "checkout_session", r.URL.Path)
 	})
 	handleLimited(mux, "GET "+prefix+"/v1/checkout/sessions/{id}", func(w http.ResponseWriter, r *http.Request) {
 		if _, ok := rt.resolveScenario(w, r); !ok {
@@ -46,7 +46,7 @@ func (rt *routes) registerV1Routes(mux *http.ServeMux, prefix string) {
 		if _, ok := rt.resolveScenario(w, r); !ok {
 			return
 		}
-		rt.writeList(w, "payment_intent")
+		rt.writeList(w, "payment_intent", r.URL.Path)
 	})
 	handleLimited(mux, "GET "+prefix+"/v1/payment_intents/{id}", func(w http.ResponseWriter, r *http.Request) {
 		if _, ok := rt.resolveScenario(w, r); !ok {
@@ -79,7 +79,7 @@ func (rt *routes) registerResource(mux *http.ServeMux, prefix, resourceType, pat
 		if _, ok := rt.resolveScenario(w, r); !ok {
 			return
 		}
-		rt.writeList(w, resourceType)
+		rt.writeList(w, resourceType, r.URL.Path)
 	})
 	handleLimited(mux, "GET "+prefix+path+"/{id}", func(w http.ResponseWriter, r *http.Request) {
 		if _, ok := rt.resolveScenario(w, r); !ok {
@@ -224,14 +224,19 @@ func (rt *routes) writeResource(w http.ResponseWriter, resourceType, id string, 
 	rt.writeStripeError(w, http.StatusNotFound, "invalid_request_error", "resource_missing", "No such "+resourceType+": "+id)
 }
 
-func (rt *routes) writeList(w http.ResponseWriter, resourceType string) {
-	var data []map[string]any
-	for _, resource := range rt.store.List("stripe", resourceType) {
+func (rt *routes) writeList(w http.ResponseWriter, resourceType, requestPath string) {
+	resources := rt.store.List("stripe", resourceType)
+	// Allocate an empty non-nil slice because Stripe clients require data to
+	// remain a JSON array even when no resources have been created yet.
+	data := make([]map[string]any, 0, len(resources))
+	for _, resource := range resources {
 		body := resource.Data
 		body["id"] = resource.ID
 		data = append(data, body)
 	}
-	rt.writeJSON(w, http.StatusOK, listResponse{Object: "list", Data: data})
+	// Stripe clients use has_more and url to interpret a response as a list;
+	// keeping them explicit avoids silently weakening the documented contract.
+	rt.writeJSON(w, http.StatusOK, listResponse{Object: "list", Data: data, HasMore: false, URL: requestPath})
 }
 
 func fallbackCheckoutSession(id string) map[string]any {
