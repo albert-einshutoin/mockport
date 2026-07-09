@@ -11,7 +11,7 @@
 | `line` | `/line` | `workflow-compatible` | Messaging API send/content/signed webhook/rich menu/channel token workflows, LINE Login OAuth/profile, LIFF helpers, MINI App service messages, LINE Pay request/confirm, Mini Dapp wallet/payment helpers |
 | `zoho-oauth` | `/zoho` | `workflow-compatible` | authorize redirect with state echo, access token exchange, user info via the `Zoho-oauthtoken` scheme |
 
-Adapters are scenario-driven today and are moving toward provider-compatible local APIs for selected workflows. Use the [support matrix](support-matrix.md) and report behavior matrix to confirm supported paths.
+Adapters are scenario-driven today and are moving toward provider-compatible local APIs for selected workflows. See the [scenario matrix](scenarios.md) for built-in scenario names across adapters. Use the [support matrix](support-matrix.md) and report behavior matrix to confirm supported paths.
 
 `timeout` scenarios return an immediate 504-style response shape. To test client-side timeout behavior, add the server-wide `X-Mockport-Delay` header with a delay in milliseconds before Mockport handles the request.
 

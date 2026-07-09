@@ -10,6 +10,7 @@ Built-in adapters: `stripe`, `openai`, `github-oauth`, `slack`, `line`, and `zoh
 
 - [Quickstart](quickstart.md)
 - [Adapters](adapters.md)
+- [Scenarios](scenarios.md)
 - [Adapter onboarding](../adding-an-adapter.md)
 - [Support matrix](support-matrix.md)
 - [Examples](examples.md)
