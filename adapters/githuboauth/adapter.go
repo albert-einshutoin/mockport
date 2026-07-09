@@ -22,9 +22,7 @@ func (a Adapter) Register(mux *http.ServeMux, cfg adapter.Config) error {
 	if basePath == "" {
 		basePath = "/github"
 	}
-	meta := Adapter{}.Metadata()
-	resolver := adapter.NewScenarioResolver(cfg, "oauth_success", meta)
-	r := &routes{basePath: strings.TrimRight(basePath, "/"), cfg: cfg, store: state.NewStore(), resolver: resolver}
+	r := &routes{basePath: strings.TrimRight(basePath, "/"), cfg: cfg, store: state.NewStore()}
 	mux.HandleFunc(r.basePath+"/", r.handle)
 	return nil
 }
@@ -77,20 +75,11 @@ type routes struct {
 	basePath string
 	cfg      adapter.Config
 	store    *state.Store
-	resolver *adapter.ScenarioResolver
 }
 
 func (r *routes) handle(w http.ResponseWriter, req *http.Request) {
 	httpx.LimitRequestBody(w, req)
 	path := strings.TrimPrefix(req.URL.Path, r.basePath)
-	// Reject unknown scenario names before routing. The /test/reset management
-	// endpoint only clears state and is exempt from scenario validation.
-	if path != "/test/reset" {
-		if _, err := r.resolver.Resolve(req); err != nil {
-			writeAPIErrorCode(w, http.StatusBadRequest, "unknown_mockport_scenario", err.Error())
-			return
-		}
-	}
 	switch {
 	case req.Method == http.MethodGet && path == "/login/oauth/authorize":
 		clientID := req.URL.Query().Get("client_id")
@@ -168,12 +157,7 @@ func (r *routes) createCode(req *http.Request, clientID, redirectURI string) (st
 }
 
 func (r *routes) writeToken(w http.ResponseWriter, req *http.Request) {
-	scenario, err := r.resolver.Resolve(req)
-	if err != nil {
-		writeOAuthError(w, http.StatusBadRequest, "unknown_mockport_scenario", err.Error())
-		return
-	}
-	switch scenario {
+	switch normalizeScenario(r.cfg.Scenario) {
 	case "invalid_code":
 		writeOAuthError(w, http.StatusBadRequest, "bad_verification_code", "The code passed is incorrect or expired.")
 	case "expired_token":
@@ -224,14 +208,7 @@ func (r *routes) writeToken(w http.ResponseWriter, req *http.Request) {
 }
 
 func (r *routes) writeUser(w http.ResponseWriter, req *http.Request) {
-	scenario, err := r.resolver.Resolve(req)
-	if err != nil {
-		// 共通コード unknown_mockport_scenario は機械可読な error フィールドへ入れる
-		// （メッセージ連結ではなく構造化コードで判別可能にする）。
-		writeAPIErrorCode(w, http.StatusBadRequest, "unknown_mockport_scenario", err.Error())
-		return
-	}
-	switch scenario {
+	switch normalizeScenario(r.cfg.Scenario) {
 	case "expired_token":
 		writeAPIError(w, http.StatusUnauthorized, "Bad credentials")
 	case "scope_missing":
@@ -253,15 +230,6 @@ func (r *routes) writeUser(w http.ResponseWriter, req *http.Request) {
 }
 
 func (r *routes) writeEmails(w http.ResponseWriter, req *http.Request) {
-	scenario, err := r.resolver.Resolve(req)
-	if err != nil {
-		writeAPIErrorCode(w, http.StatusBadRequest, "unknown_mockport_scenario", err.Error())
-		return
-	}
-	if scenario == "scope_missing" {
-		writeAPIError(w, http.StatusForbidden, "Resource not accessible by token")
-		return
-	}
 	resource, ok := r.tokenResource(req)
 	if !ok {
 		writeAPIError(w, http.StatusUnauthorized, "Bad credentials")
@@ -275,15 +243,6 @@ func (r *routes) writeEmails(w http.ResponseWriter, req *http.Request) {
 }
 
 func (r *routes) writeOrgs(w http.ResponseWriter, req *http.Request) {
-	scenario, err := r.resolver.Resolve(req)
-	if err != nil {
-		writeAPIErrorCode(w, http.StatusBadRequest, "unknown_mockport_scenario", err.Error())
-		return
-	}
-	if scenario == "scope_missing" {
-		writeAPIError(w, http.StatusForbidden, "Resource not accessible by token")
-		return
-	}
 	resource, ok := r.tokenResource(req)
 	if !ok {
 		writeAPIError(w, http.StatusUnauthorized, "Bad credentials")
@@ -357,6 +316,13 @@ func redirectWithQuery(w http.ResponseWriter, req *http.Request, redirectURI str
 	http.Redirect(w, req, parsed.String(), http.StatusFound)
 }
 
+func normalizeScenario(s string) string {
+	if s == "" {
+		return "oauth_success"
+	}
+	return s
+}
+
 func writeOAuthError(w http.ResponseWriter, status int, code, description string) {
 	httpx.WriteJSON(w, status, oauthErrorResponse{
 		Error:            code,
@@ -370,18 +336,6 @@ func writeAPIError(w http.ResponseWriter, status int, message string) {
 		Message:          message,
 		DocumentationURL: "https://docs.github.com/rest",
 		Status:           http.StatusText(status),
-	})
-}
-
-// writeAPIErrorCode は GitHub REST 形式のエラーに加えて、Mockport 固有の機械可読な
-// code を error フィールドへ載せる。message は人間向け説明にとどめ、コード判別は
-// error フィールドで行えるようにする。
-func writeAPIErrorCode(w http.ResponseWriter, status int, code, message string) {
-	httpx.WriteJSON(w, status, apiErrorResponse{
-		Message:          message,
-		DocumentationURL: "https://docs.github.com/rest",
-		Status:           http.StatusText(status),
-		Error:            code,
 	})
 }
 

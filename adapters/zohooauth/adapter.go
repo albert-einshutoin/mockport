@@ -31,13 +31,7 @@ func (a Adapter) Name() string { return "zoho-oauth" }
 
 func (a Adapter) Register(mux *http.ServeMux, cfg adapter.Config) error {
 	basePath := resolveBasePath(cfg.BasePath)
-	meta := a.Metadata()
-	r := &routes{
-		basePath: basePath,
-		cfg:      cfg,
-		store:    state.NewStore(),
-		resolver: adapter.NewScenarioResolver(cfg, "oauth_success", meta),
-	}
+	r := &routes{basePath: basePath, cfg: cfg, store: state.NewStore()}
 	mux.HandleFunc(basePath+"/", r.handle)
 	return nil
 }
@@ -84,20 +78,11 @@ type routes struct {
 	basePath string
 	cfg      adapter.Config
 	store    *state.Store
-	resolver *adapter.ScenarioResolver
 }
 
 func (r *routes) handle(w http.ResponseWriter, req *http.Request) {
 	httpx.LimitRequestBody(w, req)
 	path := strings.TrimPrefix(req.URL.Path, r.basePath)
-	// Reject unknown scenario names before routing. The /test/reset management
-	// endpoint only clears state and is exempt from scenario validation.
-	if path != "/test/reset" {
-		if _, err := r.resolver.Resolve(req); err != nil {
-			writeError(w, http.StatusBadRequest, "unknown_mockport_scenario")
-			return
-		}
-	}
 	switch {
 	case req.Method == http.MethodGet && path == "/oauth/v2/auth":
 		r.authorize(w, req)
@@ -168,12 +153,7 @@ func (r *routes) authorize(w http.ResponseWriter, req *http.Request) {
 // Zoho returns HTTP 200 even for these errors; the client inspects the error
 // field, not the status code.
 func (r *routes) token(w http.ResponseWriter, req *http.Request) {
-	scenario, err := r.resolver.Resolve(req)
-	if err != nil {
-		writeError(w, http.StatusBadRequest, "unknown_mockport_scenario")
-		return
-	}
-	if scenario == "invalid_code" {
+	if normalizeScenario(r.cfg.Scenario) == "invalid_code" {
 		writeTokenError(w, "invalid_code")
 		return
 	}
@@ -222,12 +202,7 @@ func (r *routes) token(w http.ResponseWriter, req *http.Request) {
 // "Authorization: Zoho-oauthtoken <access_token>" header and returns the
 // configured Email/Display_Name on success.
 func (r *routes) userInfo(w http.ResponseWriter, req *http.Request) {
-	scenario, err := r.resolver.Resolve(req)
-	if err != nil {
-		writeError(w, http.StatusBadRequest, "unknown_mockport_scenario")
-		return
-	}
-	if scenario == "invalid_token" {
+	if normalizeScenario(r.cfg.Scenario) == "invalid_token" {
 		writeError(w, http.StatusUnauthorized, "invalid_token")
 		return
 	}
@@ -261,6 +236,13 @@ func resolveBasePath(basePath string) string {
 		basePath = "/zoho"
 	}
 	return strings.TrimRight(basePath, "/")
+}
+
+func normalizeScenario(s string) string {
+	if s == "" {
+		return "oauth_success"
+	}
+	return s
 }
 
 func clientIDMatches(resource state.Resource, got string) bool {

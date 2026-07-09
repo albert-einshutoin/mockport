@@ -45,38 +45,6 @@ request body too large
 
 Adapter handlers may apply the same limit independently for provider-shaped error responses on bodies that pass the server check.
 
-## Switching scenarios
-
-Scenarios can be switched in two ways.
-
-### 1. mockport.yml (config file)
-
-```yaml
-adapters:
-  stripe:
-    scenario: payment_failed
-```
-
-Changing the config requires a server restart.
-
-### 2. X-Mockport-Scenario header (per-request)
-
-Add the `X-Mockport-Scenario` header to switch scenarios per request without restarting the server.
-
-```bash
-curl -X POST http://localhost:43101/stripe/v1/checkout/sessions \
-  -H "X-Mockport-Scenario: payment_failed" \
-  -H "Authorization: Bearer $STRIPE_KEY" \
-  -d "mode=payment&success_url=http://localhost/success&cancel_url=http://localhost/cancel"
-```
-
-Resolution order: **header > config scenario > adapter default**
-
-- An unknown scenario name is rejected (no silent fallback to the success scenario). The error uses each provider's own error shape: most adapters return HTTP 400, while LINE Pay follows its real API and returns HTTP 200 with a `returnCode`/`returnMessage` body carrying `unknown_mockport_scenario`.
-- Per-request switching does not interfere with parallel test runs
-- Only built-in scenarios registered in `Metadata().Scenarios` are accepted
-- Management endpoints such as `/test/reset` reset stored state and are exempt from scenario validation
-
 Detailed adapter specifications:
 
 - [Stripe adapter](../adapters/stripe.md)

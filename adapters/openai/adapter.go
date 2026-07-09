@@ -28,13 +28,7 @@ func (a Adapter) Register(mux *http.ServeMux, cfg adapter.Config) error {
 	if basePath == "" {
 		basePath = "/openai"
 	}
-	meta := a.Metadata()
-	r := &routes{
-		basePath: strings.TrimRight(basePath, "/"),
-		cfg:      cfg,
-		store:    state.NewStore(),
-		resolver: adapter.NewScenarioResolver(cfg, "chat_success", meta),
-	}
+	r := &routes{basePath: strings.TrimRight(basePath, "/"), cfg: cfg, store: state.NewStore()}
 	mux.HandleFunc(r.basePath+"/", r.handle)
 	return nil
 }
@@ -92,20 +86,11 @@ type routes struct {
 	basePath string
 	cfg      adapter.Config
 	store    *state.Store
-	resolver *adapter.ScenarioResolver
 }
 
 func (r *routes) handle(w http.ResponseWriter, req *http.Request) {
 	httpx.LimitRequestBody(w, req)
 	path := strings.TrimPrefix(req.URL.Path, r.basePath)
-	// Reject unknown scenario names before routing. The /test/reset management
-	// endpoint only clears state and is exempt from scenario validation.
-	if path != "/test/reset" {
-		if _, err := r.resolver.Resolve(req); err != nil {
-			writeError(w, http.StatusBadRequest, "unknown_mockport_scenario", err.Error())
-			return
-		}
-	}
 	switch {
 	case req.Method == http.MethodGet && path == "/v1/models":
 		httpx.WriteJSON(w, http.StatusOK, map[string]any{"object": "list", "data": []map[string]string{{"id": "gpt-mockport", "object": "model"}}})
@@ -144,12 +129,7 @@ func (r *routes) handleReset(w http.ResponseWriter, req *http.Request) {
 }
 
 func (r *routes) writeCompletion(w http.ResponseWriter, req *http.Request, object string) {
-	scenario, err := r.resolver.Resolve(req)
-	if err != nil {
-		writeError(w, http.StatusBadRequest, "unknown_mockport_scenario", err.Error())
-		return
-	}
-	switch scenario {
+	switch normalizeScenario(r.cfg.Scenario) {
 	case "auth_error":
 		writeError(w, http.StatusUnauthorized, "invalid_api_key", "Mockport simulated invalid API key")
 	case "rate_limited":
@@ -537,6 +517,13 @@ func splitStreamTextIntoChunks(text string, wordsPerChunk int) []string {
 		chunks = append(chunks, chunk)
 	}
 	return chunks
+}
+
+func normalizeScenario(s string) string {
+	if s == "" {
+		return "chat_success"
+	}
+	return s
 }
 
 func writeError(w http.ResponseWriter, status int, code, message string) {

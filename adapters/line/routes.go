@@ -12,14 +12,6 @@ func (r *routes) handle(w http.ResponseWriter, req *http.Request) {
 	httpx.LimitRequestBody(w, req)
 	w.Header().Set("X-Line-Request-Id", "line-request-mockport")
 	path := strings.TrimPrefix(req.URL.Path, r.basePath)
-	// Validate X-Mockport-Scenario once at the dispatch layer so every LINE
-	// endpoint rejects unknown scenario names with a 400 instead of silently
-	// falling through to a success path. The error body shape depends on the
-	// path group (Messaging API vs OAuth vs LINE Pay), so pick the matching
-	// resolver helper before routing to the concrete handler.
-	if !r.validateScenarioForPath(w, req, path) {
-		return
-	}
 	switch {
 	case req.Method == http.MethodPost && strings.HasPrefix(path, "/v2/bot/message/validate/"):
 		r.writeValidateMessage(w, req)
@@ -38,13 +30,13 @@ func (r *routes) handle(w http.ResponseWriter, req *http.Request) {
 	case req.Method == http.MethodGet && strings.HasPrefix(path, "/v2/bot/message/") && strings.Contains(path, "/content"):
 		r.writeContentEndpoint(w, path)
 	case req.Method == http.MethodGet && strings.HasPrefix(path, "/v2/bot/profile/"):
-		r.writeMessagingProfile(w, req, strings.TrimPrefix(path, "/v2/bot/profile/"))
+		r.writeMessagingProfile(w, strings.TrimPrefix(path, "/v2/bot/profile/"))
 	case req.Method == http.MethodPut && path == "/v2/bot/channel/webhook/endpoint":
 		r.writeSetWebhookEndpoint(w, req)
 	case req.Method == http.MethodGet && path == "/v2/bot/channel/webhook/endpoint":
 		r.writeGetWebhookEndpoint(w)
 	case req.Method == http.MethodPost && path == "/v2/bot/channel/webhook/test":
-		r.writeWebhookTest(w, req)
+		r.writeWebhookTest(w)
 	case req.Method == http.MethodPost && path == "/test/webhook/send":
 		r.sendWebhook(w, req)
 	case req.Method == http.MethodPost && path == "/test/reset":
@@ -92,7 +84,7 @@ func (r *routes) handle(w http.ResponseWriter, req *http.Request) {
 	case req.Method == http.MethodPost && strings.HasPrefix(path, "/v2/bot/room/") && strings.HasSuffix(path, "/leave"):
 		writeEmptyJSON(w, http.StatusOK)
 	case req.Method == http.MethodGet && path == "/liff/v2/profile":
-		r.writeLIFFProfile(w, req)
+		r.writeLIFFProfile(w)
 	case req.Method == http.MethodGet && path == "/liff/v2/context":
 		r.writeLIFFContext(w)
 	case req.Method == http.MethodPost && path == "/v2/bot/richmenu":
@@ -152,7 +144,7 @@ func (r *routes) handle(w http.ResponseWriter, req *http.Request) {
 		r.writePayRequest(w, req)
 	case req.Method == http.MethodPost && strings.HasPrefix(path, "/v3/payments/") && strings.HasSuffix(path, "/confirm"):
 		id := strings.TrimSuffix(strings.TrimPrefix(path, "/v3/payments/"), "/confirm")
-		r.writePayConfirm(w, req, id)
+		r.writePayConfirm(w, id)
 	case req.Method == http.MethodGet && strings.HasPrefix(path, "/v3/payments/requests/") && strings.HasSuffix(path, "/check"):
 		id := strings.TrimSuffix(strings.TrimPrefix(path, "/v3/payments/requests/"), "/check")
 		r.writePayCheck(w, id)
@@ -164,31 +156,6 @@ func (r *routes) handle(w http.ResponseWriter, req *http.Request) {
 		r.writeMiniDappPaymentLookup(w, strings.TrimPrefix(path, "/mini-dapp/v1/payments/"))
 	default:
 		http.NotFound(w, req)
-	}
-}
-
-// validateScenarioForPath resolves the request scenario using the resolver
-// helper that matches the path group's error format, returning false (after
-// writing a 400) when the X-Mockport-Scenario header names an unknown scenario.
-// Grouping mirrors the error shapes the concrete handlers already emit:
-//   - LINE Pay (/v3/payments/*): resolveScenarioPay -> {"returnCode","returnMessage"}
-//   - OAuth/Login (/oauth2/*, /v2/oauth/*): resolveScenarioOAuth -> {"error",...}
-//   - everything else (Messaging API, LIFF, MINI App, Mini Dapp): resolveScenario -> {"message"}
-//
-// The /test/reset management endpoint only clears state and is exempt.
-func (r *routes) validateScenarioForPath(w http.ResponseWriter, req *http.Request, path string) bool {
-	switch {
-	case path == "/test/reset":
-		return true
-	case strings.HasPrefix(path, "/v3/payments/"):
-		_, ok := r.resolveScenarioPay(w, req)
-		return ok
-	case strings.HasPrefix(path, "/oauth2/") || strings.HasPrefix(path, "/v2/oauth/"):
-		_, ok := r.resolveScenarioOAuth(w, req)
-		return ok
-	default:
-		_, ok := r.resolveScenario(w, req)
-		return ok
 	}
 }
 

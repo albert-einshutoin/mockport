@@ -78,21 +78,6 @@ async function runStripeSmoke(options) {
   assertEqual(invoice.customer, customer.id, "invoice customer id");
   assertEqual(refund.payment_intent, paymentIntent.id, "refund payment intent id");
 
-  // X-Mockport-Scenario ヘッダによる per-request シナリオ切り替えのテスト。
-  // Stripe SDK は per-request カスタムヘッダをサポートしていないため fetch で直接確認する。
-  const scenarioRes = await fetch(`${options.baseURL}/v1/checkout/sessions`, {
-    method: "POST",
-    headers: {
-      "Authorization": "Bearer sk_test_mockport",
-      "Content-Type": "application/x-www-form-urlencoded",
-      "X-Mockport-Scenario": "payment_failed",
-    },
-    body: "mode=payment&success_url=http%3A%2F%2Flocalhost%2Fsuccess&cancel_url=http%3A%2F%2Flocalhost%2Fcancel",
-  });
-  const scenarioBody = await scenarioRes.json();
-  assertEqual(scenarioRes.status, 402, "X-Mockport-Scenario: payment_failed returns 402");
-  assertEqual(scenarioBody.error?.code, "card_declined", "payment_failed error code");
-
   return {
     provider: "stripe",
     baseURL: options.baseURL,

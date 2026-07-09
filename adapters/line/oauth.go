@@ -24,11 +24,7 @@ func (r *routes) writeAuthorize(w http.ResponseWriter, req *http.Request) {
 		writeOAuthError(w, http.StatusBadRequest, "invalid_request", "redirect_uri must be a loopback URL in Mockport")
 		return
 	}
-	scenario, ok := r.resolveScenarioOAuth(w, req)
-	if !ok {
-		return
-	}
-	if scenario == "invalid_request" {
+	if normalizeScenario(r.cfg.Scenario) == "invalid_request" {
 		redirectWithQuery(w, req, redirectURI, map[string]string{
 			"error":             "invalid_request",
 			"error_description": "Mockport simulated invalid LINE Login request",
@@ -55,11 +51,7 @@ func (r *routes) writeAuthorize(w http.ResponseWriter, req *http.Request) {
 }
 
 func (r *routes) writeToken(w http.ResponseWriter, req *http.Request) {
-	scenario, ok := r.resolveScenarioOAuth(w, req)
-	if !ok {
-		return
-	}
-	switch scenario {
+	switch normalizeScenario(r.cfg.Scenario) {
 	case "auth_error":
 		writeOAuthError(w, http.StatusUnauthorized, "invalid_client", "Mockport simulated invalid LINE Login client")
 	case "invalid_request":
@@ -118,11 +110,7 @@ func (r *routes) writeToken(w http.ResponseWriter, req *http.Request) {
 }
 
 func (r *routes) writeStatelessToken(w http.ResponseWriter, req *http.Request) {
-	scenario, ok := r.resolveScenarioOAuth(w, req)
-	if !ok {
-		return
-	}
-	if scenario == "auth_error" {
+	if normalizeScenario(r.cfg.Scenario) == "auth_error" {
 		writeOAuthError(w, http.StatusBadRequest, "invalid_request", "Invalid 'client_credentials'.")
 		return
 	}
@@ -144,11 +132,7 @@ func (r *routes) writeStatelessToken(w http.ResponseWriter, req *http.Request) {
 }
 
 func (r *routes) writeShortLivedToken(w http.ResponseWriter, req *http.Request) {
-	scenario, ok := r.resolveScenarioOAuth(w, req)
-	if !ok {
-		return
-	}
-	if scenario == "auth_error" {
+	if normalizeScenario(r.cfg.Scenario) == "auth_error" {
 		writeOAuthError(w, http.StatusBadRequest, "invalid_client", "invalid client_secret")
 		return
 	}
@@ -210,11 +194,7 @@ func (r *routes) writeVerifyOAuthToken(w http.ResponseWriter, req *http.Request)
 }
 
 func (r *routes) writeLoginProfile(w http.ResponseWriter, req *http.Request) {
-	scenario, ok := r.resolveScenario(w, req)
-	if !ok {
-		return
-	}
-	if scenario == "auth_error" {
+	if normalizeScenario(r.cfg.Scenario) == "auth_error" {
 		writeLINEError(w, http.StatusUnauthorized, "Mockport simulated invalid access token")
 		return
 	}
@@ -227,12 +207,8 @@ func (r *routes) writeLoginProfile(w http.ResponseWriter, req *http.Request) {
 	httpx.WriteJSON(w, http.StatusOK, lineProfile(userID))
 }
 
-func (r *routes) writeLIFFProfile(w http.ResponseWriter, req *http.Request) {
-	scenario, ok := r.resolveScenario(w, req)
-	if !ok {
-		return
-	}
-	if scenario == "auth_error" {
+func (r *routes) writeLIFFProfile(w http.ResponseWriter) {
+	if normalizeScenario(r.cfg.Scenario) == "auth_error" {
 		writeLINEError(w, http.StatusUnauthorized, "Mockport simulated LIFF access token error")
 		return
 	}

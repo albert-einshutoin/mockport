@@ -10,11 +10,7 @@ import (
 )
 
 func (r *routes) writeNotificationToken(w http.ResponseWriter, req *http.Request) {
-	scenario, ok := r.resolveScenario(w, req)
-	if !ok {
-		return
-	}
-	switch scenario {
+	switch normalizeScenario(r.cfg.Scenario) {
 	case "auth_error":
 		writeLINEError(w, http.StatusUnauthorized, "Mockport simulated invalid MINI App channel token")
 	case "invalid_request":
@@ -42,11 +38,7 @@ func (r *routes) writeNotificationToken(w http.ResponseWriter, req *http.Request
 }
 
 func (r *routes) writeServiceMessage(w http.ResponseWriter, req *http.Request) {
-	scenario, ok := r.resolveScenario(w, req)
-	if !ok {
-		return
-	}
-	switch scenario {
+	switch normalizeScenario(r.cfg.Scenario) {
 	case "auth_error":
 		writeLINEError(w, http.StatusUnauthorized, "Mockport simulated invalid MINI App channel token")
 	case "invalid_request":
@@ -77,11 +69,7 @@ func (r *routes) writeServiceMessage(w http.ResponseWriter, req *http.Request) {
 }
 
 func (r *routes) writePayRequest(w http.ResponseWriter, req *http.Request) {
-	scenario, ok := r.resolveScenarioPay(w, req)
-	if !ok {
-		return
-	}
-	switch scenario {
+	switch normalizeScenario(r.cfg.Scenario) {
 	case "auth_error":
 		writePayError(w, "1104", "Mockport simulated LINE Pay authorization error")
 	case "pay_failed":
@@ -122,12 +110,8 @@ func (r *routes) writePayRequest(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func (r *routes) writePayConfirm(w http.ResponseWriter, req *http.Request, id string) {
-	scenario, ok := r.resolveScenarioPay(w, req)
-	if !ok {
-		return
-	}
-	switch scenario {
+func (r *routes) writePayConfirm(w http.ResponseWriter, id string) {
+	switch normalizeScenario(r.cfg.Scenario) {
 	case "auth_error":
 		writePayError(w, "1104", "Mockport simulated LINE Pay authorization error")
 	case "pay_failed":
@@ -157,15 +141,11 @@ func (r *routes) writePayCheck(w http.ResponseWriter, id string) {
 }
 
 func (r *routes) writeMiniDappWalletSession(w http.ResponseWriter, req *http.Request) {
-	scenario, ok := r.resolveScenario(w, req)
-	if !ok {
-		return
-	}
-	if scenario == "auth_error" {
+	if normalizeScenario(r.cfg.Scenario) == "auth_error" {
 		writeLINEError(w, http.StatusUnauthorized, "Mockport simulated Mini Dapp client authorization error")
 		return
 	}
-	if scenario == "invalid_request" {
+	if normalizeScenario(r.cfg.Scenario) == "invalid_request" {
 		writeLINEError(w, http.StatusBadRequest, "chainId is required")
 		return
 	}
@@ -178,11 +158,7 @@ func (r *routes) writeMiniDappWalletSession(w http.ResponseWriter, req *http.Req
 }
 
 func (r *routes) writeMiniDappPayment(w http.ResponseWriter, req *http.Request) {
-	scenario, ok := r.resolveScenario(w, req)
-	if !ok {
-		return
-	}
-	switch scenario {
+	switch normalizeScenario(r.cfg.Scenario) {
 	case "auth_error":
 		writeLINEError(w, http.StatusUnauthorized, "Mockport simulated Mini Dapp client authorization error")
 	case "pay_failed":

@@ -18,7 +18,6 @@ type routes struct {
 	cfg         adapter.Config
 	store       *state.Store
 	idempotency *state.IdempotencyStore
-	resolver    *adapter.ScenarioResolver
 }
 
 func (rt *routes) register(mux *http.ServeMux, prefix string) {
@@ -29,28 +28,16 @@ func (rt *routes) register(mux *http.ServeMux, prefix string) {
 func (rt *routes) registerV1Routes(mux *http.ServeMux, prefix string) {
 	handleLimited(mux, "POST "+prefix+"/v1/checkout/sessions", rt.writeCheckoutSession)
 	handleLimited(mux, "GET "+prefix+"/v1/checkout/sessions", func(w http.ResponseWriter, r *http.Request) {
-		if _, ok := rt.resolveScenario(w, r); !ok {
-			return
-		}
 		rt.writeList(w, r, "checkout_session")
 	})
 	handleLimited(mux, "GET "+prefix+"/v1/checkout/sessions/{id}", func(w http.ResponseWriter, r *http.Request) {
-		if _, ok := rt.resolveScenario(w, r); !ok {
-			return
-		}
 		rt.writeResource(w, "checkout_session", r.PathValue("id"), fallbackCheckoutSession)
 	})
 	handleLimited(mux, "POST "+prefix+"/v1/payment_intents", rt.writePaymentIntent)
 	handleLimited(mux, "GET "+prefix+"/v1/payment_intents", func(w http.ResponseWriter, r *http.Request) {
-		if _, ok := rt.resolveScenario(w, r); !ok {
-			return
-		}
 		rt.writeList(w, r, "payment_intent")
 	})
 	handleLimited(mux, "GET "+prefix+"/v1/payment_intents/{id}", func(w http.ResponseWriter, r *http.Request) {
-		if _, ok := rt.resolveScenario(w, r); !ok {
-			return
-		}
 		rt.writeResource(w, "payment_intent", r.PathValue("id"), fallbackPaymentIntent)
 	})
 	rt.registerResource(mux, prefix, "customer", "/v1/customers", nil, map[string]any{"object": "customer"}, nil)
@@ -69,21 +56,12 @@ func (rt *routes) registerTestRoutes(mux *http.ServeMux, prefix string) {
 func (rt *routes) registerResource(mux *http.ServeMux, prefix, resourceType, path string,
 	fallback func(string) map[string]any, body map[string]any, required []string) {
 	handleLimited(mux, "POST "+prefix+path, func(w http.ResponseWriter, r *http.Request) {
-		if _, ok := rt.resolveScenario(w, r); !ok {
-			return
-		}
 		rt.writeGenericResource(w, r, resourceType, body, required)
 	})
 	handleLimited(mux, "GET "+prefix+path, func(w http.ResponseWriter, r *http.Request) {
-		if _, ok := rt.resolveScenario(w, r); !ok {
-			return
-		}
 		rt.writeList(w, r, resourceType)
 	})
 	handleLimited(mux, "GET "+prefix+path+"/{id}", func(w http.ResponseWriter, r *http.Request) {
-		if _, ok := rt.resolveScenario(w, r); !ok {
-			return
-		}
 		rt.writeResource(w, resourceType, r.PathValue("id"), fallback)
 	})
 }
@@ -100,11 +78,7 @@ func withBodyLimit(next http.HandlerFunc) http.HandlerFunc {
 }
 
 func (rt *routes) writeCheckoutSession(w http.ResponseWriter, r *http.Request) {
-	scenario, ok := rt.resolveScenario(w, r)
-	if !ok {
-		return
-	}
-	switch scenario {
+	switch normalizeScenario(rt.cfg.Scenario) {
 	case scenarioPaymentFailed:
 		rt.writeStripeError(w, http.StatusPaymentRequired, "card_error", "card_declined", "Mockport simulated card decline")
 	case scenarioAuthError:
@@ -127,11 +101,7 @@ func (rt *routes) writeCheckoutSession(w http.ResponseWriter, r *http.Request) {
 }
 
 func (rt *routes) writePaymentIntent(w http.ResponseWriter, r *http.Request) {
-	scenario, ok := rt.resolveScenario(w, r)
-	if !ok {
-		return
-	}
-	switch scenario {
+	switch normalizeScenario(rt.cfg.Scenario) {
 	case scenarioPaymentFailed:
 		rt.writeStripeError(w, http.StatusPaymentRequired, "card_error", "card_declined", "Mockport simulated card decline")
 	case scenarioAuthError:
@@ -358,17 +328,6 @@ func parseFormValue(value string) any {
 		return parsed
 	}
 	return value
-}
-
-// resolveScenario はリクエストヘッダまたは設定からシナリオ名を解決する。
-// 未知のシナリオが指定された場合は Stripe エラー形式で 400 を返し false を返す。
-func (rt *routes) resolveScenario(w http.ResponseWriter, r *http.Request) (string, bool) {
-	scenario, err := rt.resolver.Resolve(r)
-	if err != nil {
-		rt.writeStripeError(w, http.StatusBadRequest, "invalid_request_error", "unknown_mockport_scenario", err.Error())
-		return "", false
-	}
-	return scenario, true
 }
 
 func looksLikeLegacyID(resourceType, id string) bool {

@@ -30,12 +30,7 @@ func (a Adapter) Register(mux *http.ServeMux, cfg adapter.Config) error {
 	if basePath == "" {
 		basePath = "/slack"
 	}
-	r := &routes{
-		basePath: strings.TrimRight(basePath, "/"),
-		cfg:      cfg,
-		store:    state.NewStore(),
-		resolver: adapter.NewScenarioResolver(cfg, "message_success", a.Metadata()),
-	}
+	r := &routes{basePath: strings.TrimRight(basePath, "/"), cfg: cfg, store: state.NewStore()}
 	mux.HandleFunc(r.basePath+"/", r.handle)
 	return nil
 }
@@ -92,7 +87,6 @@ type routes struct {
 	basePath string
 	cfg      adapter.Config
 	store    *state.Store
-	resolver *adapter.ScenarioResolver
 }
 
 func (r *routes) handle(w http.ResponseWriter, req *http.Request) {
@@ -100,7 +94,7 @@ func (r *routes) handle(w http.ResponseWriter, req *http.Request) {
 	path := strings.TrimPrefix(req.URL.Path, r.basePath)
 	switch {
 	case req.Method == http.MethodPost && path == "/api/auth.test":
-		r.writeAuthTest(w, req)
+		r.writeAuthTest(w)
 	case req.Method == http.MethodPost && path == "/api/chat.postMessage":
 		r.writePostMessage(w, req)
 	case req.Method == http.MethodPost && path == "/api/chat.update":
@@ -108,7 +102,7 @@ func (r *routes) handle(w http.ResponseWriter, req *http.Request) {
 	case req.Method == http.MethodPost && path == "/api/chat.delete":
 		r.writeDeleteMessage(w, req)
 	case req.Method == http.MethodPost && path == "/api/conversations.list":
-		r.writeConversationsList(w, req)
+		r.writeConversationsList(w)
 	case (req.Method == http.MethodGet || req.Method == http.MethodPost) && path == "/api/conversations.history":
 		r.writeHistory(w, req)
 	case req.Method == http.MethodPost && path == "/events":
@@ -133,13 +127,8 @@ func (r *routes) handleReset(w http.ResponseWriter, req *http.Request) {
 	})
 }
 
-func (r *routes) writeAuthTest(w http.ResponseWriter, req *http.Request) {
-	scenario, err := r.resolver.Resolve(req)
-	if err != nil {
-		httpx.WriteJSON(w, http.StatusBadRequest, slackErrorResponse{OK: false, Error: "unknown_mockport_scenario"})
-		return
-	}
-	if scenario == "auth_error" {
+func (r *routes) writeAuthTest(w http.ResponseWriter) {
+	if normalizeScenario(r.cfg.Scenario) == "auth_error" {
 		writeSlackError(w, http.StatusOK, "invalid_auth")
 		return
 	}
@@ -150,41 +139,51 @@ func (r *routes) writeAuthTest(w http.ResponseWriter, req *http.Request) {
 }
 
 func (r *routes) writePostMessage(w http.ResponseWriter, req *http.Request) {
-	if !r.validateWriteScenario(w, req) {
-		return
-	}
-	// ここに到達するのは message_success (default) のみ
-	if !parseSlackForm(w, req) {
-		return
-	}
-	channel := req.Form.Get("channel")
-	if channel == "" {
-		channel = "C_MOCKPORT"
-	}
-	if !knownChannel(channel) {
+	switch normalizeScenario(r.cfg.Scenario) {
+	case "auth_error":
+		writeSlackError(w, http.StatusOK, "invalid_auth")
+	case "rate_limited":
+		w.Header().Set("Retry-After", "1")
+		writeSlackError(w, http.StatusTooManyRequests, "ratelimited")
+	case "delivery_failed":
+		writeSlackError(w, http.StatusOK, "message_delivery_failed")
+	case "channel_not_found":
 		writeSlackError(w, http.StatusOK, "channel_not_found")
-		return
+	case "not_in_channel":
+		writeSlackError(w, http.StatusOK, "not_in_channel")
+	default:
+		if !parseSlackForm(w, req) {
+			return
+		}
+		channel := req.Form.Get("channel")
+		if channel == "" {
+			channel = "C_MOCKPORT"
+		}
+		if !knownChannel(channel) {
+			writeSlackError(w, http.StatusOK, "channel_not_found")
+			return
+		}
+		text := req.Form.Get("text")
+		if text == "" {
+			text = "Mockport message"
+		}
+		message, err := r.store.Create("slack", "message", map[string]any{
+			"channel": channel,
+			"deleted": false,
+			"text":    text,
+			"team":    "T_MOCKPORT",
+			"user":    "U_MOCKPORT",
+		})
+		if err != nil {
+			writeSlackError(w, http.StatusInternalServerError, "mockport_state_error")
+			return
+		}
+		httpx.WriteJSON(w, http.StatusOK, postMessageResponse{OK: true, Channel: channel, TS: message.ID, Message: messageBody(message.ID, message.Data)})
 	}
-	text := req.Form.Get("text")
-	if text == "" {
-		text = "Mockport message"
-	}
-	message, err := r.store.Create("slack", "message", map[string]any{
-		"channel": channel,
-		"deleted": false,
-		"text":    text,
-		"team":    "T_MOCKPORT",
-		"user":    "U_MOCKPORT",
-	})
-	if err != nil {
-		writeSlackError(w, http.StatusInternalServerError, "mockport_state_error")
-		return
-	}
-	httpx.WriteJSON(w, http.StatusOK, postMessageResponse{OK: true, Channel: channel, TS: message.ID, Message: messageBody(message.ID, message.Data)})
 }
 
 func (r *routes) writeUpdateMessage(w http.ResponseWriter, req *http.Request) {
-	if !r.validateWriteScenario(w, req) {
+	if !r.validateWriteScenario(w) {
 		return
 	}
 	if !parseSlackForm(w, req) {
@@ -211,7 +210,7 @@ func (r *routes) writeUpdateMessage(w http.ResponseWriter, req *http.Request) {
 }
 
 func (r *routes) writeDeleteMessage(w http.ResponseWriter, req *http.Request) {
-	if !r.validateWriteScenario(w, req) {
+	if !r.validateWriteScenario(w) {
 		return
 	}
 	if !parseSlackForm(w, req) {
@@ -237,13 +236,8 @@ func (r *routes) writeDeleteMessage(w http.ResponseWriter, req *http.Request) {
 	}{OK: true, Channel: channel, TS: ts})
 }
 
-func (r *routes) writeConversationsList(w http.ResponseWriter, req *http.Request) {
-	scenario, err := r.resolver.Resolve(req)
-	if err != nil {
-		httpx.WriteJSON(w, http.StatusBadRequest, slackErrorResponse{OK: false, Error: "unknown_mockport_scenario"})
-		return
-	}
-	if scenario == "auth_error" {
+func (r *routes) writeConversationsList(w http.ResponseWriter) {
+	if normalizeScenario(r.cfg.Scenario) == "auth_error" {
 		writeSlackError(w, http.StatusOK, "invalid_auth")
 		return
 	}
@@ -255,12 +249,7 @@ func (r *routes) writeConversationsList(w http.ResponseWriter, req *http.Request
 }
 
 func (r *routes) writeHistory(w http.ResponseWriter, req *http.Request) {
-	scenario, err := r.resolver.Resolve(req)
-	if err != nil {
-		httpx.WriteJSON(w, http.StatusBadRequest, slackErrorResponse{OK: false, Error: "unknown_mockport_scenario"})
-		return
-	}
-	if scenario == "auth_error" {
+	if normalizeScenario(r.cfg.Scenario) == "auth_error" {
 		writeSlackError(w, http.StatusOK, "invalid_auth")
 		return
 	}
@@ -290,10 +279,6 @@ func (r *routes) writeHistory(w http.ResponseWriter, req *http.Request) {
 }
 
 func (r *routes) writeEvent(w http.ResponseWriter, req *http.Request) {
-	if _, err := r.resolver.Resolve(req); err != nil {
-		httpx.WriteJSON(w, http.StatusBadRequest, slackErrorResponse{OK: false, Error: "unknown_mockport_scenario"})
-		return
-	}
 	raw, err := io.ReadAll(req.Body)
 	if err != nil {
 		if httpx.IsRequestBodyTooLarge(err) {
@@ -369,13 +354,8 @@ func (r *routes) validSignature(req *http.Request, raw []byte) bool {
 	return hmac.Equal([]byte(signature), []byte(want))
 }
 
-func (r *routes) validateWriteScenario(w http.ResponseWriter, req *http.Request) bool {
-	scenario, err := r.resolver.Resolve(req)
-	if err != nil {
-		httpx.WriteJSON(w, http.StatusBadRequest, slackErrorResponse{OK: false, Error: "unknown_mockport_scenario"})
-		return false
-	}
-	switch scenario {
+func (r *routes) validateWriteScenario(w http.ResponseWriter) bool {
+	switch normalizeScenario(r.cfg.Scenario) {
 	case "auth_error":
 		writeSlackError(w, http.StatusOK, "invalid_auth")
 	case "rate_limited":
@@ -406,6 +386,13 @@ func knownChannel(channel string) bool {
 
 func messageBody(ts string, data map[string]any) messageData {
 	return messageData{Type: "message", Team: data["team"], Channel: data["channel"], TS: ts, User: data["user"], Text: data["text"]}
+}
+
+func normalizeScenario(s string) string {
+	if s == "" {
+		return "message_success"
+	}
+	return s
 }
 
 func writeSlackError(w http.ResponseWriter, status int, code string) {

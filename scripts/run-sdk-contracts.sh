@@ -5,7 +5,6 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PROVIDER="${1:-all}"
 PORT="${MOCKPORT_CONTRACT_PORT:-43101}"
 BASE_URL="http://127.0.0.1:${PORT}"
-WORK_DIR="$(mktemp -d)"
 
 case "$PROVIDER" in
   all|stripe|openai|github-oauth|slack) ;;
@@ -14,6 +13,8 @@ case "$PROVIDER" in
     exit 1
     ;;
 esac
+
+WORK_DIR="$(mktemp -d)"
 
 if [[ -z "${GO_BIN:-}" ]]; then
   if command -v go >/dev/null 2>&1; then
