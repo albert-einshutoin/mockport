@@ -158,7 +158,7 @@ Full docs, install paths, and release verification live under [docs/site/](docs/
 
 ## Contribute
 
-Contributions follow spec-first TDD. See [CONTRIBUTING.md](CONTRIBUTING.md), [Adapter onboarding guide](docs/adding-an-adapter.md), [Maintainer Guide](docs/maintainer-guide.md), [Roadmap](ROADMAP.md), and [Support Policy](docs/public-support-policy.md).
+Contributions follow spec-first TDD. See [CONTRIBUTING.md](CONTRIBUTING.md), [CHANGELOG.md](CHANGELOG.md), [Adapter onboarding guide](docs/adding-an-adapter.md), [Maintainer Guide](docs/maintainer-guide.md), [Roadmap](ROADMAP.md), and [Support Policy](docs/public-support-policy.md).
 
 Mockport is not a full clone of external services. It focuses on local integration testing scenarios: success, failure, auth error, rate limit, timeout, and webhook/callback.
 
