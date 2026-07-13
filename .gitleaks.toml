@@ -13,3 +13,14 @@ condition = "AND"
 regexTarget = "line"
 paths = ['''internal/security/secrets_test\.go''']
 regexes = ['''sk_live_123456789''']
+
+[[rules]]
+# Documented Mockport fake keys appear in curl examples; they are not real credentials.
+id = "curl-auth-header"
+
+[[rules.allowlists]]
+description = "Allow documented Mockport fake keys in site curl examples."
+condition = "AND"
+regexTarget = "secret"
+paths = ['''docs/site/limitations\.md''']
+regexes = ['''mockport_openai_key''']
