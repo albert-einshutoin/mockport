@@ -83,7 +83,7 @@ Use this table to jump from Mockport's supported local surface to the closest of
 | `POST` | `/stripe/v1/refunds` | Creates a deterministic Refund. |
 | `GET` | `/stripe/v1/refunds` | Lists local Refunds. |
 | `GET` | `/stripe/v1/refunds/{id}` | Retrieves a local Refund. |
-| `POST` | `/stripe/test/webhook/send` | Sends a fake signed webhook to the configured target URL. |
+| `POST` | `/stripe/test/webhook/send` | Sends a fake signed webhook to the configured target URL. Outbound delivery uses a fixed `5s` timeout; timeout failures return `504` / `webhook_send_timeout`, and non-2xx target responses return `502` / `webhook_target_non_2xx`. |
 | `POST` | `/stripe/test/reset` | Clears local state and idempotency records for test isolation. |
 
 ## Scenarios

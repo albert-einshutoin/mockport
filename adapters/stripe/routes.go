@@ -14,11 +14,12 @@ import (
 )
 
 type routes struct {
-	basePath    string
-	cfg         adapter.Config
-	store       *state.Store
-	idempotency *state.IdempotencyStore
-	resolver    *adapter.ScenarioResolver
+	basePath      string
+	cfg           adapter.Config
+	store         *state.Store
+	idempotency   *state.IdempotencyStore
+	resolver      *adapter.ScenarioResolver
+	webhookClient *http.Client
 }
 
 func (rt *routes) register(mux *http.ServeMux, prefix string) {

@@ -4,14 +4,22 @@ import (
 	"net/http"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/albert-einshutoin/mockport/internal/adapter"
+	"github.com/albert-einshutoin/mockport/internal/adapter/httpx"
 	"github.com/albert-einshutoin/mockport/internal/state"
 )
 
-type Adapter struct{}
+type Adapter struct {
+	webhookClient *http.Client
+}
 
-func New() Adapter { return Adapter{} }
+func New() Adapter { return newWithWebhookTimeout(httpx.DefaultWebhookSenderTimeout) }
+
+func newWithWebhookTimeout(timeout time.Duration) Adapter {
+	return Adapter{webhookClient: httpx.NewWebhookSenderClient(timeout)}
+}
 
 func (a Adapter) Name() string { return "line" }
 
@@ -21,10 +29,14 @@ func (a Adapter) Register(mux *http.ServeMux, cfg adapter.Config) error {
 		basePath = "/line"
 	}
 	r := &routes{
-		basePath: strings.TrimRight(basePath, "/"),
-		cfg:      cfg,
-		store:    state.NewStore(),
-		resolver: adapter.NewScenarioResolver(cfg, "line_success", a.Metadata()),
+		basePath:      strings.TrimRight(basePath, "/"),
+		cfg:           cfg,
+		store:         state.NewStore(),
+		resolver:      adapter.NewScenarioResolver(cfg, "line_success", a.Metadata()),
+		webhookClient: a.webhookClient,
+	}
+	if r.webhookClient == nil {
+		r.webhookClient = httpx.NewWebhookSenderClient(httpx.DefaultWebhookSenderTimeout)
 	}
 	mux.HandleFunc(r.basePath+"/", r.handle)
 	return nil
@@ -48,10 +60,11 @@ func (a Adapter) FakeEnv(cfg adapter.Config) map[string]string {
 }
 
 type routes struct {
-	basePath string
-	cfg      adapter.Config
-	store    *state.Store
-	resolver *adapter.ScenarioResolver
+	basePath      string
+	cfg           adapter.Config
+	store         *state.Store
+	resolver      *adapter.ScenarioResolver
+	webhookClient *http.Client
 
 	// mu guards the singleton mutable state below. net/http dispatches
 	// concurrent requests to the same routes instance, so these fields must
