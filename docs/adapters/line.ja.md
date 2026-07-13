@@ -7,6 +7,7 @@ LINE adapter は、Messaging API、LINE Login、LIFF helper、MINI App service m
 ## 対応範囲
 
 - message send、content、signed webhook、rich menu、channel token workflow。
+- webhook send helper の outbound 配送は固定 `5s` timeout。timeout は `504` + `failure: "timeout"`、non-2xx target は `502` + `failure: "target_non_2xx"` と `target_status_code`。
 - OAuth code/token/profile と local profile lookup。LINE Login flow では authorize と token exchange の `client_id` を必須とし、token exchange の値は code 発行時と一致する必要があります。
 - LIFF browser runtime、provider-driven webhook redelivery、quota enforcement、regional policy、Dapp Portal の完全再現は対象外です。
 
