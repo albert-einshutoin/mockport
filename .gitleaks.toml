@@ -15,7 +15,9 @@ paths = ['''internal/security/secrets_test\.go''']
 regexes = ['''sk_live_123456789''']
 
 # Documented Mockport fake keys are public fixtures, not real credentials.
-[[allowlists]]
+# Use [allowlist] (singular): gitleaks-action pins v8.24.3, which does not
+# apply top-level [[allowlists]] when scanning PR commit history.
+[allowlist]
 description = "Allow documented Mockport fake keys in examples, fixtures, and docs."
 regexTarget = "secret"
 regexes = ['''mockport_openai_key''']
