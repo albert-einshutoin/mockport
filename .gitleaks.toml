@@ -13,3 +13,9 @@ condition = "AND"
 regexTarget = "line"
 paths = ['''internal/security/secrets_test\.go''']
 regexes = ['''sk_live_123456789''']
+
+# Documented Mockport fake keys are public fixtures, not real credentials.
+[[allowlists]]
+description = "Allow documented Mockport fake keys in examples, fixtures, and docs."
+regexTarget = "secret"
+regexes = ['''mockport_openai_key''']

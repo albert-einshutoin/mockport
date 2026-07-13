@@ -18,7 +18,7 @@ These are symptom-based limits verified against adapter specs, compatibility rep
 
   ```bash
   curl -i -X POST http://localhost:43101/openai/v1/responses \
-    -H 'Authorization: Bearer mockport_openai_key' \
+    -H "Authorization: Bearer $OPENAI_API_KEY" \
     -H 'Content-Type: application/json' \
     -d '{"model":"gpt-mockport","input":"hello","stream":true}'
   ```
