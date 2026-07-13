@@ -36,10 +36,12 @@ For adapter PRs, follow the onboarding guide before implementation:
 
 ## Public Trust Checks
 
-Run these before opening a pull request:
+Run `make verify` before opening a pull request. It runs the standard local
+test, race, public trust, and adapter completeness gates shown below:
 
 ```bash
 bash scripts/check-public-trust.sh
+bash scripts/check-adapter-completeness.sh
 bash scripts/check-distribution.sh
 go test ./...
 go test -race ./...
