@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/albert-einshutoin/mockport/internal/adapter/httpx"
 	"github.com/albert-einshutoin/mockport/internal/security"
@@ -123,18 +122,37 @@ func (r *routes) sendWebhook(w http.ResponseWriter, req *http.Request) {
 	}
 	outbound.Header.Set("Content-Type", "application/json")
 	outbound.Header.Set("x-line-signature", signWebhookPayload(secret, body))
-	resp, err := (&http.Client{Timeout: 5 * time.Second}).Do(outbound)
+	resp, err := r.webhookClient.Do(outbound)
 	if err != nil {
+		if httpx.IsWebhookSendTimeout(err) {
+			writeWebhookSendFailure(w, http.StatusGatewayTimeout, "timeout", "webhook target did not respond before timeout", 0)
+			return
+		}
 		writeLINEError(w, http.StatusBadGateway, "failed to send webhook")
 		return
 	}
 	defer resp.Body.Close()
+	if !httpx.IsWebhookTargetSuccess(resp.StatusCode) {
+		writeWebhookSendFailure(w, http.StatusBadGateway, "target_non_2xx", fmt.Sprintf("webhook target returned status %d", resp.StatusCode), resp.StatusCode)
+		return
+	}
 	httpx.WriteJSON(w, http.StatusAccepted, map[string]any{
 		"sent":        true,
 		"target_url":  r.cfg.WebhookTargetURL,
 		"event_count": len(events),
 		"status_code": resp.StatusCode,
 	})
+}
+
+func writeWebhookSendFailure(w http.ResponseWriter, status int, failure, message string, targetStatusCode int) {
+	body := map[string]any{
+		"failure": failure,
+		"message": message,
+	}
+	if targetStatusCode > 0 {
+		body["target_status_code"] = targetStatusCode
+	}
+	httpx.WriteJSON(w, status, body)
 }
 
 func signWebhookPayload(secret string, payload []byte) string {

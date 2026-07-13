@@ -312,6 +312,46 @@ func TestWebhookSender(t *testing.T) {
 	}
 }
 
+func TestWebhookSenderTimesOutWhenTargetIsSlow(t *testing.T) {
+	target := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		time.Sleep(200 * time.Millisecond)
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	defer target.Close()
+
+	mux := newStripeMuxWithWebhookTimeout(t, adapter.Config{
+		BasePath:             "/stripe",
+		Scenario:             "payment_success",
+		WebhookTargetURL:     target.URL,
+		WebhookSigningSecret: "whsec_mockport",
+	}, 50*time.Millisecond)
+	rec := serveStripeRequest(mux, http.MethodPost, "/stripe/test/webhook/send", "", nil)
+
+	if rec.Code != http.StatusGatewayTimeout {
+		t.Fatalf("status = %d, want %d, body=%s", rec.Code, http.StatusGatewayTimeout, rec.Body.String())
+	}
+	assertStripeErrorCode(t, rec, "webhook_send_timeout")
+}
+
+func TestWebhookSenderRejectsNon2xxTarget(t *testing.T) {
+	target := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusInternalServerError)
+	}))
+	defer target.Close()
+
+	rec := performStripeRequest(t, adapter.Config{
+		BasePath:             "/stripe",
+		Scenario:             "payment_success",
+		WebhookTargetURL:     target.URL,
+		WebhookSigningSecret: "whsec_mockport",
+	}, http.MethodPost, "/stripe/test/webhook/send")
+
+	if rec.Code != http.StatusBadGateway {
+		t.Fatalf("status = %d, want %d, body=%s", rec.Code, http.StatusBadGateway, rec.Body.String())
+	}
+	assertStripeErrorCode(t, rec, "webhook_target_non_2xx")
+}
+
 func TestWebhookSenderRejectsNonLocalTriggerAndUnsafeTarget(t *testing.T) {
 	mux := newStripeMux(t, adapter.Config{
 		BasePath:             "/stripe",
@@ -500,6 +540,11 @@ func performStripeRequest(t *testing.T, cfg adapter.Config, method, path string)
 func newStripeMux(t *testing.T, cfg adapter.Config) *http.ServeMux {
 	t.Helper()
 	return adaptertest.NewMux(t, New(), cfg)
+}
+
+func newStripeMuxWithWebhookTimeout(t *testing.T, cfg adapter.Config, timeout time.Duration) *http.ServeMux {
+	t.Helper()
+	return adaptertest.NewMux(t, newWithWebhookTimeout(timeout), cfg)
 }
 
 func createStripeResource(t *testing.T, mux http.Handler, path, body string) map[string]any {

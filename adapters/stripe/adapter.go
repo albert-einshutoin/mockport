@@ -3,15 +3,23 @@ package stripe
 import (
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/albert-einshutoin/mockport/internal/adapter"
+	"github.com/albert-einshutoin/mockport/internal/adapter/httpx"
 	"github.com/albert-einshutoin/mockport/internal/state"
 )
 
-type Adapter struct{}
+type Adapter struct {
+	webhookClient *http.Client
+}
 
 func New() Adapter {
-	return Adapter{}
+	return newWithWebhookTimeout(httpx.DefaultWebhookSenderTimeout)
+}
+
+func newWithWebhookTimeout(timeout time.Duration) Adapter {
+	return Adapter{webhookClient: httpx.NewWebhookSenderClient(timeout)}
 }
 
 func (a Adapter) Name() string {
@@ -25,11 +33,15 @@ func (a Adapter) Register(mux *http.ServeMux, cfg adapter.Config) error {
 	}
 	meta := a.Metadata()
 	rt := &routes{
-		basePath:    strings.TrimRight(basePath, "/"),
-		cfg:         cfg,
-		store:       state.NewStore(),
-		idempotency: state.NewIdempotencyStore(),
-		resolver:    adapter.NewScenarioResolver(cfg, scenarioPaymentSuccess, meta),
+		basePath:      strings.TrimRight(basePath, "/"),
+		cfg:           cfg,
+		store:         state.NewStore(),
+		idempotency:   state.NewIdempotencyStore(),
+		resolver:      adapter.NewScenarioResolver(cfg, scenarioPaymentSuccess, meta),
+		webhookClient: a.webhookClient,
+	}
+	if rt.webhookClient == nil {
+		rt.webhookClient = httpx.NewWebhookSenderClient(httpx.DefaultWebhookSenderTimeout)
 	}
 	if rt.basePath == "" {
 		rt.register(mux, "")
