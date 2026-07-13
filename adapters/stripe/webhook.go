@@ -3,9 +3,10 @@ package stripe
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
-	"time"
 
+	"github.com/albert-einshutoin/mockport/internal/adapter/httpx"
 	"github.com/albert-einshutoin/mockport/internal/security"
 )
 
@@ -53,13 +54,21 @@ func (rt *routes) sendWebhook(w http.ResponseWriter, r *http.Request) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Stripe-Signature", signPayload(secret, nowUnix(), payload))
 
-	client := &http.Client{Timeout: 5 * time.Second}
+	client := httpx.WebhookSenderClient()
 	resp, err := client.Do(req)
 	if err != nil {
+		if failure, ok := httpx.ClassifyWebhookSendError(err); ok && failure.Kind == "timeout" {
+			rt.writeStripeError(w, http.StatusGatewayTimeout, "api_error", "webhook_send_timeout", "webhook target did not respond before timeout")
+			return
+		}
 		rt.writeStripeError(w, http.StatusBadGateway, "api_error", "webhook_send_failed", "failed to send webhook")
 		return
 	}
 	defer resp.Body.Close()
+	if !httpx.IsWebhookTargetSuccess(resp.StatusCode) {
+		rt.writeStripeError(w, http.StatusBadGateway, "api_error", "webhook_target_non_2xx", fmt.Sprintf("webhook target returned status %d", resp.StatusCode))
+		return
+	}
 
 	rt.writeJSON(w, http.StatusAccepted, map[string]any{
 		"sent":        true,

@@ -61,7 +61,7 @@ ID はプロセス内で deterministic であり、Mockport プロセス再起�
 - Mockport が OpenID Connect discovery endpoint を公開しない。
 - 実 LINE SDK contract harness は未対応。
 - 実 LIFF browser runtime はない。
-- provider 主導の webhook redelivery、retry scheduler、完全な webhook event catalog はない。local helper は要求に応じて signed webhook payload を送信できる。
+- provider 主導の webhook redelivery、retry scheduler、完全な webhook event catalog はない。local helper は要求に応じて signed webhook payload を送信できる。outbound 配送は固定 `5s` timeout で、timeout は `504` + `failure: "timeout"`、non-2xx target は `502` + `failure: "target_non_2xx"` と `target_status_code` を返す。
 - monthly quota、free-message、rate-limit bucket、concurrent audience operation の enforcement は、deterministic scenario を超えてない。
 - すべての message、Flex、template、action、audience、insight、coupon、membership、rich menu フィールドに対する完全な Messaging API schema validation はない。
 - 実 media storage lifecycle はない。content と preview endpoint は local placeholder bytes を返す。

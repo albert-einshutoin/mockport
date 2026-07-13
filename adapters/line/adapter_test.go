@@ -12,9 +12,11 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/albert-einshutoin/mockport/internal/adapter"
 	"github.com/albert-einshutoin/mockport/internal/adapter/adaptertest"
+	"github.com/albert-einshutoin/mockport/internal/adapter/httpx"
 )
 
 func TestMessagingPushAndProfile(t *testing.T) {
@@ -197,6 +199,63 @@ func TestWebhookDeliverySignsLINERequest(t *testing.T) {
 		}
 	default:
 		t.Fatal("webhook target did not receive request")
+	}
+}
+
+func TestWebhookDeliveryTimesOutWhenTargetIsSlow(t *testing.T) {
+	httpx.SetWebhookSenderTimeoutForTest(t, 50*time.Millisecond)
+	target := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		time.Sleep(200 * time.Millisecond)
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer target.Close()
+
+	mux := newLineMux(t, adapter.Config{
+		BasePath:             "/line",
+		Scenario:             "line_success",
+		WebhookTargetURL:     target.URL,
+		WebhookSigningSecret: "mockport_line_secret",
+	})
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "/line/test/webhook/send", strings.NewReader(`{}`))
+	req.Header.Set("Content-Type", "application/json")
+	req.RemoteAddr = "127.0.0.1:12345"
+	mux.ServeHTTP(rec, req)
+	if rec.Code != http.StatusGatewayTimeout {
+		t.Fatalf("status = %d, want %d: %s", rec.Code, http.StatusGatewayTimeout, rec.Body.String())
+	}
+	adaptertest.AssertJSONField(t, rec, "failure", "timeout")
+	adaptertest.AssertJSONField(t, rec, "message", "webhook target did not respond before timeout")
+}
+
+func TestWebhookDeliveryFailsOnNon2xxTarget(t *testing.T) {
+	target := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusBadGateway)
+	}))
+	defer target.Close()
+
+	mux := newLineMux(t, adapter.Config{
+		BasePath:             "/line",
+		Scenario:             "line_success",
+		WebhookTargetURL:     target.URL,
+		WebhookSigningSecret: "mockport_line_secret",
+	})
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "/line/test/webhook/send", strings.NewReader(`{}`))
+	req.Header.Set("Content-Type", "application/json")
+	req.RemoteAddr = "127.0.0.1:12345"
+	mux.ServeHTTP(rec, req)
+	if rec.Code != http.StatusBadGateway {
+		t.Fatalf("status = %d, want %d: %s", rec.Code, http.StatusBadGateway, rec.Body.String())
+	}
+	adaptertest.AssertJSONField(t, rec, "failure", "target_non_2xx")
+	adaptertest.AssertJSONField(t, rec, "message", "webhook target returned status 502")
+	var body map[string]any
+	if err := json.Unmarshal(rec.Body.Bytes(), &body); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	if body["target_status_code"] != float64(http.StatusBadGateway) {
+		t.Fatalf("target_status_code = %#v, want %d", body["target_status_code"], http.StatusBadGateway)
 	}
 }
 

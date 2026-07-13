@@ -10,6 +10,7 @@ import (
 
 	"github.com/albert-einshutoin/mockport/internal/adapter"
 	"github.com/albert-einshutoin/mockport/internal/adapter/adaptertest"
+	"github.com/albert-einshutoin/mockport/internal/adapter/httpx"
 )
 
 func TestCheckoutSessionSuccess(t *testing.T) {
@@ -361,6 +362,46 @@ func TestWebhookSender(t *testing.T) {
 	default:
 		t.Fatal("webhook target did not receive request")
 	}
+}
+
+func TestWebhookSenderTimesOutWhenTargetIsSlow(t *testing.T) {
+	httpx.SetWebhookSenderTimeoutForTest(t, 50*time.Millisecond)
+	target := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		time.Sleep(200 * time.Millisecond)
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	defer target.Close()
+
+	rec := performStripeRequest(t, adapter.Config{
+		BasePath:             "/stripe",
+		Scenario:             "payment_success",
+		WebhookTargetURL:     target.URL,
+		WebhookSigningSecret: "whsec_mockport",
+	}, http.MethodPost, "/stripe/test/webhook/send")
+	if rec.Code != http.StatusGatewayTimeout {
+		t.Fatalf("status = %d, want %d, body=%s", rec.Code, http.StatusGatewayTimeout, rec.Body.String())
+	}
+	assertStripeErrorCode(t, rec, "webhook_send_timeout")
+	adaptertest.AssertJSONField(t, rec, "error.message", "webhook target did not respond before timeout")
+}
+
+func TestWebhookSenderFailsOnNon2xxTarget(t *testing.T) {
+	target := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusInternalServerError)
+	}))
+	defer target.Close()
+
+	rec := performStripeRequest(t, adapter.Config{
+		BasePath:             "/stripe",
+		Scenario:             "payment_success",
+		WebhookTargetURL:     target.URL,
+		WebhookSigningSecret: "whsec_mockport",
+	}, http.MethodPost, "/stripe/test/webhook/send")
+	if rec.Code != http.StatusBadGateway {
+		t.Fatalf("status = %d, want %d, body=%s", rec.Code, http.StatusBadGateway, rec.Body.String())
+	}
+	assertStripeErrorCode(t, rec, "webhook_target_non_2xx")
+	adaptertest.AssertJSONField(t, rec, "error.message", "webhook target returned status 500")
 }
 
 func TestWebhookSenderRejectsNonLocalTriggerAndUnsafeTarget(t *testing.T) {

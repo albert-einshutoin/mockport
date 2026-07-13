@@ -99,7 +99,7 @@ This adapter treats the following surfaces as the minimum useful LINE baseline f
 | Requirement | Status | Mockport behavior |
 | --- | --- | --- |
 | Send a message from app code | Implemented | Push/reply return `sentMessages`; multicast/broadcast return `{}`; narrowcast returns `202` plus progress. |
-| Receive a LINE-like webhook in app code | Implemented | `POST /line/test/webhook/send` sends a webhook payload to the configured `webhook.target_url`. |
+| Receive a LINE-like webhook in app code | Implemented | `POST /line/test/webhook/send` sends a webhook payload to the configured `webhook.target_url`. Outbound delivery uses a fixed `5s` timeout; timeout failures return `504` with `failure: "timeout"`, and non-2xx target responses return `502` with `failure: "target_non_2xx"` and `target_status_code`. |
 | Verify webhook signature in app code | Implemented for local delivery | The webhook sender signs the raw JSON body with HMAC-SHA256 and the `x-line-signature` header, using `webhook.signing_secret` or `mockport_line_secret`. |
 | Validate common bad message payloads | Partial | Message validation returns LINE-style `details[].property` errors for missing message count, non-object messages, unsupported `type`, and empty text messages. |
 | Exercise profile and account lookup paths | Implemented | Profile, bot info, follower IDs, group, and room helper endpoints return deterministic data. |
