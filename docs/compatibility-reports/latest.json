@@ -166,7 +166,7 @@
       "score": 100,
       "provider_version": "2025-02-01",
       "sdk_versions": [
-        "openai@6.45.0"
+        "openai@6.46.0"
       ],
       "client_evidence": [],
       "endpoint_coverage": 100,
