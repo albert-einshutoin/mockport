@@ -4,7 +4,7 @@
 
 ## Setup
 
-Use Go 1.26.4. Install a Go toolchain (mise, asdf, Homebrew, or the official installer) so `go` is available on your PATH.
+Use Go 1.26.5. Install a Go toolchain (mise, asdf, Homebrew, or the official installer) so `go` is available on your PATH.
 
 ```bash
 go test ./...
