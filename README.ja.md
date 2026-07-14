@@ -35,6 +35,8 @@ curl http://localhost:43101/_mockport/report
 
 ### ソースから
 
+ソース開発の要件: PATH 上で使える Go 1.26.5 が必要です。上記の Docker クイックスタートではローカル Go のインストールは不要です。
+
 リポジトリ checkout から binary と image をビルドします。
 
 ```bash
