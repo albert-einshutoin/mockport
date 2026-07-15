@@ -1,7 +1,9 @@
 package report
 
 import (
+	"os"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -13,6 +15,8 @@ type Recorder struct {
 	mode           string
 	adapters       []AdapterStatus
 	requests       []Request
+	requestLimit   int
+	evictedCount   int64
 	safetyWarnings []SafetyWarning
 	coverage       []ScenarioCoverage
 	matrix         []BehaviorMatrixEntry
@@ -21,10 +25,25 @@ type Recorder struct {
 	nextID         int64
 }
 
-const MaxRecordedRequests = 1000
+const MaxRecordedRequests = 500
 
 func NewRecorder() *Recorder {
-	return &Recorder{now: time.Now}
+	return &Recorder{
+		now:          time.Now,
+		requestLimit: requestHistoryLimit(),
+	}
+}
+
+func requestHistoryLimit() int {
+	raw := strings.TrimSpace(os.Getenv("MOCKPORT_REQUEST_HISTORY"))
+	if raw == "" {
+		return MaxRecordedRequests
+	}
+	limit, err := strconv.ParseInt(raw, 10, 0)
+	if err != nil || limit <= 0 {
+		return MaxRecordedRequests
+	}
+	return int(limit)
 }
 
 func (r *Recorder) SetClock(now func() time.Time) {
@@ -92,8 +111,11 @@ func (r *Recorder) RecordRequestWithDetails(method, path string, status int, ada
 		Scenario:  scenario,
 		Reason:    reason,
 	})
-	if len(r.requests) > MaxRecordedRequests {
-		r.requests = r.requests[len(r.requests)-MaxRecordedRequests:]
+	if len(r.requests) > r.requestLimit {
+		evicted := len(r.requests) - r.requestLimit
+		r.evictedCount += int64(evicted)
+		// Clone the retained tail so the pruned prefix backing array is not kept alive.
+		r.requests = slices.Clone(r.requests[len(r.requests)-r.requestLimit:])
 	}
 }
 
@@ -111,12 +133,22 @@ func (r *Recorder) Snapshot() Snapshot {
 		Safety:               safetySummary(r.mode, r.safetyWarnings),
 		Adapters:             slices.Clone(r.adapters),
 		Requests:             slices.Clone(r.requests),
+		RequestHistory:       requestHistorySummary(r.requestLimit, r.requests, r.evictedCount),
 		SafetyWarnings:       slices.Clone(r.safetyWarnings),
 		ScenarioCoverage:     cloneScenarioCoverage(r.coverage),
 		BehaviorMatrix:       cloneBehaviorMatrix(r.matrix),
 		Compatibility:        cloneCompatibility(r.compatibility),
 		StateCoverage:        cloneStateCoverage(r.stateCoverage),
 		UnsupportedEndpoints: unsupportedEndpoints(r.requests),
+	}
+}
+
+func requestHistorySummary(limit int, requests []Request, evicted int64) RequestHistorySummary {
+	return RequestHistorySummary{
+		Limit:     limit,
+		Retained:  len(requests),
+		Evicted:   evicted,
+		Truncated: evicted > 0,
 	}
 }
 

@@ -15,6 +15,7 @@ Important fields:
 - `safety`: AI-safe summary, including real-looking secret and external URL counts.
 - `adapters`: enabled adapters, base paths, capabilities, and maturity.
 - `requests`: replay-safe request metadata. Request bodies and secret headers are not stored by default.
+- `request_history`: bounded request buffer summary with `limit`, `retained`, `evicted`, and `truncated`.
 - `scenario_coverage`: supported scenarios per adapter.
 - `behavior_matrix`: supported endpoints and their scenarios.
 - `compatibility`: measured compatibility level, score, provider version, SDK/client evidence, and unsupported endpoint ids.
@@ -29,6 +30,8 @@ mockport report --format text
 ```
 
 Text output is meant for local development and CI logs. JSON output is better for tools.
+
+Request history keeps the most recent 500 requests by default. Override with `MOCKPORT_REQUEST_HISTORY` (positive integer only). When history is truncated, text output includes a truncation line and JSON includes `request_history.truncated=true`.
 
 ## Maturity Levels
 

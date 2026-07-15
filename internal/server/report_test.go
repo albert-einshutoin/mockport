@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/albert-einshutoin/mockport/adapters/stripe"
@@ -206,6 +207,25 @@ func TestReportRecordsValidScenarioHeaderOverride(t *testing.T) {
 	}
 	if got := snapshot.Requests[0]; got.Scenario != "payment_failed" {
 		t.Fatalf("scenario = %q, want payment_failed (valid header override)", got.Scenario)
+	}
+}
+
+func TestReportEndpointOmitsRequestBodySecrets(t *testing.T) {
+	const secretInBody = "sk_live_request_body_secret_12345"
+
+	handler := newStripeHandler(t, report.NewRecorder())
+	req := httptest.NewRequest(http.MethodPost, "/stripe/v1/checkout/sessions", strings.NewReader(`{"api_key":"`+secretInBody+`"}`))
+	req.Header.Set("Content-Type", "application/json")
+	handler.ServeHTTP(httptest.NewRecorder(), req)
+
+	reportRec := httptest.NewRecorder()
+	handler.ServeHTTP(reportRec, httptest.NewRequest(http.MethodGet, "/_mockport/report", nil))
+
+	if reportRec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d", reportRec.Code, http.StatusOK)
+	}
+	if strings.Contains(reportRec.Body.String(), secretInBody) {
+		t.Fatalf("report leaked request body secret: %s", reportRec.Body.String())
 	}
 }
 

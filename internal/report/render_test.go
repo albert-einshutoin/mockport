@@ -1,6 +1,7 @@
 package report
 
 import (
+	"net/http"
 	"strings"
 	"testing"
 )
@@ -35,5 +36,42 @@ func TestRenderTextIncludesTrustFields(t *testing.T) {
 		if !strings.Contains(text, want) {
 			t.Fatalf("rendered text missing %q:\n%s", want, text)
 		}
+	}
+}
+
+func TestRenderTextShowsTruncatedRequestHistory(t *testing.T) {
+	text := RenderText(Snapshot{
+		Mode:     "ai-safe",
+		Safety:   SafetySummary{Mode: "ai-safe", Safe: true, PublicEnvSafe: true},
+		Requests: []Request{{ID: 3, Method: "GET", Path: "/requests/3", Status: http.StatusOK}},
+		RequestHistory: RequestHistorySummary{
+			Limit:     3,
+			Retained:  3,
+			Evicted:   2,
+			Truncated: true,
+		},
+	})
+
+	want := "Request history: truncated (limit=3 retained=3 evicted=2)"
+	if !strings.Contains(text, want) {
+		t.Fatalf("rendered text missing %q:\n%s", want, text)
+	}
+}
+
+func TestRenderTextOmitsTruncatedRequestHistoryWhenNotTruncated(t *testing.T) {
+	text := RenderText(Snapshot{
+		Mode:     "ai-safe",
+		Safety:   SafetySummary{Mode: "ai-safe", Safe: true, PublicEnvSafe: true},
+		Requests: []Request{{ID: 1, Method: "GET", Path: "/health", Status: http.StatusOK}},
+		RequestHistory: RequestHistorySummary{
+			Limit:     MaxRecordedRequests,
+			Retained:  1,
+			Evicted:   0,
+			Truncated: false,
+		},
+	})
+
+	if strings.Contains(text, "Request history: truncated") {
+		t.Fatalf("rendered text should not include truncation line:\n%s", text)
 	}
 }
