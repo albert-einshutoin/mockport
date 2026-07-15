@@ -14,7 +14,7 @@ Compatibility is measured from Mockport runtime metadata, SDK/client contract ch
 | `line` | `workflow-compatible` | 80 | Messaging API v2 / Login v2.1 / Pay v3 / MINI App service messages / Mini Dapp SDK | none |
 | `openai` | `workflow-compatible` | 100 | 2025-02-01 | openai@6.46.0 |
 | `slack` | `workflow-compatible` | 100 | 2025-02-01 | slack-client-contract |
-| `stripe` | `workflow-compatible` | 100 | 2025-10-29.clover | stripe@22.3.0 |
+| `stripe` | `workflow-compatible` | 100 | 2025-10-29.clover | stripe@22.3.1 |
 | `zoho-oauth` | `workflow-compatible` | 100 | oauth-v2 | oauth-client-contract |
 
 ## Coverage
