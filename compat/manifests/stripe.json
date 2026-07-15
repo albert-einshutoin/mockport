@@ -5,7 +5,7 @@
   "sdk_versions": [
     {
       "name": "stripe",
-      "version": "22.3.0"
+      "version": "22.3.1"
     }
   ],
   "levels": [

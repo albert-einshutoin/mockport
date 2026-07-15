@@ -87,7 +87,7 @@ func (a Adapter) Metadata() adapter.Metadata {
 		Name:            "stripe",
 		Maturity:        adapter.MaturityWorkflowCompatible,
 		ProviderVersion: "2025-10-29.clover",
-		SDKVersions:     []adapter.SDKVersion{{Name: "stripe", Version: "22.3.0"}},
+		SDKVersions:     []adapter.SDKVersion{{Name: "stripe", Version: "22.3.1"}},
 		Levels:          []adapter.Level{adapter.LevelWire, adapter.LevelSDK, adapter.LevelWorkflow, adapter.LevelState, adapter.LevelError},
 		Capabilities: []string{
 			"checkout_sessions",
