@@ -212,18 +212,37 @@ func TestConversationsListUpdateAndDelete(t *testing.T) {
 	}
 }
 
+func TestRateLimitedResponseContract(t *testing.T) {
+	mux := newSlackMux(t, adapter.Config{BasePath: "/slack", Scenario: "rate_limited"})
+	rec := serveSlackRequest(mux, http.MethodPost, "/slack/api/chat.postMessage", "channel=C_MOCKPORT&text=hello")
+
+	if rec.Code != http.StatusTooManyRequests {
+		t.Fatalf("status = %d, want %d", rec.Code, http.StatusTooManyRequests)
+	}
+	if got := rec.Header().Get("Retry-After"); got != "1" {
+		t.Fatalf("Retry-After = %q, want %q", got, "1")
+	}
+	if got := rec.Header().Get("Content-Type"); got != "application/json" {
+		t.Fatalf("Content-Type = %q, want application/json", got)
+	}
+	var body map[string]any
+	if err := json.Unmarshal(rec.Body.Bytes(), &body); err != nil {
+		t.Fatalf("decode response body: %v", err)
+	}
+	if body["ok"] != false {
+		t.Fatalf("ok = %v, want false", body["ok"])
+	}
+	if body["error"] != "ratelimited" {
+		t.Fatalf("error = %v, want ratelimited", body["error"])
+	}
+}
+
 func TestSlackErrorsAndHeaders(t *testing.T) {
 	auth := performRequest(t, adapter.Config{BasePath: "/slack", Scenario: "auth_error"}, http.MethodPost, "/slack/api/auth.test")
 	if auth.Code != http.StatusOK {
 		t.Fatalf("auth error status = %d, body=%s", auth.Code, auth.Body.String())
 	}
 	assertSlackError(t, auth, "invalid_auth")
-
-	rate := performRequest(t, adapter.Config{BasePath: "/slack", Scenario: "rate_limited"}, http.MethodPost, "/slack/api/chat.postMessage")
-	if rate.Code != http.StatusTooManyRequests || rate.Header().Get("Retry-After") != "1" {
-		t.Fatalf("rate status/header/body = %d %q %s", rate.Code, rate.Header().Get("Retry-After"), rate.Body.String())
-	}
-	assertSlackError(t, rate, "ratelimited")
 
 	mux := newSlackMux(t, adapter.Config{BasePath: "/slack", Scenario: "message_success"})
 	unknownChannel := serveSlackRequest(mux, http.MethodPost, "/slack/api/chat.postMessage", "channel=C_UNKNOWN&text=hello")
