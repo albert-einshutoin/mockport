@@ -27,6 +27,8 @@ type paymentIntentResponse struct {
 }
 
 type listResponse struct {
-	Object string `json:"object"`
-	Data   any    `json:"data"`
+	Object  string `json:"object"`
+	Data    any    `json:"data"`
+	HasMore bool   `json:"has_more"`
+	URL     string `json:"url"`
 }
