@@ -5,7 +5,7 @@
   "sdk_versions": [
     {
       "name": "openai",
-      "version": "6.45.0"
+      "version": "6.46.0"
     }
   ],
   "levels": [
