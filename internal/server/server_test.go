@@ -277,8 +277,8 @@ func TestDelayMiddlewareBoundaryValues(t *testing.T) {
 			maxElapsed:  50 * time.Millisecond,
 		},
 		{
-			name:        "non-integer abc",
-			delay:       "abc",
+			name:        "non-integer not-a-number",
+			delay:       "not-a-number",
 			wantStatus:  http.StatusBadRequest,
 			wantBody:    invalidDelayMessage,
 			wantHandled: false,
