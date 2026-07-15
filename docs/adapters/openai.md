@@ -71,7 +71,7 @@ Use this table to jump from Mockport's supported local surface to the closest of
 | --- | --- |
 | `chat_success` | Default successful local workflow. |
 | `stream_success` | Returns SSE-compatible chat completion chunks for streaming chat requests. |
-| `rate_limited` | Returns OpenAI-like rate limit behavior. |
+| `rate_limited` | Returns HTTP 429 with `Retry-After: 1` and an OpenAI-like rate limit error envelope. |
 | `context_length_exceeded` | Returns OpenAI-like context length behavior. |
 | `auth_error` | Returns authentication-style failures. |
 
