@@ -8,7 +8,7 @@ Mockport exposes a run report at:
 curl http://localhost:43101/_mockport/report
 ```
 
-The report includes safety status, enabled adapters, request metadata, scenario coverage, behavior matrix entries, and unsupported endpoint attempts.
+The report includes safety status, enabled adapters, request metadata, scenario coverage, behavior matrix entries, and unsupported endpoint attempts. For the full JSON field reference, see [Report schema](report-schema.md).
 
 ## Request history
 
