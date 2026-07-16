@@ -2,6 +2,8 @@
 
 [English](openai.md)
 
+共通ルール: [シナリオポリシー](../scenario-policy.ja.md)。
+
 OpenAI adapter は、OpenAI-compatible な local API surface を使って、AI application の統合 path を secret-free に検証するための adapter です。
 
 ## 対応範囲

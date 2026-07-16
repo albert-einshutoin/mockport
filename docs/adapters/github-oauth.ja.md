@@ -2,6 +2,8 @@
 
 [English](github-oauth.md)
 
+共通ルール: [シナリオポリシー](../scenario-policy.ja.md)。
+
 GitHub OAuth adapter は、local OAuth flow の selected workflow を再現するための adapter です。認可 redirect、token exchange、user profile、emails、orgs などを fake state で扱います。
 
 ## 対応範囲

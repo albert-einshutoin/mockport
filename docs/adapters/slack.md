@@ -2,6 +2,8 @@
 
 [日本語版](slack.ja.md)
 
+Shared rules: [Scenario Policy](../scenario-policy.md).
+
 This document describes the Mockport `slack` adapter contract. It is not a copy of Slack's documentation and does not claim full Slack platform compatibility.
 
 ## Scope
