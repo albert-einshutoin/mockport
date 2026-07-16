@@ -53,6 +53,14 @@ docker run --rm -p 127.0.0.1:43101:43101 \
 bash scripts/smoke-empty-dir.sh
 ```
 
+PR を開く前に、標準のローカル trust gate を実行してください:
+
+```bash
+make verify
+```
+
+`go vet ./...`、`go test ./...`、race test、public-trust check、adapter completeness gate を連鎖実行します。上記の Docker build/run と `bash scripts/smoke-empty-dir.sh` は、コンテナ image の動作確認用です。
+
 ## 動作イメージ
 
 ヘルスチェック:

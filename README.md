@@ -53,6 +53,14 @@ Or run the empty-directory smoke test:
 bash scripts/smoke-empty-dir.sh
 ```
 
+Before opening a pull request, run the standard local trust gate:
+
+```bash
+make verify
+```
+
+This chains `go vet ./...`, `go test ./...`, race tests, public-trust checks, and the adapter-completeness gate. The Docker build/run steps and `bash scripts/smoke-empty-dir.sh` above exercise the container image separately.
+
 ## What It Looks Like
 
 Health check:
