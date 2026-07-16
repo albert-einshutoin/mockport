@@ -6,6 +6,16 @@ set -euo pipefail
 # Fails when any helper name appears in more adapter packages than
 # DUPLICATE_ADAPTER_THRESHOLD (default: built-in adapter package count).
 
+if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
+  cat <<'EOF'
+Usage: bash scripts/check-adapter-helpers.sh
+
+Reports duplicated unexported helper names across built-in adapter packages.
+See docs/adapter-helper-policy.md for when helpers should stay local or become shared.
+EOF
+  exit 0
+fi
+
 ADAPTERS_DIR="adapters"
 EXCLUDED_HELPERS='^(New|Name|Register|FakeEnv|Metadata|handle|handleReset)$'
 

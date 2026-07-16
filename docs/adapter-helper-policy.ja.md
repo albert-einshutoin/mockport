@@ -14,7 +14,7 @@ adapter helper は、provider ごとの差異を隠しすぎず、Mockport の s
 
 ## 重複 helper 名の追跡
 
-[`scripts/check-adapter-helpers.sh`](../scripts/check-adapter-helpers.sh) は、built-in adapter パッケージ内の unexported helper 名（`writeJSON` や `normalizeScenario` など）の重複を機械的に一覧化します。
+[`scripts/check-adapter-helpers.sh`](../scripts/check-adapter-helpers.sh) は、built-in adapter パッケージ内の unexported helper 名（`bearerToken`、`clientIDMatches`、`writeError` など）の重複を機械的に一覧化します。
 
 この script は追跡用であり、即時の共通化を義務づけるものではありません。
 
