@@ -9,6 +9,7 @@
 - Added scheduled/manual compatibility CI for Stripe, OpenAI, GitHub OAuth, and Slack contract checks.
 - Added generated compatibility reports with compatibility scores, provider API versions, SDK/client evidence, and known gaps.
 - Added release checks for maturity labels: `experimental`, `sdk-compatible`, `workflow-compatible`, and `provider-compatible`.
+- Compared with the v0.1.0-alpha scope, current mainline now classifies all six built-in adapters—Stripe, OpenAI, GitHub OAuth, Slack, LINE, and Zoho OAuth—as `workflow-compatible` for documented selected workflows. This does not claim `provider-compatible` parity.
 
 ## v0.1.0-alpha - 2026-05-26
 
