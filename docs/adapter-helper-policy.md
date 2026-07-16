@@ -2,7 +2,7 @@
 
 [日本語版](adapter-helper-policy.ja.md)
 
-OpenAI, GitHub OAuth, and Slack currently keep small local helpers such as `writeJSON` and `normalizeScenario` inside each adapter package.
+The six current built-in adapters—Stripe, OpenAI, GitHub OAuth, Slack, LINE, and Zoho OAuth—keep provider-shaped helpers local to their adapter packages. Examples shared by some packages include `bearerToken`, `clientIDMatches`, and `writeError`; the duplicated names do not imply identical behavior.
 
 This is intentional for Phase 13:
 
