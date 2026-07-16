@@ -2,6 +2,8 @@
 
 [日本語版](github-oauth.ja.md)
 
+Shared rules: [Scenario Policy](../scenario-policy.md).
+
 This document describes the Mockport `github-oauth` adapter contract. It is not a copy of GitHub's documentation and does not claim full GitHub OAuth or REST API compatibility.
 
 ## Scope

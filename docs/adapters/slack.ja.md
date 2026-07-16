@@ -2,6 +2,8 @@
 
 [English](slack.md)
 
+共通ルール: [シナリオポリシー](../scenario-policy.ja.md)。
+
 Slack adapter は、messaging workflow と Events API の selected subset を local で検証するための adapter です。
 
 ## 対応範囲

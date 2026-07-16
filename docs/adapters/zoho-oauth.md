@@ -2,6 +2,8 @@
 
 [日本語版](zoho-oauth.ja.md)
 
+Shared rules: [Scenario Policy](../scenario-policy.md).
+
 This document describes the Mockport `zoho-oauth` adapter contract. It is not a copy of Zoho's documentation and does not claim full Zoho OAuth compatibility. It provides a minimal, deterministic local emulation of the Zoho OAuth2 authorization-code flow so an application can complete login locally without reaching real Zoho.
 
 ## Scope

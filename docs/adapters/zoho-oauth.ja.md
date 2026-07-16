@@ -2,6 +2,8 @@
 
 [English](zoho-oauth.md)
 
+共通ルール: [シナリオポリシー](../scenario-policy.ja.md)。
+
 Zoho OAuth adapter は、Zoho OAuth2 の authorization-code flow を最小限・deterministic に再現する adapter です。アプリが `ZOHO_AUTH_BASE_URL` をこの Mockport の base path に向けるだけで、実際の Zoho に接続せずローカルでログインを完結できます。Zoho の全 API は対象外です。
 
 ## 対応範囲

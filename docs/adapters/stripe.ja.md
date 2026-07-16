@@ -2,6 +2,8 @@
 
 [English](stripe.md)
 
+共通ルール: [シナリオポリシー](../scenario-policy.ja.md)。
+
 Stripe adapter は、payment integration の selected workflow を local で検証するための Stripe-like adapter です。
 
 ## 対応範囲

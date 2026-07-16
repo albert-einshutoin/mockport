@@ -2,6 +2,8 @@
 
 [日本語版](openai.ja.md)
 
+Shared rules: [Scenario Policy](../scenario-policy.md).
+
 This document describes the Mockport `openai` adapter contract. It is not a copy of OpenAI's documentation and does not claim full OpenAI API compatibility.
 
 ## Scope

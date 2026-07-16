@@ -2,6 +2,8 @@
 
 [English](line.md)
 
+共通ルール: [シナリオポリシー](../scenario-policy.ja.md)。
+
 LINE adapter は、Messaging API、LINE Login、LIFF helper、MINI App service message、LINE Pay、Mini Dapp helper の local workflow を扱います。本ドキュメントは LINE 公式プラットフォーム仕様の写しではなく、完全な LINE プラットフォーム互換を主張しません。
 
 `line` adapter は **workflow-compatible**（アプリ統合テストに必要な workflow を local で再現可能）であり、**provider-compatible**（本番 LINE プラットフォームと同等の挙動・検証・運用境界）ではありません。
