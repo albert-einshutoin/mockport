@@ -33,6 +33,7 @@ adapter PR では、実装前にオンボーディングガイドに従ってく
 - [`docs/adding-an-adapter.md`](docs/adding-an-adapter.md)
 - [`docs/scenario-policy.md`](docs/scenario-policy.md)
 - [`docs/compatibility-model.md`](docs/compatibility-model.md)
+- [`docs/adapter-helper-policy.ja.md`](docs/adapter-helper-policy.ja.md)
 
 ## Public Trust Checks
 

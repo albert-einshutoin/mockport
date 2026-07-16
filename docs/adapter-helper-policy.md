@@ -21,7 +21,7 @@ Until then, adapters should prefer clear local helpers over broad abstraction.
 
 ## Tracking duplicated helper names
 
-[`scripts/check-adapter-helpers.sh`](../scripts/check-adapter-helpers.sh) scans built-in adapter packages for repeated unexported helper names such as `writeJSON` and `normalizeScenario`.
+[`scripts/check-adapter-helpers.sh`](../scripts/check-adapter-helpers.sh) scans built-in adapter packages for repeated unexported helper names such as `bearerToken`, `clientIDMatches`, and `writeError`.
 
 The script is a tracking aid, not a mandate to consolidate immediately:
 
