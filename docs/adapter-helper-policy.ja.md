@@ -2,7 +2,7 @@
 
 [English](adapter-helper-policy.md)
 
-Stripe、OpenAI、GitHub OAuth、Slack、LINE、Zoho OAuth は、現在各 adapter パッケージ内に `writeJSON` や `normalizeScenario` などの小さな local helper を保持しています。
+現在の6つの built-in adapter（Stripe、OpenAI、GitHub OAuth、Slack、LINE、Zoho OAuth）は、provider 固有の helper を各 adapter パッケージ内に保持しています。複数パッケージに存在する例として `bearerToken`、`clientIDMatches`、`writeError` がありますが、同名であることは同一挙動を意味しません。
 
 adapter helper は、provider ごとの差異を隠しすぎず、Mockport の supported workflow を明確に保つための補助層です。
 
