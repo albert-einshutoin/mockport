@@ -23,6 +23,7 @@ require_text() {
 require_file ".github/workflows/compatibility.yml"
 require_text ".github/workflows/compatibility.yml" "workflow_dispatch"
 require_text ".github/workflows/compatibility.yml" "schedule:"
+require_text ".github/workflows/compatibility.yml" "fetch-depth: 0"
 require_text ".github/workflows/compatibility.yml" "bash scripts/run-sdk-contracts.sh stripe"
 require_text ".github/workflows/compatibility.yml" "bash scripts/run-sdk-contracts.sh openai"
 require_text ".github/workflows/compatibility.yml" "bash scripts/run-sdk-contracts.sh github-oauth"

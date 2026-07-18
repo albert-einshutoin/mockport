@@ -16,6 +16,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          # The freshness gate compares report evidence with the latest commit
+          # touching compatibility sources, which requires repository history.
+          fetch-depth: 0
       - uses: actions/setup-go@v6
         with:
           go-version: "1.26.5"
