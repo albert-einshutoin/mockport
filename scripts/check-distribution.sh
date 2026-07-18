@@ -31,6 +31,7 @@ require_text ".github/workflows/docker.yml" "ghcr.io/albert-einshutoin/mockport"
 require_text ".github/workflows/docker.yml" "type=semver"
 require_text ".github/workflows/docker.yml" "type=raw,value=latest"
 require_text ".github/workflows/docker.yml" "file: docker/Dockerfile"
+require_text ".github/workflows/docker.yml" "VERSION=\${{ steps.meta.outputs.version }}"
 require_text ".github/workflows/docker.yml" "go test ./..."
 
 require_file "packaging/homebrew/mockport.rb.template"

@@ -71,6 +71,9 @@ verify_image() {
   [[ -n "$IMAGE" ]] || return 0
   docker pull "$IMAGE" >/dev/null
   docker image inspect "$IMAGE" >/dev/null
+  local output
+  output="$(docker run --rm "$IMAGE" version)"
+  [[ "$output" == "mockport ${VERSION}" ]] || fail "container version output = $output"
 }
 
 cd "$ROOT_DIR"
