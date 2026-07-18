@@ -27,7 +27,7 @@ These are symptom-based limits verified against adapter specs, compatibility rep
 - **OpenAI: no real inference quality** — Responses are deterministic placeholders; model quality, tokenization parity, hosted tools, vector stores, and provider scheduling are not reproduced.
 - **Slack: no real message delivery or full Events API** — Local message state and a URL-verification / message-callback subset are available; real workspace delivery, Block Kit validation, files, app scopes, and enterprise directory policy are not.
 - **LINE: no real Login UI or LIFF browser** — OAuth code/token/profile flows work locally; QR login, LIFF runtime, signed ID tokens, provider webhook redelivery, and quota enforcement beyond scenarios are not reproduced.
-- **General: `scenarios:` block in `mockport.yml` is not implemented** — parsed but silently ignored at runtime; Mockport warns at startup, in `--check`, and in `/_mockport/report` when present (see issue #81).
+- **General: `scenarios:` block in `mockport.yml` is not implemented** — parsed but not applied at runtime; Mockport warns at startup, in `--check`, and in `/_mockport/report` when present.
 - **General: state is in-memory only** — container or process restart clears adapter state; there is no persistence layer.
 
 For the full gap list per adapter, see [support matrix](support-matrix.md), adapter specs under `docs/adapters/`, and [compatibility reports](../compatibility-reports/latest.md).
@@ -43,8 +43,8 @@ For the full gap list per adapter, see [support matrix](support-matrix.md), adap
 
 ## Unimplemented Configuration Blocks
 
-The `scenarios:` block in `mockport.yml` is parsed but **not implemented** — it is silently
-ignored at runtime. Mockport will emit a warning at startup (and in `--check` output and
+The `scenarios:` block in `mockport.yml` is parsed but **not implemented** and is not
+applied at runtime. Mockport will emit a warning at startup (and in `--check` output and
 `/_mockport/report`) when this block is present.
 
 For response switching and error-case simulation, use:
