@@ -20,6 +20,7 @@ collect_public_files() {
     "ROADMAP.md"
     "SECURITY.ja.md"
     "SECURITY.md"
+    "llms.txt"
     "configs"
     "contract"
     "docs"

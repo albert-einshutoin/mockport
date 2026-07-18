@@ -92,6 +92,7 @@ func newInitCommand() *cobra.Command {
 			fmt.Fprintln(cmd.OutOrStdout(), "  docker compose -f docker-compose.mockport.yml up")
 			fmt.Fprintf(cmd.OutOrStdout(), "  curl http://localhost:%d/health\n", config.DefaultPort)
 			fmt.Fprintln(cmd.OutOrStdout(), "  mockport report")
+			fmt.Fprintf(cmd.OutOrStdout(), "  Tip: mockport agent-context --adapter %s >> AGENTS.md\n", specs[0].Name)
 			return nil
 		},
 	}

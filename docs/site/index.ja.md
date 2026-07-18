@@ -2,6 +2,8 @@
 
 [English](index.md)
 
+AI coding agent から安全に利用する手順は [AI coding agents](ai-agents.ja.md) を参照してください。
+
 Mockport は、外部サービス連携テストのための Docker-first なローカルエミュレーターです。
 
 - [Quickstart](quickstart.ja.md)

@@ -19,6 +19,9 @@ func TestRootCommandShowsHelp(t *testing.T) {
 	if !strings.Contains(got, "healthcheck") {
 		t.Fatalf("help output missing healthcheck command: %q", got)
 	}
+	if !strings.Contains(got, "agent-context") {
+		t.Fatalf("help output missing agent-context command: %q", got)
+	}
 }
 
 func TestRootCommandShowsUsageForFlagParseError(t *testing.T) {

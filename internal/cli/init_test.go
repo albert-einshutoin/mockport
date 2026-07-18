@@ -57,6 +57,7 @@ func TestInitGeneratesStripeFiles(t *testing.T) {
 		"docker compose -f docker-compose.mockport.yml up",
 		"curl http://localhost:43101/health",
 		"mockport report",
+		"mockport agent-context --adapter stripe >> AGENTS.md",
 	} {
 		if !strings.Contains(got, want) {
 			t.Fatalf("init output missing %q:\n%s", want, got)

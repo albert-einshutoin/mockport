@@ -151,6 +151,10 @@ mockport run --config examples/unsafe-config/mockport.yml --check
 
 See [AI-safe Development](docs/ai-safe-development.md) for warning categories, strict mode, and redaction behavior.
 
+For AI coding agents, run `mockport agent-context --adapter <name>` and review
+the generated safe instruction block before adding it to your project. See
+[AI coding agents](docs/site/ai-agents.md).
+
 ## Reports And Compatibility
 
 Every run exposes `/_mockport/report` and `mockport report` with request history, scenario coverage, behavior matrix, and safety summary.

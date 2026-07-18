@@ -17,5 +17,6 @@ Built-in adapters: `stripe`, `openai`, `github-oauth`, `slack`, `line`, and `zoh
 - [Limitations](limitations.md)
 - [Comparison](comparison.md)
 - [AI-safe mode](ai-safe.md)
+- [AI coding agents](ai-agents.md)
 - [Reports](reports.md)
 - [Distribution](distribution.md)

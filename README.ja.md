@@ -150,6 +150,9 @@ mockport run --config examples/unsafe-config/mockport.yml --check
 
 警告カテゴリ、strict mode、redaction の挙動は [AI-safe Development](docs/ai-safe-development.ja.md) を参照してください。
 
+AI coding agent 向けには `mockport agent-context --adapter <name>` で安全な instruction
+block を生成できます。詳細は [AI coding agents](docs/site/ai-agents.ja.md) を参照してください。
+
 ## レポートと互換性
 
 各 run は `/_mockport/report` と `mockport report` で request history、scenario coverage、behavior matrix、safety summary を公開します。
