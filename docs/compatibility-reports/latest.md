@@ -2,7 +2,7 @@
 
 [日本語版](latest.ja.md)
 
-Generated: 2026-07-02
+Generated: 2026-07-19
 
 Compatibility is measured from Mockport runtime metadata, SDK/client contract checks, fixture coverage, and known gaps. It is not a claim that provider internals or undocumented behavior are reproduced.
 

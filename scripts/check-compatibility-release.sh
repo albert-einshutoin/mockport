@@ -48,6 +48,30 @@ require_text "CHANGELOG.md" "compatibility scores"
 node --test scripts/validate-compatibility-report.test.mjs
 node scripts/validate-compatibility-report.mjs docs/compatibility-reports/latest.json
 
+# Keep the published evidence date at least as new as every committed source
+# that can change the generated compatibility snapshot. This catches content
+# refreshes that accidentally preserve an older generated_at value.
+LATEST_COMPATIBILITY_SOURCE_DATE="$(
+  git log -1 --format=%cs -- \
+    adapters \
+    compat \
+    contract \
+    examples/multi-adapter/mockport.yml \
+    internal/adapter \
+    internal/compat \
+    internal/report \
+    scripts/generate-compatibility-report.sh \
+    scripts/render-compatibility-report.mjs
+)"
+if [[ -z "$LATEST_COMPATIBILITY_SOURCE_DATE" ]]; then
+  echo "unable to determine latest compatibility source date" >&2
+  exit 1
+fi
+node --test scripts/check-compatibility-freshness.test.mjs
+node scripts/check-compatibility-freshness.mjs \
+  docs/compatibility-reports/latest.json \
+  "$LATEST_COMPATIBILITY_SOURCE_DATE"
+
 # Provenance gate: regenerate the report from the runtime endpoint and require
 # the committed artifacts to match. Use the committed generated_at date so this
 # check catches hand edits and stale content without failing only because the

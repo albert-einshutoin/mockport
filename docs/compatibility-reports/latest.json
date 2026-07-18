@@ -1,6 +1,6 @@
 {
   "generated_by": "scripts/generate-compatibility-report.sh",
-  "generated_at": "2026-07-02",
+  "generated_at": "2026-07-19",
   "source": "_mockport/report",
   "release_labels": {
     "experimental": "Early adapter coverage for selected workflows. Expect gaps.",
