@@ -1,0 +1,28 @@
+# Mockport
+
+Mockport is a secret-free, Docker-first local API environment for AI coding agents and CI.
+
+## Start here
+
+- README and quickstart: README.md, docs/site/quickstart.md
+- Current support: docs/site/support-matrix.md
+- Known limitations: docs/site/limitations.md
+- Runnable official SDK clients: examples/node-sdk-clients/, examples/python-openai/
+- Adapter specifications: docs/adapters/
+- Contribution and TDD: CONTRIBUTING.md, docs/maintainer-guide.md
+
+## Security boundary
+
+- Never use real provider credentials with Mockport examples or tests.
+- Use only `mockport_`-prefixed fake values and loopback URLs.
+- Do not proxy requests to real provider APIs.
+- Run `make verify` before proposing changes.
+- Run `mockport agent-context --adapter <name>` to generate project-specific instructions.
+- Treat `docs/planning/` as planning input, not current support or a release commitment.
+
+## Runtime contract
+
+- Health: GET /health
+- Machine-readable report: GET /_mockport/report
+- Default local address: http://127.0.0.1:43101
+- Built-in adapters: Stripe, OpenAI, GitHub OAuth, Slack, LINE, Zoho OAuth

@@ -27,7 +27,7 @@ adapter spec、compatibility report、runtime 挙動と突合した症状ベー�
 - **OpenAI: 実 inference 品質は再現しません** — 応答は deterministic な placeholder。model quality、tokenization parity、hosted tools、vector stores、provider scheduling は対象外。
 - **Slack: 実メッセージ配送や Events API 全体は対象外** — local message state と URL verification / message callback の subset のみ。実 workspace 配送、Block Kit validation、files、app scopes、enterprise directory は未対応。
 - **LINE: 実 Login UI や LIFF browser はありません** — OAuth code/token/profile は local で動作。QR login、LIFF runtime、署名付き ID token、provider 側 webhook 再配送、quota enforcement（シナリオ以外）は未対応。
-- **全般: `mockport.yml` の `scenarios:` ブロックは未実装** — パースされますが runtime では無視。存在時は起動時・`--check`・`/_mockport/report` で警告（issue #81 参照）。
+- **全般: `mockport.yml` の `scenarios:` ブロックは未実装** — パースされますが runtime には適用されません。存在時は起動時・`--check`・`/_mockport/report` で警告します。
 - **全般: 状態はメモリ内のみ** — コンテナまたはプロセス再起動で消えます。永続化レイヤーはありません。
 
 adapter ごとの gap 一覧は [support matrix](support-matrix.ja.md)、`docs/adapters/`、 [compatibility reports](../compatibility-reports/latest.ja.md) を参照してください。

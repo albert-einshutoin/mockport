@@ -39,6 +39,10 @@ func (a Adapter) Register(mux *http.ServeMux, cfg adapter.Config) error {
 		r.webhookClient = httpx.NewWebhookSenderClient(httpx.DefaultWebhookSenderTimeout)
 	}
 	mux.HandleFunc(r.basePath+"/", r.handle)
+	// The official LINE SDK builds absolute /v2/bot paths, so a base URL path
+	// prefix cannot redirect it under /line. Keep the documented /line routes
+	// while exposing only the Messaging API root needed by the official client.
+	mux.HandleFunc("/v2/bot/", r.handleSDKRoot)
 	return nil
 }
 

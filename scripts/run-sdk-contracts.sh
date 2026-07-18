@@ -6,7 +6,7 @@ PROVIDER="${1:-all}"
 PORT="${MOCKPORT_CONTRACT_PORT:-43101}"
 BASE_URL="http://127.0.0.1:${PORT}"
 case "$PROVIDER" in
-  all|stripe|openai|github-oauth|slack|slack-rate-limited) ;;
+  all|stripe|openai|github-oauth|line|slack|slack-rate-limited) ;;
   *)
     echo "unsupported provider: $PROVIDER" >&2
     exit 1

@@ -12,6 +12,7 @@
   },
   "license": "Apache-2.0",
   "devDependencies": {
+    "@line/bot-sdk": "11.0.0",
     "openai": "6.46.0",
     "stripe": "22.3.1"
   }

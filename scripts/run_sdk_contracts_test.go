@@ -20,19 +20,20 @@ func TestRunSDKContractsRejectsUnsupportedProvider(t *testing.T) {
 	// contract-harness resources.
 	tmpBase := t.TempDir()
 
-	cmd := exec.Command("bash", filepath.Join(repoRoot, "scripts", "run-sdk-contracts.sh"), "line")
+	const unsupportedProvider = "sendgrid"
+	cmd := exec.Command("bash", filepath.Join(repoRoot, "scripts", "run-sdk-contracts.sh"), unsupportedProvider)
 	cmd.Dir = repoRoot
 	cmd.Env = append(os.Environ(), "TMPDIR="+tmpBase)
 
 	output, err := cmd.CombinedOutput()
 	if err == nil {
-		t.Fatalf("expected non-zero exit for unsupported provider line, got success\noutput: %s", output)
+		t.Fatalf("expected non-zero exit for unsupported provider %s, got success\noutput: %s", unsupportedProvider, output)
 	}
 	if exitErr, ok := err.(*exec.ExitError); !ok || exitErr.ExitCode() != 1 {
 		t.Fatalf("expected exit code 1, got %v\noutput: %s", err, output)
 	}
 
-	if !strings.Contains(string(output), "unsupported provider: line") {
+	if !strings.Contains(string(output), "unsupported provider: "+unsupportedProvider) {
 		t.Fatalf("expected clear unsupported provider message, got:\n%s", output)
 	}
 

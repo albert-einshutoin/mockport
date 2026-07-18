@@ -6,12 +6,15 @@
 
 ## Unreleased
 
+## v0.2.0-preview - 2026-07-19
+
 ### Compatibility release track
 
-- Stripe、OpenAI、GitHub OAuth、Slack の contract check 向けに scheduled/manual compatibility CI を追加。
+- Stripe、OpenAI、GitHub OAuth、Slack、公式 LINE SDK の contract check 向けに scheduled/manual compatibility CI を追加。
 - compatibility score、provider API version、SDK/client evidence、known gap を含む生成済み compatibility report を追加。
 - maturity label `experimental`、`sdk-compatible`、`workflow-compatible`、`provider-compatible` 向けの release check を追加。
 - v0.1.0-alpha の scope と比べ、現行 mainline では6つの built-in adapter（Stripe、OpenAI、GitHub OAuth、Slack、LINE、Zoho OAuth）すべてを、文書化された selected workflow 向けの `workflow-compatible` として分類。`provider-compatible` parity を主張するものではない。
+- deterministic state、reset、bounded request history、AI-safe summary、実行可能な Node SDK example、`llms.txt` を追加。
 
 ## v0.1.0-alpha - 2026-05-26
 

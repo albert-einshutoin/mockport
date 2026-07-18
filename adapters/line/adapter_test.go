@@ -50,6 +50,23 @@ func TestMessagingPushAndProfile(t *testing.T) {
 	}
 }
 
+func TestMessagingPushSupportsOfficialSDKRootPath(t *testing.T) {
+	mux := newLineMux(t, adapter.Config{BasePath: "/line", Scenario: "line_success"})
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "/v2/bot/message/push", strings.NewReader(`{"to":"Umockport","messages":[{"type":"text","text":"hello"}]}`))
+	req.Header.Set("Authorization", "Bearer mockport_line_token")
+	req.Header.Set("Content-Type", "application/json")
+
+	mux.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("SDK root push status = %d, want %d: %s", rec.Code, http.StatusOK, rec.Body.String())
+	}
+	if !strings.Contains(rec.Body.String(), `"sentMessages"`) {
+		t.Fatalf("SDK root push response missing sentMessages: %s", rec.Body.String())
+	}
+}
+
 func TestMessagingAPICoreEndpoints(t *testing.T) {
 	mux := newLineMux(t, adapter.Config{BasePath: "/line", Scenario: "line_success"})
 

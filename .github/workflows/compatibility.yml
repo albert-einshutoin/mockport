@@ -16,6 +16,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          # The freshness gate compares report evidence with the latest commit
+          # touching compatibility sources, which requires repository history.
+          fetch-depth: 0
       - uses: actions/setup-go@v6
         with:
           go-version: "1.26.5"
@@ -24,6 +28,9 @@ jobs:
           node-version: "24"
           cache: "npm"
           cache-dependency-path: "contract/sdk/package-lock.json"
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
       - run: go test ./...
       - run: go vet ./...
       - run: go test -race ./...
@@ -32,7 +39,9 @@ jobs:
       - run: bash scripts/run-sdk-contracts.sh stripe
       - run: bash scripts/run-sdk-contracts.sh openai
       - run: bash scripts/run-sdk-contracts.sh github-oauth
+      - run: bash scripts/run-sdk-contracts.sh line
       - run: bash scripts/run-sdk-contracts.sh slack
+      - run: bash scripts/smoke-node-sdk-examples.sh
       - run: bash scripts/check-compat-fixtures.sh
       - run: bash scripts/check-compatibility-release.sh
       - run: bash scripts/generate-compatibility-report.sh

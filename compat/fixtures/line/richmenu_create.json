@@ -1,0 +1,36 @@
+{
+  "provider": "line",
+  "provider_version": "Messaging API v2",
+  "sdk": { "name": "@line/bot-sdk", "version": "11.0.0" },
+  "source": {
+    "type": "sdk",
+    "title": "LINE Messaging API create rich menu",
+    "url_or_path": "https://developers.line.biz/en/reference/messaging-api/#create-rich-menu",
+    "retrieved_at": "2026-07-19"
+  },
+  "scenario": "line_success",
+  "request": {
+    "method": "POST",
+    "path": "/v2/bot/richmenu",
+    "headers": {
+      "Authorization": "Bearer mockport_line_token",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "size": { "width": 2500, "height": 1686 },
+      "selected": false,
+      "name": "Mockport SDK menu",
+      "chatBarText": "Open",
+      "areas": []
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "body": { "richMenuId": "line_rich_menu_000001" }
+  },
+  "normalization": [
+    "channel token uses the mockport_ fake namespace",
+    "rich menu ID is a deterministic local value"
+  ]
+}

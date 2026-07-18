@@ -9,9 +9,16 @@ import (
 )
 
 func (r *routes) handle(w http.ResponseWriter, req *http.Request) {
+	r.handlePath(w, req, strings.TrimPrefix(req.URL.Path, r.basePath))
+}
+
+func (r *routes) handleSDKRoot(w http.ResponseWriter, req *http.Request) {
+	r.handlePath(w, req, req.URL.Path)
+}
+
+func (r *routes) handlePath(w http.ResponseWriter, req *http.Request, path string) {
 	httpx.LimitRequestBody(w, req)
 	w.Header().Set("X-Line-Request-Id", "line-request-mockport")
-	path := strings.TrimPrefix(req.URL.Path, r.basePath)
 	// Validate X-Mockport-Scenario once at the dispatch layer so every LINE
 	// endpoint rejects unknown scenario names with a 400 instead of silently
 	// falling through to a success path. The error body shape depends on the

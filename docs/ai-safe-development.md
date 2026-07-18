@@ -84,3 +84,9 @@ Mockport also flags live provider URLs for supported and planned providers.
 ```
 
 No full secret value should appear in CLI output or report output.
+
+`safe` covers every warning category. `public_env_safe` is narrower: it only
+becomes `false` for real-looking credentials or external provider URLs. For
+example, a container may report a `public_bind` deployment warning while its
+fake environment values remain safe to commit. Always review the detailed
+`safety_warnings` list when `safe` is `false`.

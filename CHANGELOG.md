@@ -4,12 +4,21 @@
 
 ## Unreleased
 
+## v0.2.0-preview - 2026-07-19
+
 ### Compatibility release track
 
-- Added scheduled/manual compatibility CI for Stripe, OpenAI, GitHub OAuth, and Slack contract checks.
+- Added scheduled/manual compatibility CI for Stripe, OpenAI, GitHub OAuth, Slack, and the official LINE SDK contract.
 - Added generated compatibility reports with compatibility scores, provider API versions, SDK/client evidence, and known gaps.
 - Added release checks for maturity labels: `experimental`, `sdk-compatible`, `workflow-compatible`, and `provider-compatible`.
 - Compared with the v0.1.0-alpha scope, current mainline now classifies all six built-in adapters—Stripe, OpenAI, GitHub OAuth, Slack, LINE, and Zoho OAuth—as `workflow-compatible` for documented selected workflows. This does not claim `provider-compatible` parity.
+
+### Runtime and OSS experience
+
+- Added deterministic state, reset endpoints, bounded request history, compatibility metadata, and broader selected workflow coverage across all six adapters.
+- Separated deployment warnings from the narrower `public_env_safe` environment-commit signal.
+- Added runnable official Stripe, OpenAI, and LINE Node.js SDK examples plus `llms.txt` guidance for AI coding agents.
+- Refreshed Docker, binary archive, CLI init, and npm fallback paths to the `v0.2.0-preview` release contract.
 
 ## v0.1.0-alpha - 2026-05-26
 

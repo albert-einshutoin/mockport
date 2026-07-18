@@ -21,7 +21,7 @@ Stripe、OpenAI、Slack、GitHub OAuth、LINE、Zoho OAuth の統合コードを
 ```bash
 docker run --rm -p 127.0.0.1:43101:43101 \
   -v $(pwd)/examples/stripe-checkout/mockport.yml:/etc/mockport/mockport.yml \
-  ghcr.io/albert-einshutoin/mockport:0.1.0-alpha \
+  ghcr.io/albert-einshutoin/mockport:0.2.0-preview \
   run --config /etc/mockport/mockport.yml --host 0.0.0.0
 ```
 
@@ -136,6 +136,10 @@ STRIPE_WEBHOOK_SECRET=whsec_mockport
 
 詳細は [Public Env Safety](docs/public-env-safety.ja.md) を参照してください。
 
+Stripe、OpenAI、LINE の公式 client を実行できる [Node SDK examples](examples/node-sdk-clients/README.md)
+と [OpenAI Python SDK example](examples/python-openai/README.md) も用意しています。
+local Mockport と fake credential だけを使用します。
+
 ## AI-safe By Default
 
 Mockport は、実在の credential らしい値や本番外部サービス URL を検出すると警告します。`strict` mode では unsafe configuration があると startup に失敗します。
@@ -146,6 +150,9 @@ mockport run --config examples/unsafe-config/mockport.yml --check
 
 警告カテゴリ、strict mode、redaction の挙動は [AI-safe Development](docs/ai-safe-development.ja.md) を参照してください。
 
+AI coding agent 向けには `mockport agent-context --adapter <name>` で安全な instruction
+block を生成できます。詳細は [AI coding agents](docs/site/ai-agents.ja.md) を参照してください。
+
 ## レポートと互換性
 
 各 run は `/_mockport/report` と `mockport report` で request history、scenario coverage、behavior matrix、safety summary を公開します。
@@ -154,7 +161,7 @@ mockport run --config examples/unsafe-config/mockport.yml --check
 
 ## ドキュメントと配布
 
-docs、install 経路、release verification は [docs/site/](docs/site/index.ja.md) 配下にあります。現在の preview は `v0.1.0-alpha`（[Docker / GHCR](docs/site/distribution.ja.md)、[GitHub release archives](docs/site/distribution.ja.md)）。npm wrapper は experimental。Go binary と Docker が主経路です。
+docs、install 経路、release verification は [docs/site/](docs/site/index.ja.md) 配下にあります。現在の preview は `v0.2.0-preview`（[Docker / GHCR](docs/site/distribution.ja.md)、[GitHub release archives](docs/site/distribution.ja.md)）。npm wrapper は experimental。Go binary と Docker が主経路です。
 
 > **⚠️ アーカイブ**: 実装開始前(2026-05)の設計ドキュメントは [docs/archive/design/](docs/archive/design/README.ja.md) に保存されています。内容は保守されておらず、実装と乖離している可能性があります。
 

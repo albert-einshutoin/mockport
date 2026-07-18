@@ -23,9 +23,11 @@ require_text() {
 require_file ".github/workflows/compatibility.yml"
 require_text ".github/workflows/compatibility.yml" "workflow_dispatch"
 require_text ".github/workflows/compatibility.yml" "schedule:"
+require_text ".github/workflows/compatibility.yml" "fetch-depth: 0"
 require_text ".github/workflows/compatibility.yml" "bash scripts/run-sdk-contracts.sh stripe"
 require_text ".github/workflows/compatibility.yml" "bash scripts/run-sdk-contracts.sh openai"
 require_text ".github/workflows/compatibility.yml" "bash scripts/run-sdk-contracts.sh github-oauth"
+require_text ".github/workflows/compatibility.yml" "bash scripts/run-sdk-contracts.sh line"
 require_text ".github/workflows/compatibility.yml" "bash scripts/run-sdk-contracts.sh slack"
 require_text ".github/workflows/compatibility.yml" "actions/upload-artifact@v7"
 
@@ -47,6 +49,30 @@ require_text "CHANGELOG.md" "compatibility scores"
 # score threshold). Run its regression tests first so the gate logic stays covered.
 node --test scripts/validate-compatibility-report.test.mjs
 node scripts/validate-compatibility-report.mjs docs/compatibility-reports/latest.json
+
+# Keep the published evidence date at least as new as every committed source
+# that can change the generated compatibility snapshot. This catches content
+# refreshes that accidentally preserve an older generated_at value.
+LATEST_COMPATIBILITY_SOURCE_DATE="$(
+  git log -1 --format=%cs -- \
+    adapters \
+    compat \
+    contract \
+    examples/multi-adapter/mockport.yml \
+    internal/adapter \
+    internal/compat \
+    internal/report \
+    scripts/generate-compatibility-report.sh \
+    scripts/render-compatibility-report.mjs
+)"
+if [[ -z "$LATEST_COMPATIBILITY_SOURCE_DATE" ]]; then
+  echo "unable to determine latest compatibility source date" >&2
+  exit 1
+fi
+node --test scripts/check-compatibility-freshness.test.mjs
+node scripts/check-compatibility-freshness.mjs \
+  docs/compatibility-reports/latest.json \
+  "$LATEST_COMPATIBILITY_SOURCE_DATE"
 
 # Provenance gate: regenerate the report from the runtime endpoint and require
 # the committed artifacts to match. Use the committed generated_at date so this

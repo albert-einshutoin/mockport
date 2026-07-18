@@ -6,7 +6,7 @@ Mockport is a Docker-first local API environment for AI-native development and C
 
 ## Current Release
 
-- `v0.1.0-alpha`: public preview with Docker/GHCR, GitHub release archives, AI-safe env policy, and scenario-compatible adapters.
+- `v0.2.0-preview`: six workflow-compatible adapters, generated compatibility evidence, official Stripe/OpenAI/LINE SDK contracts, bounded reports, and AI-safe environment checks.
 
 ## Current Mainline
 
@@ -20,14 +20,13 @@ Mockport is a Docker-first local API environment for AI-native development and C
 - Phase 25: expand the SDK/client contract harness beyond provider-specific smoke coverage.
 - Phase 26: add versioned compatibility manifests and automated provider-compatible promotion gates.
 - Phase 27-29: deepen provider-specific contract evidence for Stripe, OpenAI, GitHub OAuth, Slack, and LINE where applicable.
-- Phase 30: publish `v0.2.0-preview` with refreshed compatibility report and post-release smoke evidence.
+- Publish post-release artifact, checksum, GHCR, and smoke evidence for `v0.2.0-preview`.
 
 ## Public Preview Follow-up
 
-- [#6](https://github.com/albert-einshutoin/mockport/issues/6): Add SSE-compatible streaming response for OpenAI `stream_success`.
-- [#8](https://github.com/albert-einshutoin/mockport/issues/8): Improve `mockport up` Docker Compose UX with clearer errors and `--detach` / `--build`.
-- [#5](https://github.com/albert-einshutoin/mockport/issues/5): Clarify built-in scenario policy versus user-defined scenarios.
-- [#7](https://github.com/albert-einshutoin/mockport/issues/7): Track adapter helper duplication before adding more adapters.
+- Expand official SDK contracts beyond the selected workflows currently covered.
+- Turn verified compatibility gaps into a small milestone-driven backlog.
+- Improve runnable application examples and release adoption evidence.
 
 ## Adapter Direction
 

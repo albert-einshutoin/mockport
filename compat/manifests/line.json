@@ -2,8 +2,15 @@
   "adapter": "line",
   "provider_version": "Messaging API v2 / Login v2.1 / Pay v3 / MINI App service messages / Mini Dapp SDK",
   "maturity": "workflow-compatible",
+  "sdk_versions": [
+    {
+      "name": "@line/bot-sdk",
+      "version": "11.0.0"
+    }
+  ],
   "levels": [
     "wire",
+    "sdk",
     "workflow",
     "state",
     "error"

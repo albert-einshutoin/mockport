@@ -60,7 +60,7 @@ ID はプロセス内で deterministic であり、Mockport プロセス再起�
 - 実 LINE Login UI、QR code login、auto login、SSO login、二要素認証画面はない。
 - 署名済みまたは provider で検証可能な ID token はない。
 - Mockport が OpenID Connect discovery endpoint を公開しない。
-- 実 LINE SDK contract harness は未対応。
+- 公式 `@line/bot-sdk` contract は push、reply、profile、rich menu の selected workflow を検証。raw client contract は LINE Login authorize/token と invalid-request response を検証し、その他の SDK surface は未検証。
 - 実 LIFF browser runtime はない。
 - provider 主導の webhook redelivery、retry scheduler、完全な webhook event catalog はない。local helper は要求に応じて signed webhook payload を送信できる。
 - monthly quota、free-message、rate-limit bucket、concurrent audience operation の enforcement は、deterministic scenario を超えていない。
@@ -86,4 +86,13 @@ bash scripts/check-public-trust.sh
 
 互換性ステータスと known gap は [`docs/site/support-matrix.md`](../site/support-matrix.md) を正とします。
 
-SDK contract harness は LINE 未対応です。`bash scripts/run-sdk-contracts.sh line` は `unsupported provider: line` で終了します。LINE smoke test が [`contract/sdk/README.md`](../../contract/sdk/README.md) に追加されるまで、上記 adapter test を使用してください。
+公式 LINE SDK contract を実行します。
+
+```bash
+bash scripts/run-sdk-contracts.sh line
+```
+
+この harness は公式 `@line/bot-sdk` の push、reply、profile、rich menu create/list/delete
+を SDK-compatible root path に対して検証します。LINE Login authorize/token と
+invalid-request response も検証します。sanitized evidence は
+[`compat/fixtures/line/`](../../compat/fixtures/line/) にあります。

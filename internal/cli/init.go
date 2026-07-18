@@ -14,7 +14,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const defaultDockerImage = "ghcr.io/albert-einshutoin/mockport:0.1.0-alpha"
+const defaultDockerImage = "ghcr.io/albert-einshutoin/mockport:0.2.0-preview"
 
 var initFilePaths = []string{"mockport.yml", ".env.mockport", "docker-compose.mockport.yml"}
 
@@ -92,6 +92,7 @@ func newInitCommand() *cobra.Command {
 			fmt.Fprintln(cmd.OutOrStdout(), "  docker compose -f docker-compose.mockport.yml up")
 			fmt.Fprintf(cmd.OutOrStdout(), "  curl http://localhost:%d/health\n", config.DefaultPort)
 			fmt.Fprintln(cmd.OutOrStdout(), "  mockport report")
+			fmt.Fprintf(cmd.OutOrStdout(), "  Tip: mockport agent-context --adapter %s >> AGENTS.md\n", specs[0].Name)
 			return nil
 		},
 	}

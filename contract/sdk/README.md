@@ -17,7 +17,7 @@ MOCKPORT_BASE_URL=http://127.0.0.1:43101 npm run test:live -- --provider all --j
 ```
 
 Runs the live SDK contract against a local Mockport server. With `--provider all`,
-the runner executes the real `stripe`, `openai`, `github-oauth`, and `slack` smoke
+the runner executes the real `stripe`, `openai`, `github-oauth`, `line`, and `slack` smoke
 tests in order and aggregates their results under a `providers` array. If any
 provider fails, the runner reports `status: "failed"` and exits non-zero.
 
@@ -30,9 +30,10 @@ Supported provider selectors:
 - `stripe`
 - `openai`
 - `github-oauth`
+- `line`
 - `slack`
 
-LINE is not yet supported: it has no smoke test in this workspace and is therefore
-excluded from the `all` selector.
-
 No test in this workspace may call an external provider API.
+
+The LINE selector verifies official SDK calls for push, reply, profile, and rich
+menus, plus raw local client checks for OAuth and invalid-request behavior.

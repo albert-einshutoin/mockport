@@ -1,0 +1,37 @@
+{
+  "provider": "line",
+  "provider_version": "LINE Login v2.1",
+  "sdk": { "name": "none", "version": "none" },
+  "source": {
+    "type": "docs",
+    "title": "LINE Login access token errors",
+    "url_or_path": "https://developers.line.biz/en/reference/line-login/#issue-access-token-error-response",
+    "retrieved_at": "2026-07-19"
+  },
+  "scenario": "auth_error",
+  "request": {
+    "method": "POST",
+    "path": "/oauth2/v2.1/token",
+    "headers": {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "X-Mockport-Scenario": "auth_error"
+    },
+    "body": {
+      "grant_type": "authorization_code",
+      "code": "mockport_invalid_code",
+      "client_id": "mockport_line_channel"
+    }
+  },
+  "response": {
+    "status": 401,
+    "headers": { "Content-Type": "application/json" },
+    "body": {
+      "error": "invalid_client",
+      "error_description": "Mockport simulated invalid LINE Login client"
+    }
+  },
+  "normalization": [
+    "invalid code and client use the mockport_ fake namespace",
+    "error text is deterministic Mockport behavior"
+  ]
+}

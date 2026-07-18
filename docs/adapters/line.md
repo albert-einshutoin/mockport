@@ -204,7 +204,7 @@ Known gaps:
 - No real LINE Login UI, QR code login, auto login, SSO login, or two-factor authentication screen.
 - No signed or provider-verifiable ID token.
 - No OpenID Connect discovery endpoint exposed by Mockport.
-- No real LINE SDK contract harness yet.
+- The official `@line/bot-sdk` contract covers selected push, reply, profile, and rich-menu workflows. A raw client contract covers the LINE Login authorize/token flow and an invalid-request response. Other SDK surfaces are not yet verified.
 - No real LIFF browser runtime.
 - No provider-driven webhook redelivery, retry scheduler, or complete webhook event catalog. The local helper can send signed webhook payloads on demand.
 - No monthly quota, free-message, rate-limit bucket, or concurrent audience operation enforcement beyond deterministic scenarios.
@@ -230,4 +230,14 @@ bash scripts/check-public-trust.sh
 
 Compatibility status and known gaps are tracked in [`docs/site/support-matrix.md`](../site/support-matrix.md).
 
-LINE is not yet supported by the SDK contract harness. `bash scripts/run-sdk-contracts.sh line` exits with `unsupported provider: line`. Use the adapter tests above until a LINE smoke test exists in [`contract/sdk/README.md`](../../contract/sdk/README.md).
+Run the official LINE SDK contract:
+
+```bash
+bash scripts/run-sdk-contracts.sh line
+```
+
+The harness verifies push, reply, profile, and rich-menu create/list/delete calls
+through the official `@line/bot-sdk` and SDK-compatible root paths. It also
+verifies the LINE Login authorize/token flow and an invalid-request response.
+Sanitized evidence lives under [`compat/fixtures/line/`](../../compat/fixtures/line/).
+The `/line/v2/bot/...` routes remain available for explicit multi-adapter HTTP clients.

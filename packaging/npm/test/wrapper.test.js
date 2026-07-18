@@ -10,7 +10,7 @@ assert(wrapper.includes("MOCKPORT_BIN"));
 assert(wrapper.includes("MOCKPORT_IMAGE"));
 assert(wrapper.includes("spawnSync(binary"));
 assert(wrapper.includes("docker"));
-assert(wrapper.includes("ghcr.io/albert-einshutoin/mockport:0.1.0-alpha"));
+assert(wrapper.includes("ghcr.io/albert-einshutoin/mockport:0.2.0-preview"));
 assert(!wrapper.includes("ghcr.io/albert-einshutoin/mockport:latest"));
 assert(wrapper.includes('"127.0.0.1:43101:43101"'));
 assert(wrapper.includes('["run", "--config", "/etc/mockport/mockport.yml", "--host", "0.0.0.0"]'));
