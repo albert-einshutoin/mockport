@@ -34,7 +34,7 @@ func TestInitGeneratesStripeFiles(t *testing.T) {
 	if !strings.Contains(string(composeData), "127.0.0.1:43101:43101") {
 		t.Fatalf("compose missing loopback port binding: %s", string(composeData))
 	}
-	if !strings.Contains(string(composeData), "ghcr.io/albert-einshutoin/mockport:0.1.0-alpha") {
+	if !strings.Contains(string(composeData), "ghcr.io/albert-einshutoin/mockport:0.2.0-preview") {
 		t.Fatalf("compose missing pinned preview image: %s", string(composeData))
 	}
 	if strings.Contains(string(composeData), "ghcr.io/albert-einshutoin/mockport:latest") {

@@ -14,7 +14,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const defaultDockerImage = "ghcr.io/albert-einshutoin/mockport:0.1.0-alpha"
+const defaultDockerImage = "ghcr.io/albert-einshutoin/mockport:0.2.0-preview"
 
 var initFilePaths = []string{"mockport.yml", ".env.mockport", "docker-compose.mockport.yml"}
 

@@ -22,8 +22,8 @@ go vet ./...
 
 ```bash
 tmpdir="$(mktemp -d)"
-scripts/build-release-archives.sh 0.1.0-alpha "$tmpdir"
-scripts/verify-release-artifacts.sh 0.1.0-alpha "$tmpdir"
+scripts/build-release-archives.sh 0.2.0-preview "$tmpdir"
+scripts/verify-release-artifacts.sh 0.2.0-preview "$tmpdir"
 ```
 
 4. Sync the public preview image tag everywhere it appears before tagging (see [Release version update checklist](#release-version-update-checklist) below).
@@ -35,10 +35,10 @@ scripts/verify-release-artifacts.sh 0.1.0-alpha "$tmpdir"
 
 ## Release Version Update Checklist
 
-On each release, update `0.1.0-alpha` (or the new semver) consistently in every file below. Run:
+On each release, update the current preview version consistently in every file below. Run:
 
 ```bash
-git grep -n "0.1.0-alpha" -- . ':(exclude)docs/releases/**'
+git grep -n "0.2.0-preview" -- . ':(exclude)docs/releases/**'
 ```
 
 | File | Role |

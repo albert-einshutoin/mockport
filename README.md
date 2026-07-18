@@ -21,7 +21,7 @@ No local install required:
 ```bash
 docker run --rm -p 127.0.0.1:43101:43101 \
   -v $(pwd)/examples/stripe-checkout/mockport.yml:/etc/mockport/mockport.yml \
-  ghcr.io/albert-einshutoin/mockport:0.1.0-alpha \
+  ghcr.io/albert-einshutoin/mockport:0.2.0-preview \
   run --config /etc/mockport/mockport.yml --host 0.0.0.0
 ```
 
@@ -158,7 +158,7 @@ See [Reports](docs/site/reports.md) and [Support matrix](docs/site/support-matri
 
 ## Docs And Distribution
 
-Full docs, install paths, and release verification live under [docs/site/](docs/site/index.md). Current preview: `v0.1.0-alpha` via [Docker / GHCR](docs/site/distribution.md) and [GitHub release archives](docs/site/distribution.md). The npm wrapper is experimental; Go binary and Docker remain primary.
+Full docs, install paths, and release verification live under [docs/site/](docs/site/index.md). Current preview: `v0.2.0-preview` via [Docker / GHCR](docs/site/distribution.md) and [GitHub release archives](docs/site/distribution.md). The npm wrapper is experimental; Go binary and Docker remain primary.
 
 > **⚠️ Archive**: Pre-implementation design documents (May 2026) are preserved in [docs/archive/design/](docs/archive/design/README.md). They are not maintained and may diverge from the current implementation.
 

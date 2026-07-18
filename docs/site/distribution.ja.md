@@ -4,6 +4,9 @@
 
 Mockport は Docker-first で配布します。public preview では Docker image と GitHub release archive が主経路です。
 
+現在の preview は `v0.2.0-preview` です。Docker image は
+`ghcr.io/albert-einshutoin/mockport:0.2.0-preview` を使用してください。
+
 ## 経路
 
 - Docker/GHCR: preview image を取得してすぐに起動できます。

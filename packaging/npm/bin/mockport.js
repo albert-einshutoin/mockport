@@ -7,7 +7,7 @@ const { join } = require("node:path");
 
 const args = process.argv.slice(2);
 const explicitBinary = process.env.MOCKPORT_BIN;
-const dockerImage = process.env.MOCKPORT_IMAGE || "ghcr.io/albert-einshutoin/mockport:0.1.0-alpha";
+const dockerImage = process.env.MOCKPORT_IMAGE || "ghcr.io/albert-einshutoin/mockport:0.2.0-preview";
 const packageBinary = join(__dirname, "..", "vendor", process.platform, process.arch, "mockport");
 const binary = explicitBinary || packageBinary;
 const fallbackArgs = args.length === 0
