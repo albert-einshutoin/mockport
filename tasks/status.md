@@ -2,7 +2,7 @@
 
 [日本語版](status.ja.md)
 
-最終更新: 2026-05-26
+最終更新: 2026-07-19
 
 ## Decisions
 
@@ -20,7 +20,7 @@
 
 | Phase | Goal | Status | Exit Evidence |
 | --- | --- | --- | --- |
-| Phase 0 | Repository skeleton, CLI, config, server, health, Docker, CI | done | Go 1.26.3 test/vet/build, Docker build, `/health` 200 |
+| Phase 0 | Repository skeleton, CLI, config, server, health, Docker, CI | done | Go 1.26.5 test/vet/build, Docker build, `/health` 200 |
 | Phase 1 | Stripe-like Minimal MVP | done | Stripe scenarios, webhook tests, report, AI-safe tests, Docker run |
 | Phase 2 | CLI UX | done | Empty directory init/up/run flow works in under 2 minutes |
 | Phase 3 | AI-safe mode | done | Warn/fail/redact/report/docs are explicit and tested |
@@ -45,13 +45,13 @@
 | Phase 22 | Provider-compatible release track | done | Compatibility CI and release reports publish scores, SDK versions, and known gaps |
 | Phase 22.1 | Go engineering hardening before docs alignment | done | Streaming middleware, typed metadata, deterministic reports, helper boundaries, and regexp cleanup are hardened before Phase 23 |
 | Phase 22.2 | Go 10/10 hardening track | done | Typed responses, context/error/runtime hardening, state clone safety, static analysis gates, and Go readiness evidence close remaining Go-specific gaps |
-| Phase 23 | Roadmap and docs alignment | pending | Roadmap, README, docs, changelog, and compatibility report explain the same current state |
-| Phase 24 | GitHub Actions execution recovery | pending | CI and compatibility workflows create observable GitHub Actions runs or the blocker is documented |
-| Phase 25 | SDK contract all-provider harness | pending | `run-sdk-contracts.sh all` runs every provider-specific contract, not a placeholder |
+| Phase 23 | Roadmap and docs alignment | done | Roadmap, README, docs, changelog, and compatibility report explain the same current state |
+| Phase 24 | GitHub Actions execution recovery | done | CI and compatibility workflows have successful observable GitHub Actions runs |
+| Phase 25 | SDK contract all-provider harness | done | `run-sdk-contracts.sh all` runs every registered provider-specific contract |
 | Phase 26 | Provider-compatible manifest promotion | done | Versioned manifests and release checks gate manifest drift and maturity claims |
-| Phase 27 | Stripe provider-compatible track | pending | Stripe selected workflows have contract-level evidence or explicit blockers |
-| Phase 28 | OpenAI provider-compatible track | pending | OpenAI selected workflows have contract-level evidence or explicit blockers |
-| Phase 29 | GitHub OAuth and Slack client evidence | pending | GitHub OAuth and Slack client/SDK evidence is strong enough for honest scoring |
+| Phase 27 | Stripe provider-compatible track | done | Stripe selected workflows have official SDK contracts and explicit known gaps |
+| Phase 28 | OpenAI provider-compatible track | done | OpenAI selected workflows have official SDK contracts and explicit known gaps |
+| Phase 29 | GitHub OAuth and Slack client evidence | done | GitHub OAuth client and Slack official SDK contracts cover selected workflows and failures |
 | Phase 30 | v0.2.0-preview release | pending | Release artifacts, GHCR image, compatibility report, and post-release smoke are verified |
 | Phase 31 | Adapter reference docs | done | Registered adapter docs include official reference maps and implementation boundaries for `stripe`, `openai`, `github-oauth`, `slack`, `line`, and `zoho-oauth` |
 | Phase 32 | Service baseline execution | pending | Registered adapter baselines and SendGrid execution order are explicit and verifiable |
@@ -86,9 +86,9 @@
 
 ## Minimal MVP Exit Checklist
 
-- [x] `go test ./...` passes with Go 1.26.3.
-- [x] `go vet ./...` passes with Go 1.26.3.
-- [x] `go build ./cmd/mockport` passes with Go 1.26.3.
+- [x] `go test ./...` passes with Go 1.26.5.
+- [x] `go vet ./...` passes with Go 1.26.5.
+- [x] `go build ./cmd/mockport` passes with Go 1.26.5.
 - [x] `docker build -t mockport:local -f docker/Dockerfile .` passes.
 - [x] `docker run -p 43101:43101 ... mockport:local` starts the server.
 - [x] `curl http://localhost:43101/health` returns 200.
@@ -338,28 +338,28 @@
 
 | ID | Task | Status | Test First |
 | --- | --- | --- | --- |
-| P23-T01 | Audit current docs state | pending | Static review records mismatches between tasks, roadmap, support matrix, and compatibility report |
-| P23-T02 | Refresh ROADMAP current and next work | pending | `rg` checks prove stale near-term Phase 12-16 language is no longer future-looking |
-| P23-T03 | Align README and docs site | pending | Doc link and public trust checks cover updated support matrix, limitations, and report links |
-| P23-T04 | Verify documentation consistency | pending | `check-doc-links`, `check-public-trust`, and `check-compatibility-release` pass |
+| P23-T01 | Audit current docs state | done | Static review records mismatches between tasks, roadmap, support matrix, and compatibility report |
+| P23-T02 | Refresh ROADMAP current and next work | done | `rg` checks prove stale near-term Phase 12-16 language is no longer future-looking |
+| P23-T03 | Align README and docs site | done | Doc link and public trust checks cover updated support matrix, limitations, and report links |
+| P23-T04 | Verify documentation consistency | done | `check-doc-links`, `check-public-trust`, and `check-compatibility-release` pass |
 
 ## Phase 24 Tasks
 
 | ID | Task | Status | Test First |
 | --- | --- | --- | --- |
-| P24-T01 | Collect GitHub Actions evidence | pending | `gh` commands capture repo Actions permissions, workflow list, and run list |
-| P24-T02 | Audit workflow triggers and YAML | pending | Local parser/static checks fail on invalid workflow YAML or missing triggers |
-| P24-T03 | Recover workflow execution | pending | Workflow enable/settings/docs changes address the discovered no-run cause |
-| P24-T04 | Prove CI and compatibility runs | pending | `gh workflow run` plus `gh run watch --exit-status` succeeds or blocker is documented |
+| P24-T01 | Collect GitHub Actions evidence | done | `gh` commands capture repo Actions permissions, workflow list, and run list |
+| P24-T02 | Audit workflow triggers and YAML | done | Local parser/static checks fail on invalid workflow YAML or missing triggers |
+| P24-T03 | Recover workflow execution | done | Push, pull request, schedule, and manual workflow triggers create observable runs |
+| P24-T04 | Prove CI and compatibility runs | done | CI and compatibility runs have successful GitHub Actions evidence |
 
 ## Phase 25 Tasks
 
 | ID | Task | Status | Test First |
 | --- | --- | --- | --- |
-| P25-T01 | Add RED coverage for `--provider all` | pending | Live `all` contract fails until every provider result is present |
-| P25-T02 | Implement all-provider contract runner | pending | `test-runner.js --provider all --json` returns results for Stripe, OpenAI, GitHub OAuth, and Slack |
-| P25-T03 | Wire real all-provider gate into CI | pending | CI requires the real `run-sdk-contracts.sh all` gate |
-| P25-T04 | Verify all provider contracts | pending | Single-provider contracts and `all` pass against the same local Mockport runtime |
+| P25-T01 | Add RED coverage for `--provider all` | done | Live `all` contract fails until every provider result is present |
+| P25-T02 | Implement all-provider contract runner | done | `test-runner.js --provider all --json` returns every registered provider result |
+| P25-T03 | Wire real all-provider gate into CI | done | CI requires the real `run-sdk-contracts.sh all` gate |
+| P25-T04 | Verify all provider contracts | done | Single-provider contracts and `all` pass against the same local Mockport runtime |
 
 ## Phase 26 Tasks
 
@@ -374,35 +374,35 @@
 
 | ID | Task | Status | Test First |
 | --- | --- | --- | --- |
-| P27-T01 | Define Stripe provider-compatible scope | pending | Manifest checker validates selected Stripe workflows and explicit non-goals |
-| P27-T02 | Deepen Stripe SDK contracts | pending | Stripe SDK tests fail before list/retrieve/idempotency/error evidence is implemented |
-| P27-T03 | Improve Stripe adapter fidelity | pending | Adapter tests and SDK contracts cover selected workflows without external Stripe calls |
-| P27-T04 | Make Stripe maturity decision | pending | Compatibility gate promotes Stripe or records exact blockers |
+| P27-T01 | Define Stripe provider-compatible scope | done | Manifest checker validates selected Stripe workflows and explicit non-goals |
+| P27-T02 | Deepen Stripe SDK contracts | done | Stripe SDK tests cover list/retrieve/idempotency/error evidence |
+| P27-T03 | Improve Stripe adapter fidelity | done | Adapter tests and SDK contracts cover selected workflows without external Stripe calls |
+| P27-T04 | Make Stripe maturity decision | done | Compatibility gate records workflow-compatible maturity and exact known gaps |
 
 ## Phase 28 Tasks
 
 | ID | Task | Status | Test First |
 | --- | --- | --- | --- |
-| P28-T01 | Define OpenAI provider-compatible scope | pending | Manifest checker validates selected OpenAI workflows and explicit non-goals |
-| P28-T02 | Deepen OpenAI SDK streaming and error contracts | pending | OpenAI SDK tests fail before SSE/error/retrieve consistency is implemented |
-| P28-T03 | Improve OpenAI adapter fidelity | pending | SDK contracts verify selected workflows while fake inference remains deterministic |
-| P28-T04 | Make OpenAI maturity decision | pending | Compatibility gate promotes OpenAI or records exact blockers |
+| P28-T01 | Define OpenAI provider-compatible scope | done | Manifest checker validates selected OpenAI workflows and explicit non-goals |
+| P28-T02 | Deepen OpenAI SDK streaming and error contracts | done | OpenAI SDK tests cover selected SSE, error, and retrieve consistency |
+| P28-T03 | Improve OpenAI adapter fidelity | done | SDK contracts verify selected workflows while fake inference remains deterministic |
+| P28-T04 | Make OpenAI maturity decision | done | Compatibility gate records workflow-compatible maturity and exact known gaps |
 
 ## Phase 29 Tasks
 
 | ID | Task | Status | Test First |
 | --- | --- | --- | --- |
-| P29-T01 | Strengthen GitHub OAuth client contract | pending | Client contract fails before success and common failure paths are covered |
-| P29-T02 | Test Slack official SDK feasibility | pending | Pinned SDK experiment proves official SDK support or records exact blocker |
-| P29-T03 | Deepen Slack client contract | pending | Slack contract fails before errors, rate limits, lifecycle, and Events API paths are covered |
-| P29-T04 | Update evidence scores and reports | pending | Generated report explains GitHub OAuth and Slack evidence changes |
+| P29-T01 | Strengthen GitHub OAuth client contract | done | Client contract covers success and common failure paths |
+| P29-T02 | Test Slack official SDK feasibility | done | Pinned official SDK contract proves selected workflow support |
+| P29-T03 | Deepen Slack client contract | done | Slack contract covers errors, rate limits, lifecycle, and selected Events API paths |
+| P29-T04 | Update evidence scores and reports | done | Generated report explains GitHub OAuth and Slack evidence changes |
 
 ## Phase 30 Tasks
 
 | ID | Task | Status | Test First |
 | --- | --- | --- | --- |
-| P30-T01 | Run release readiness gate | pending | Full test, contract, compatibility, distribution, and public trust checks pass before tagging |
-| P30-T02 | Write v0.2.0-preview release notes | pending | Release docs include compatibility scores, known gaps, and verification commands |
+| P30-T01 | Run release readiness gate | done | Full test, contract, compatibility, distribution, and public trust checks passed before tagging |
+| P30-T02 | Write v0.2.0-preview release notes | done | Release docs include compatibility scores, known gaps, and verification commands |
 | P30-T03 | Publish release artifacts | pending | GitHub Release, checksums, and GHCR image exist or blockers are documented |
 | P30-T04 | Run post-release smoke | pending | Clean download/container smoke verifies health plus all major adapters |
 
