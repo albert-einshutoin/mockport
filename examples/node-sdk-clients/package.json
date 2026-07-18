@@ -1,0 +1,21 @@
+{
+  "name": "@mockport/node-sdk-client-examples",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Runnable official SDK examples against a local Mockport process.",
+  "type": "module",
+  "scripts": {
+    "openai": "node openai.mjs",
+    "stripe": "node stripe.mjs",
+    "line": "node line.mjs"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@line/bot-sdk": "11.0.0",
+    "openai": "6.46.0",
+    "stripe": "22.3.1"
+  }
+}

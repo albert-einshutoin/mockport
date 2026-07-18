@@ -136,6 +136,10 @@ STRIPE_WEBHOOK_SECRET=whsec_mockport
 
 See [Public Env Safety](docs/public-env-safety.md).
 
+Runnable official clients are available in [Node SDK examples](examples/node-sdk-clients/README.md)
+for Stripe, OpenAI, and LINE. They use one local multi-adapter Mockport process
+and fake credentials only.
+
 ## AI-safe By Default
 
 Mockport warns when real-looking credentials or real external service URLs are detected. In `strict` mode, unsafe configuration fails startup.

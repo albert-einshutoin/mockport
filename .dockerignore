@@ -4,5 +4,8 @@ bin
 dist
 coverage.out
 contract/sdk/node_modules
+examples/node-sdk-clients/node_modules
+.devloop
+.takt
 tasks
 docs/archive/design

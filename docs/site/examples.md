@@ -4,6 +4,19 @@
 
 Run commands from the repository root.
 
+## Node SDK Clients
+
+[Source](../../examples/node-sdk-clients/README.md)
+
+```bash
+go run ./cmd/mockport run --config examples/multi-adapter/mockport.yml
+cd examples/node-sdk-clients
+npm ci
+npm run stripe
+npm run openai
+npm run line
+```
+
 ## Stripe Checkout
 
 [Source](../../examples/stripe-checkout/README.md)

@@ -136,6 +136,9 @@ STRIPE_WEBHOOK_SECRET=whsec_mockport
 
 詳細は [Public Env Safety](docs/public-env-safety.ja.md) を参照してください。
 
+Stripe、OpenAI、LINE の公式 client を実行できる [Node SDK examples](examples/node-sdk-clients/README.md)
+も用意しています。1つの local multi-adapter Mockport と fake credential だけを使用します。
+
 ## AI-safe By Default
 
 Mockport は、実在の credential らしい値や本番外部サービス URL を検出すると警告します。`strict` mode では unsafe configuration があると startup に失敗します。
