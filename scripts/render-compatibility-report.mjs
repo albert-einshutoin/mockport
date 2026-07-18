@@ -32,7 +32,7 @@ const knownGaps = {
     "No real delivery, Events API completeness, Block Kit validation, files, app scopes, enterprise policy, or full workspace directory.",
   ],
   line: [
-    "No official LINE SDK contract yet, no real LIFF browser runtime, no provider-driven webhook redelivery, no monthly quota/rate bucket enforcement, no complete Messaging API schema validation, no regional policy enforcement, and Mini Dapp endpoints are local SDK helpers rather than a full Dapp Portal clone.",
+    "The official LINE SDK contract currently covers Messaging API push only; there is no real LIFF browser runtime, provider-driven webhook redelivery, monthly quota/rate bucket enforcement, complete Messaging API schema validation, regional policy enforcement, or full Dapp Portal clone.",
   ],
   "zoho-oauth": [
     "No real Zoho login UI, MFA, data-center/org routing, token refresh, scope enforcement, or full user profile fields.",

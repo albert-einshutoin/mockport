@@ -5,19 +5,21 @@ const { runSmokePlaceholder } = require("./smoke-placeholder.test.js");
 const { runStripeSmoke } = require("./stripe-smoke.test.js");
 const { runOpenAISmoke } = require("./openai-smoke.test.js");
 const { runGitHubOAuthSmoke } = require("./github-oauth-smoke.test.js");
+const { runLINESmoke } = require("./line-smoke.test.js");
 const { runSlackSmoke, runSlackRateLimitedContract } = require("./slack-smoke.test.js");
 
-const allowedProviders = new Set(["all", "stripe", "openai", "github-oauth", "slack", "slack-rate-limited"]);
+const allowedProviders = new Set(["all", "stripe", "openai", "github-oauth", "line", "slack", "slack-rate-limited"]);
 
 const liveSmokeRunners = {
   stripe: runStripeSmoke,
   openai: runOpenAISmoke,
   "github-oauth": runGitHubOAuthSmoke,
+  line: runLINESmoke,
   slack: runSlackSmoke,
   "slack-rate-limited": runSlackRateLimitedContract,
 };
 
-const allProviders = ["stripe", "openai", "github-oauth", "slack"];
+const allProviders = ["stripe", "openai", "github-oauth", "line", "slack"];
 
 function parseArgs(argv) {
   const options = {

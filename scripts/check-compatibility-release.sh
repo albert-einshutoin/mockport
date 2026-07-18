@@ -26,6 +26,7 @@ require_text ".github/workflows/compatibility.yml" "schedule:"
 require_text ".github/workflows/compatibility.yml" "bash scripts/run-sdk-contracts.sh stripe"
 require_text ".github/workflows/compatibility.yml" "bash scripts/run-sdk-contracts.sh openai"
 require_text ".github/workflows/compatibility.yml" "bash scripts/run-sdk-contracts.sh github-oauth"
+require_text ".github/workflows/compatibility.yml" "bash scripts/run-sdk-contracts.sh line"
 require_text ".github/workflows/compatibility.yml" "bash scripts/run-sdk-contracts.sh slack"
 require_text ".github/workflows/compatibility.yml" "actions/upload-artifact@v7"
 

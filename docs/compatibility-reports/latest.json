@@ -54,13 +54,15 @@
       "maturity": "workflow-compatible",
       "promotion_eligible": true,
       "measured_level": "workflow",
-      "score": 80,
+      "score": 100,
       "provider_version": "Messaging API v2 / Login v2.1 / Pay v3 / MINI App service messages / Mini Dapp SDK",
-      "sdk_versions": [],
+      "sdk_versions": [
+        "@line/bot-sdk@11.0.0"
+      ],
       "client_evidence": [],
       "endpoint_coverage": 100,
       "scenario_coverage": 100,
-      "sdk_coverage": 0,
+      "sdk_coverage": 100,
       "state_coverage": 100,
       "error_coverage": 100,
       "stateful_resources": [
@@ -155,7 +157,7 @@
         "GET /line/mini-dapp/v1/payments/{id}"
       ],
       "known_gaps": [
-        "No official LINE SDK contract yet, no real LIFF browser runtime, no provider-driven webhook redelivery, no monthly quota/rate bucket enforcement, no complete Messaging API schema validation, no regional policy enforcement, and Mini Dapp endpoints are local SDK helpers rather than a full Dapp Portal clone."
+        "The official LINE SDK contract currently covers Messaging API push only; there is no real LIFF browser runtime, provider-driven webhook redelivery, monthly quota/rate bucket enforcement, complete Messaging API schema validation, regional policy enforcement, or full Dapp Portal clone."
       ]
     },
     {
