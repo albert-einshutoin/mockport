@@ -12,4 +12,4 @@
 
 `all` selector は Stripe、OpenAI、GitHub OAuth、LINE Messaging API、Slack の
 contract を実行します。LINE は公式 `@line/bot-sdk` の push message 呼び出しを
-`/v2/bot/message/push` の SDK-compatible alias に対して検証します。
+はじめ、reply、profile、rich menu と raw local OAuth/error contract を検証します。

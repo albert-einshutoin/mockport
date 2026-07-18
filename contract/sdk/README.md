@@ -34,3 +34,6 @@ Supported provider selectors:
 - `slack`
 
 No test in this workspace may call an external provider API.
+
+The LINE selector verifies official SDK calls for push, reply, profile, and rich
+menus, plus raw local client checks for OAuth and invalid-request behavior.

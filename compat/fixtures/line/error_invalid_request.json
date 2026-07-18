@@ -1,0 +1,31 @@
+{
+  "provider": "line",
+  "provider_version": "Messaging API v2",
+  "sdk": { "name": "@line/bot-sdk", "version": "11.0.0" },
+  "source": {
+    "type": "docs",
+    "title": "LINE Messaging API error responses",
+    "url_or_path": "https://developers.line.biz/en/reference/messaging-api/#error-responses",
+    "retrieved_at": "2026-07-19"
+  },
+  "scenario": "invalid_request",
+  "request": {
+    "method": "POST",
+    "path": "/v2/bot/message/push",
+    "headers": {
+      "Authorization": "Bearer mockport_line_token",
+      "Content-Type": "application/json",
+      "X-Mockport-Scenario": "invalid_request"
+    },
+    "body": { "to": "Umockport", "messages": [] }
+  },
+  "response": {
+    "status": 400,
+    "headers": { "Content-Type": "application/json" },
+    "body": { "message": "Mockport simulated invalid message request" }
+  },
+  "normalization": [
+    "channel token and user ID use deterministic fake values",
+    "error text is deterministic Mockport behavior"
+  ]
+}

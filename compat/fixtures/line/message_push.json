@@ -1,0 +1,35 @@
+{
+  "provider": "line",
+  "provider_version": "Messaging API v2",
+  "sdk": { "name": "@line/bot-sdk", "version": "11.0.0" },
+  "source": {
+    "type": "sdk",
+    "title": "LINE Messaging API push message",
+    "url_or_path": "https://developers.line.biz/en/reference/messaging-api/#send-push-message",
+    "retrieved_at": "2026-07-19"
+  },
+  "scenario": "line_success",
+  "request": {
+    "method": "POST",
+    "path": "/v2/bot/message/push",
+    "headers": {
+      "Authorization": "Bearer mockport_line_token",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "to": "U_MOCKPORT",
+      "messages": [{ "type": "text", "text": "hello from LINE SDK" }]
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "body": {
+      "sentMessages": [{ "id": "line_message_000001", "quoteToken": "mockport_line_quote_token" }]
+    }
+  },
+  "normalization": [
+    "channel token uses the mockport_ fake namespace",
+    "user and message IDs are deterministic local values"
+  ]
+}

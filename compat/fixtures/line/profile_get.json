@@ -1,0 +1,32 @@
+{
+  "provider": "line",
+  "provider_version": "Messaging API v2",
+  "sdk": { "name": "@line/bot-sdk", "version": "11.0.0" },
+  "source": {
+    "type": "sdk",
+    "title": "LINE Messaging API user profile",
+    "url_or_path": "https://developers.line.biz/en/reference/messaging-api/#get-profile",
+    "retrieved_at": "2026-07-19"
+  },
+  "scenario": "line_success",
+  "request": {
+    "method": "GET",
+    "path": "/v2/bot/profile/Umockport",
+    "headers": { "Authorization": "Bearer mockport_line_token" },
+    "body": null
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "body": {
+      "userId": "Umockport",
+      "displayName": "Mockport LINE User",
+      "pictureUrl": "https://example.test/mockport-line-user.png",
+      "statusMessage": "Mockport local LINE profile"
+    }
+  },
+  "normalization": [
+    "channel token and user ID are deterministic fake values",
+    "picture URL uses the reserved example.test domain"
+  ]
+}

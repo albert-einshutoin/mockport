@@ -1,0 +1,39 @@
+{
+  "provider": "line",
+  "provider_version": "LINE Login v2.1",
+  "sdk": { "name": "none", "version": "none" },
+  "source": {
+    "type": "docs",
+    "title": "LINE Login issue access token",
+    "url_or_path": "https://developers.line.biz/en/reference/line-login/#issue-access-token",
+    "retrieved_at": "2026-07-19"
+  },
+  "scenario": "line_success",
+  "request": {
+    "method": "POST",
+    "path": "/oauth2/v2.1/token",
+    "headers": { "Content-Type": "application/x-www-form-urlencoded" },
+    "body": {
+      "grant_type": "authorization_code",
+      "code": "line_oauth_code_000001",
+      "client_id": "mockport_line_channel",
+      "redirect_uri": "http://localhost/callback"
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "body": {
+      "access_token": "line_oauth_token_000001",
+      "expires_in": 2592000,
+      "id_token": "mockport.line.id-token",
+      "refresh_token": "mockport_line_refresh_token",
+      "scope": "profile openid",
+      "token_type": "Bearer"
+    }
+  },
+  "normalization": [
+    "OAuth code, client, and tokens use deterministic mockport values",
+    "redirect URI uses localhost"
+  ]
+}
