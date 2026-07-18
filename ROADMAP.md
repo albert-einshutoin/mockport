@@ -44,6 +44,8 @@ Candidate adapters after the compatibility foundation:
 
 - SendGrid-like email API.
 
+The broader candidate catalog, priority tiers, adapter-family strategy, and exploratory sequencing live in [Adapter Candidate Priorities](docs/planning/adapter-candidate-priorities.md). That document is planning input, not a commitment or a current-support claim.
+
 ## Compatibility Direction
 
 Mockport aims for provider-compatible local APIs for selected workflows. Compatibility is measured by documented endpoint behavior, SDK contract tests, fake state, error shape, and reportable gaps.
