@@ -40,3 +40,10 @@ npm --prefix examples/node-sdk-clients ci
 for example in stripe openai line; do
   MOCKPORT_BASE_URL="$BASE_URL" npm --prefix examples/node-sdk-clients run "$example"
 done
+
+python3 -m venv "$WORK_DIR/python-venv"
+"$WORK_DIR/python-venv/bin/python" -m pip install \
+  --disable-pip-version-check \
+  -r examples/python-openai/requirements.txt
+MOCKPORT_BASE_URL="$BASE_URL" \
+  "$WORK_DIR/python-venv/bin/python" examples/python-openai/example.py

@@ -17,6 +17,19 @@ npm run openai
 npm run line
 ```
 
+## OpenAI Python SDK
+
+[Source](../../examples/python-openai/README.md)
+
+```bash
+go run ./cmd/mockport run --config examples/openai-chat/mockport.yml
+cd examples/python-openai
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install -r requirements.txt
+python example.py
+```
+
 ## Stripe Checkout
 
 [Source](../../examples/stripe-checkout/README.md)

@@ -137,7 +137,8 @@ STRIPE_WEBHOOK_SECRET=whsec_mockport
 詳細は [Public Env Safety](docs/public-env-safety.ja.md) を参照してください。
 
 Stripe、OpenAI、LINE の公式 client を実行できる [Node SDK examples](examples/node-sdk-clients/README.md)
-も用意しています。1つの local multi-adapter Mockport と fake credential だけを使用します。
+と [OpenAI Python SDK example](examples/python-openai/README.md) も用意しています。
+local Mockport と fake credential だけを使用します。
 
 ## AI-safe By Default
 

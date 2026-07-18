@@ -7,7 +7,7 @@ Mockport is a secret-free, Docker-first local API environment for AI coding agen
 - README and quickstart: README.md, docs/site/quickstart.md
 - Current support: docs/site/support-matrix.md
 - Known limitations: docs/site/limitations.md
-- Runnable official SDK clients: examples/node-sdk-clients/
+- Runnable official SDK clients: examples/node-sdk-clients/, examples/python-openai/
 - Adapter specifications: docs/adapters/
 - Contribution and TDD: CONTRIBUTING.md, docs/maintainer-guide.md
 

@@ -138,7 +138,8 @@ See [Public Env Safety](docs/public-env-safety.md).
 
 Runnable official clients are available in [Node SDK examples](examples/node-sdk-clients/README.md)
 for Stripe, OpenAI, and LINE. They use one local multi-adapter Mockport process
-and fake credentials only.
+and fake credentials only. An [OpenAI Python SDK example](examples/python-openai/README.md)
+is also available.
 
 ## AI-safe By Default
 
