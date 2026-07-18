@@ -36,7 +36,7 @@ The `safety` object is a compact trust summary for CI gates and local checks.
 | `safe` | boolean | `true` when there are no safety warnings. |
 | `real_looking_secrets` | number | Count of warnings with category `real_looking_secret`. |
 | `external_urls` | number | Count of warnings with category `external_url`. |
-| `public_env_safe` | boolean | `true` when there are no safety warnings. Same condition as `safe` today. |
+| `public_env_safe` | boolean | `true` when no real-looking secret or external provider URL warning exists. Deployment and unsupported-config warnings do not change this field. |
 
 ### `real_looking_secrets`
 
@@ -48,9 +48,9 @@ Increments once per `safety_warnings` entry whose `category` is `external_url`. 
 
 ### `public_env_safe`
 
-`true` only when the run has zero safety warnings. Treat `false` as a signal that the report may not be safe to publish verbatim, even though request bodies and secret headers are not stored by default.
+`true` when the run has no `real_looking_secret` or `external_url` warnings. Treat `false` as a signal that the configuration may contain values that are unsafe to commit, even though request bodies and secret headers are not stored by default.
 
-Other warning categories, such as `unsupported_config`, appear in `safety_warnings` and affect `safe` / `public_env_safe`, but they do not increment `real_looking_secrets` or `external_urls`.
+Other warning categories, such as `public_bind` and `unsupported_config`, still appear in `safety_warnings` and make `safe` false. They describe deployment or configuration behavior rather than whether environment values are safe to commit, so they do not change `public_env_safe`.
 
 ## Adapter and request objects
 

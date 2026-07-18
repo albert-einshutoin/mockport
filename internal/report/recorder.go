@@ -153,13 +153,15 @@ func requestHistorySummary(limit int, requests []Request, evicted int64) Request
 }
 
 func safetySummary(mode string, warnings []SafetyWarning) SafetySummary {
-	summary := SafetySummary{Mode: mode, Safe: len(warnings) == 0, PublicEnvSafe: len(warnings) == 0}
+	summary := SafetySummary{Mode: mode, Safe: len(warnings) == 0, PublicEnvSafe: true}
 	for _, warning := range warnings {
 		switch warning.Category {
 		case "real_looking_secret":
 			summary.RealLookingSecrets++
+			summary.PublicEnvSafe = false
 		case "external_url":
 			summary.ExternalURLs++
+			summary.PublicEnvSafe = false
 		}
 	}
 	return summary

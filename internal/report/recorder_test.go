@@ -30,6 +30,41 @@ func TestRecorderStoresRequestsAndSafety(t *testing.T) {
 	}
 }
 
+func TestSafetySummarySeparatesDeploymentWarningsFromPublicEnvSafety(t *testing.T) {
+	warnings := []SafetyWarning{{
+		Field:    "server.host",
+		Category: "public_bind",
+		Message:  "server host may expose Mockport outside loopback",
+	}}
+
+	summary := safetySummary("ai-safe", warnings)
+	if summary.Safe {
+		t.Fatal("safety summary safe = true, want false while a deployment warning exists")
+	}
+	if !summary.PublicEnvSafe {
+		t.Fatal("public env safe = false, want true when no secret or external URL warning exists")
+	}
+}
+
+func TestSafetySummaryMarksCredentialAndExternalURLWarningsUnsafeToCommit(t *testing.T) {
+	tests := []struct {
+		name     string
+		category string
+	}{
+		{name: "real looking secret", category: "real_looking_secret"},
+		{name: "external URL", category: "external_url"},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			summary := safetySummary("ai-safe", []SafetyWarning{{Category: tc.category}})
+			if summary.PublicEnvSafe {
+				t.Fatalf("public env safe = true for %s warning, want false", tc.category)
+			}
+		})
+	}
+}
+
 func TestRecorderStoresReplayMetadataAndUnsupportedEndpoints(t *testing.T) {
 	rec := NewRecorder()
 	rec.RecordRequestWithDetails(http.MethodPost, "/stripe/not-supported", 404, "stripe", "payment_success", "unsupported_endpoint")
