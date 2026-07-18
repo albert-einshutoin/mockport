@@ -1,12 +1,37 @@
 # Adapter Candidate Priorities
 
-Mockport is a Docker-first service emulator for AI-safe, secret-free integration testing.
+Mockport currently emulates six provider families: Stripe, OpenAI, GitHub OAuth, Slack, LINE, and Zoho OAuth. This document helps maintainers decide what to build after that foundation is stable.
 
-This document lists external SaaS / Web API / business API adapter candidates by priority tier.
+It is a planning catalog, not a support matrix or a release schedule.
 
 > **Status: exploratory planning document.** The tiers and ordering below are inputs for issue and release planning, not commitments or claims of current support. For the authoritative current surface, see the [support matrix](../site/support-matrix.md). For committed near-term work, see the [project roadmap](../../ROADMAP.md).
 
 Candidate adapter names are provisional planning identifiers. A candidate may become a capability of an existing provider adapter instead of a separate runtime adapter; for example, the current `line` adapter already spans Messaging API, LINE Login, and LINE Pay workflows.
+
+## Start Here
+
+Use this document in this order:
+
+1. Confirm that the proposed API fits the [scope](#scope).
+2. Apply the [selection gates](#selection-gates) before assigning a tier.
+3. Use the [tier definitions](#tier-definitions) to compare candidates.
+4. Check the [adapter family strategy](#adapter-family-strategy) for reusable behavior, without creating premature shared abstractions.
+5. Move a candidate into the [project roadmap](../../ROADMAP.md) only after its first supported workflow and evidence plan are concrete.
+
+## Current Baseline
+
+These adapters are already built in. Work on them is stabilization or compatibility expansion, not new-adapter delivery.
+
+| Provider family | Runtime adapter | Current focus |
+|---|---|---|
+| Stripe | `stripe` | Selected payment, checkout, state, and webhook workflows |
+| OpenAI | `openai` | Selected models, chat, Responses, streaming, and embedding workflows |
+| GitHub OAuth | `github-oauth` | Authorization, token exchange, and profile workflows |
+| Slack | `slack` | Authentication, conversations, and message workflows |
+| LINE | `line` | Messaging API, LINE Login, and LINE Pay workflows |
+| Zoho OAuth | `zoho-oauth` | Authorization, token exchange, and user information workflows |
+
+The [support matrix](../site/support-matrix.md), individual [adapter specifications](../adapters/), runtime metadata, and compatibility reports remain the source of truth for exact coverage.
 
 ## Scope
 
@@ -36,21 +61,40 @@ Mockport intentionally avoids competing directly with infrastructure emulators s
 - Full S3-compatible storage replacements
 - Generic mock server positioning
 
+## Selection Gates
+
+A candidate should enter the committed roadmap only when all of these questions have useful answers:
+
+1. **User workflow:** Which integration test becomes possible, and who needs it?
+2. **Bounded contract:** Which endpoints, errors, state transitions, callbacks, or webhooks form the first supported workflow?
+3. **Local determinism:** Can the workflow run without real credentials, external network calls, or provider-owned state?
+4. **Evidence:** Can official documentation, sanitized fixtures, SDK contract tests, and known-gap reporting support the compatibility claim?
+5. **Maintenance cost:** Can Mockport track provider drift without promising a full clone?
+6. **Safety:** Can examples and defaults remain secret-free and safe for AI agents and CI?
+
+Popularity alone is not enough. Prefer a smaller adapter with a clear, testable workflow over a famous provider with an unbounded API surface.
+
 ---
 
 ## Tier Definitions
 
 | Tier | Meaning |
 |---|---|
-| S | Core Mockport adapters. These should define the product identity and be prioritized first. |
-| A | High-value adapters for SaaS, AI, auth, payment, messaging, and modern web app development. |
-| B | Strong ecosystem adapters once adapter families and reports are stable. |
-| C | Valuable later-stage adapters with broader scope, higher maintenance, or more vertical-specific behavior. |
-| D | Long-term, industry-specific, regulation-heavy, or complex adapters. |
+| S | Product-defining provider families and shared capabilities. Includes the current foundation and the strongest next candidates. |
+| A | High-value candidates with common web application workflows and a plausible bounded first contract. |
+| B | Strong ecosystem candidates to consider after the relevant adapter pattern and evidence pipeline are proven. |
+| C | Later candidates with broader scope, higher maintenance cost, or more vertical-specific behavior. |
+| D | Long-term candidates that are industry-specific, regulation-heavy, operationally complex, or difficult to emulate safely. |
+
+Tiers express strategic value, not implementation readiness. A lower-tier candidate with a strong user request and a tightly bounded workflow may be scheduled before a higher-tier candidate that lacks evidence or maintainership.
 
 ---
 
 ## Tier S
+
+### Current Foundation
+
+These provider families define the current product. Their exact supported workflows remain intentionally narrower than the full provider APIs.
 
 | Tier | Domain | Service | Adapter Name | Main Mock Targets |
 |---|---|---|---|---|
@@ -58,9 +102,16 @@ Mockport intentionally avoids competing directly with infrastructure emulators s
 | S | AI API | OpenAI | `openai` | chat, responses, streaming, embeddings, quota, rate limit |
 | S | Auth | GitHub OAuth | `github-oauth` | authorize, token, user, invalid code |
 | S | Messaging | Slack | `slack` | auth.test, chat.postMessage, rate limit |
+| S | Platform APIs | LINE | `line` | Messaging API, Login, Pay, webhook signature, delivery failure |
+| S | Auth | Zoho OAuth | `zoho-oauth` | authorize, token, userinfo, invalid code |
+
+### Strongest Next Candidates
+
+These candidates fit Mockport's product direction, but each still needs a bounded first workflow and evidence plan before roadmap commitment.
+
+| Tier | Domain | Service | Planning Name | Main Mock Targets |
+|---|---|---|---|---|
 | S | Auth | Google OAuth / OIDC | `google-oauth` | authorize, token, userinfo, JWKS, PKCE |
-| S | Messaging | LINE Messaging API | `line-messaging` | push, reply, webhook signature, delivery failure |
-| S | Auth | LINE Login | `line-login` | authorize, token, profile, state mismatch |
 | S | Email | SendGrid | `sendgrid` | mail send, template error, bounce webhook |
 | S | Messaging | Discord | `discord` | webhook, bot message, rate limit |
 | S | Payment | PayPal | `paypal` | order create, capture, refund, webhook |
@@ -72,8 +123,15 @@ Mockport intentionally avoids competing directly with infrastructure emulators s
 | S | BaaS Auth | Supabase Auth | `supabase-auth` | signup, login, refresh, magic link |
 | S | AI API | Anthropic | `anthropic` | messages, streaming, context length, rate limit |
 | S | AI API | Gemini | `gemini` | generateContent, streaming, safety block |
-| S | Core | Generic Webhook | `webhook-generic` | HMAC signing, replay, delayed delivery |
-| S | Core | OAuth / OIDC Core | `oauth-core` | reusable OAuth engine for adapters |
+
+### Shared Capability Candidates
+
+These are reusable capabilities, not standalone provider adapters.
+
+| Tier | Capability | Planning Name | Intended Use |
+|---|---|---|---|
+| S | Generic Webhook | `webhook-generic` | HMAC signing, replay, and delayed delivery across webhook-based adapters |
+| S | OAuth / OIDC Core | `oauth-core` | Tested protocol primitives shared by compatible OAuth adapters |
 
 ---
 
@@ -150,6 +208,13 @@ Mockport intentionally avoids competing directly with infrastructure emulators s
 | A | Payment | Mollie | `mollie` | payment, refund, webhook |
 | A | Payment / Transfer | Wise Platform | `wise` | transfer, quote, status |
 
+### Developer Platforms
+
+| Tier | Domain | Service | Adapter Name | Main Mock Targets |
+|---|---|---|---|---|
+| A | Developer API | GitHub API | `github-api` | repository, issue, pull request, rate limit |
+| A | Developer API | GitHub App | `github-app` | installation token, webhook, permissions |
+
 ---
 
 ## Tier B
@@ -198,6 +263,15 @@ Mockport intentionally avoids competing directly with infrastructure emulators s
 | B | Forms | Typeform | `typeform` | form response webhook |
 | B | Forms | Jotform | `jotform` | submission webhook |
 | B | Legal / Productivity | DocuSign | `docusign` | envelope, signing webhook |
+
+### Developer and Deployment Platforms
+
+| Tier | Domain | Service | Adapter Name | Main Mock Targets |
+|---|---|---|---|---|
+| B | Developer API | GitLab | `gitlab` | project, merge request, pipeline, webhook |
+| B | Deployment | Vercel | `vercel` | deployment, status, webhook |
+| B | Deployment | Netlify | `netlify` | site, deployment, build hook |
+| B | Edge Platform | Cloudflare API | `cloudflare-api-lite` | zone, DNS record, cache purge |
 
 ### E-commerce / Commerce SaaS
 
@@ -403,7 +477,9 @@ Mockport intentionally avoids competing directly with infrastructure emulators s
 
 ## Adapter Family Strategy
 
-Mockport should not implement every adapter from scratch. It should build reusable adapter families first.
+Adapter families are a planning lens for repeated protocol and workflow behavior. They are **not** instructions to create a shared package before provider-specific contracts exist.
+
+Implement the first provider contract locally. Extract a shared primitive only when at least two adapters have tested, genuinely identical invariants and the extraction preserves provider-specific errors, validation, and state behavior. Follow the [adapter helper policy](../adapter-helper-policy.md) when deciding whether code should remain local.
 
 | Family | Reusable For |
 |---|---|
@@ -420,7 +496,7 @@ Mockport should not implement every adapter from scratch. It should build reusab
 | `commerce-family` | Shopify, WooCommerce, BigCommerce, Medusa, Saleor |
 | `productivity-family` | Google Sheets, Notion, Airtable, Microsoft Graph, Dropbox |
 
-Recommended family implementation order:
+Recommended order for proving reusable patterns:
 
 1. `webhook-family`
 2. `oauth-family`
@@ -435,9 +511,13 @@ Recommended family implementation order:
 11. `commerce-family`
 12. `productivity-family`
 
+This order describes where reuse is likely to pay off. It does not override candidate demand, the selection gates, or the committed roadmap.
+
 ---
 
-## Top 100 Recommended Implementation Order
+## Appendix A: Ranked Candidate Backlog
+
+This ranking is a coarse comparison aid, not a build queue. Re-evaluate a row with the selection gates before creating an issue. The current built-in adapters appear at the top only to anchor product priorities; they are not new implementation work.
 
 | Rank | Adapter | Tier | Domain |
 |---:|---|---|---|
@@ -445,9 +525,9 @@ Recommended family implementation order:
 | 2 | `openai` | S | AI |
 | 3 | `github-oauth` | S | Auth |
 | 4 | `slack` | S | Messaging |
-| 5 | `google-oauth` | S | Auth |
-| 6 | `line-messaging` | S | Messaging |
-| 7 | `line-login` | S | Auth |
+| 5 | `line` | S | Platform APIs |
+| 6 | `zoho-oauth` | S | Auth |
+| 7 | `google-oauth` | S | Auth |
 | 8 | `sendgrid` | S | Email |
 | 9 | `discord` | S | Messaging |
 | 10 | `paypal` | S | Payment |
@@ -544,9 +624,9 @@ Recommended family implementation order:
 
 ---
 
-## Exploratory Release Sequence
+## Appendix B: Example Sequencing
 
-This sequence is a planning hypothesis. A candidate moves into the committed [project roadmap](../../ROADMAP.md) only after its target workflows, maintenance cost, official-reference evidence, and user demand have been validated.
+This sequence shows one plausible progression from the current foundation. It is not a version plan. A candidate moves into the committed [project roadmap](../../ROADMAP.md) only after its target workflows, maintenance cost, official-reference evidence, and user demand have been validated.
 
 ### Foundation: Stabilize Current Adapters
 
@@ -557,7 +637,7 @@ This sequence is a planning hypothesis. A candidate moves into the committed [pr
 - `line`
 - `zoho-oauth`
 
-Key work:
+Example stabilization work:
 
 - Stripe webhook evidence/reporting
 - Slack rate-limit headers
@@ -566,17 +646,13 @@ Key work:
 
 ### Core Adapter Families
 
-- `webhook-family`
-- `oauth-family`
-- `message-family`
-- `email-family`
-- `ai-chat-family`
+- Prove reusable webhook behavior across existing and new provider contracts.
+- Prove reusable OAuth/OIDC behavior without flattening provider-specific errors.
+- Keep message, email, and AI response helpers local until multiple tested contracts justify extraction.
 
 ### First Expansion Wave
 
 - `google-oauth`
-- `line-messaging`
-- `line-login`
 - `sendgrid`
 - `discord`
 - `paypal`
@@ -607,17 +683,18 @@ Key work:
 
 ---
 
-## Guiding Principle
+## Decision Summary
 
 Mockport should not become a generic mock server.
 
-It should become a curated external SaaS emulator platform:
+It should remain a curated external SaaS emulator platform. Every roadmap adapter should provide:
 
-- service-specific adapters
-- fake local secrets
-- URL/env switching
-- common scenarios
-- webhook/callback support
-- compatibility reports
-- AI-safe warnings
-- no real external calls by default
+- a service-specific, bounded workflow;
+- fake local secrets and safe URL or environment switching;
+- deterministic success and failure scenarios;
+- webhook or callback behavior where the workflow requires it;
+- compatibility evidence and explicit known gaps;
+- AI-safe warnings and examples; and
+- no real external calls by default.
+
+If a candidate cannot meet those conditions, it should remain in this catalog rather than enter the committed roadmap.
