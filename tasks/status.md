@@ -52,7 +52,7 @@
 | Phase 27 | Stripe provider-compatible track | done | Stripe selected workflows have official SDK contracts and explicit known gaps |
 | Phase 28 | OpenAI provider-compatible track | done | OpenAI selected workflows have official SDK contracts and explicit known gaps |
 | Phase 29 | GitHub OAuth and Slack client evidence | done | GitHub OAuth client and Slack official SDK contracts cover selected workflows and failures |
-| Phase 30 | v0.2.0-preview release | pending | Release artifacts, GHCR image, compatibility report, and post-release smoke are verified |
+| Phase 30 | v0.2.0-preview release | done | Release artifacts, GHCR image, compatibility report, and post-release smoke are verified |
 | Phase 31 | Adapter reference docs | done | Registered adapter docs include official reference maps and implementation boundaries for `stripe`, `openai`, `github-oauth`, `slack`, `line`, and `zoho-oauth` |
 | Phase 32 | Service baseline execution | pending | Registered adapter baselines and SendGrid execution order are explicit and verifiable |
 
@@ -403,8 +403,8 @@
 | --- | --- | --- | --- |
 | P30-T01 | Run release readiness gate | done | Full test, contract, compatibility, distribution, and public trust checks passed before tagging |
 | P30-T02 | Write v0.2.0-preview release notes | done | Release docs include compatibility scores, known gaps, and verification commands |
-| P30-T03 | Publish release artifacts | pending | GitHub Release, checksums, and GHCR image exist or blockers are documented |
-| P30-T04 | Run post-release smoke | pending | Clean download/container smoke verifies health plus all major adapters |
+| P30-T03 | Publish release artifacts | done | GitHub Release, checksums, and multi-arch GHCR image are published |
+| P30-T04 | Run post-release smoke | done | Clean download/container smoke verifies version, health, and all six adapters |
 
 ## Phase 31 Tasks
 
