@@ -647,13 +647,31 @@ func TestMiniAppServiceMessageAndMiniDappPayment(t *testing.T) {
 }
 
 func TestLineErrorScenarios(t *testing.T) {
-	auth := performLineRequest(t, adapter.Config{BasePath: "/line", Scenario: "auth_error"}, http.MethodPost, "/line/v2/bot/message/push", `{"to":"Umockport","messages":[{"type":"text","text":"hello"}]}`)
-	if auth.Code != http.StatusUnauthorized {
-		t.Fatalf("auth status = %d, want %d", auth.Code, http.StatusUnauthorized)
-	}
-	rate := performLineRequest(t, adapter.Config{BasePath: "/line", Scenario: "rate_limited"}, http.MethodPost, "/line/v2/bot/message/push", `{"to":"Umockport","messages":[{"type":"text","text":"hello"}]}`)
-	if rate.Code != http.StatusTooManyRequests {
-		t.Fatalf("rate status = %d, want %d", rate.Code, http.StatusTooManyRequests)
+	for _, tt := range []struct {
+		name     string
+		scenario string
+		status   int
+		message  string
+	}{
+		{name: "auth error", scenario: "auth_error", status: http.StatusUnauthorized, message: "Mockport simulated invalid channel access token"},
+		{name: "rate limited", scenario: "rate_limited", status: http.StatusTooManyRequests, message: "Mockport simulated rate limit"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			rec := performLineRequest(t, adapter.Config{BasePath: "/line", Scenario: tt.scenario}, http.MethodPost, "/line/v2/bot/message/push", `{"to":"Umockport","messages":[{"type":"text","text":"hello"}]}`)
+			if rec.Code != tt.status {
+				t.Fatalf("status = %d, want %d", rec.Code, tt.status)
+			}
+			if got := rec.Header().Get("X-Line-Request-Id"); got != "line-request-mockport" {
+				t.Fatalf("X-Line-Request-Id = %q, want %q", got, "line-request-mockport")
+			}
+			var body map[string]any
+			if err := json.Unmarshal(rec.Body.Bytes(), &body); err != nil {
+				t.Fatalf("decode error response: %v", err)
+			}
+			if body["message"] != tt.message {
+				t.Fatalf("message = %v, want %q", body["message"], tt.message)
+			}
+		})
 	}
 	pay := performLineRequest(t, adapter.Config{BasePath: "/line", Scenario: "pay_failed"}, http.MethodPost, "/line/v3/payments/request", `{"amount":1200,"currency":"JPY","orderId":"order-1"}`)
 	if pay.Code != http.StatusOK || !strings.Contains(pay.Body.String(), `"returnCode":"1169"`) {
