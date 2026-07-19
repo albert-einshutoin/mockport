@@ -25,7 +25,7 @@ Default base path:
 /stripe
 ```
 
-The adapter also exposes an SDK-compatible `/v1` alias when mounted by the configured server.
+The adapter also exposes an SDK-compatible `/v1` alias when mounted by the configured server. Every API route listed below under `/stripe/v1/...` is available at the same `/v1/...` path with the `/stripe` prefix removed. For example, `/stripe/v1/checkout/sessions` and `/v1/checkout/sessions` return the same Stripe-like contract. Test helpers remain scoped to `/stripe/test/...`; root-level `/test/...` aliases are intentionally not exposed to avoid collisions with other adapters.
 
 Example config:
 

@@ -9,6 +9,7 @@ Stripe adapter は、payment integration の selected workflow を local で検�
 ## 対応範囲
 
 - checkout sessions、payment intents、customers、products、prices、subscriptions、invoices、refunds。
+- `/stripe/v1/...` の全 API route は、`/stripe` prefix を除いた SDK-compatible な `/v1/...` alias でも同じ Stripe-like contract を返す。`/stripe/test/...` の test helper は他 adapter との衝突を避けるため `/test/...` では公開しない。
 - fake signed webhook、validation error、stateful list/retrieve、idempotency replay。
 - webhook send helper の outbound 配送は固定 `5s` timeout。timeout は `504` / `webhook_send_timeout`、target の non-2xx は `502` / `webhook_target_non_2xx`。
 - `timeout` は即時の 504 レスポンス shape を返す。実レイテンシは server 全体の `X-Mockport-Delay`（`0`–`30000` ms、[Adapters](../site/adapters.ja.md#x-mockport-delay) 参照）で注入する。

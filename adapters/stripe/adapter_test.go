@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -505,6 +506,43 @@ func TestRootAliasPaths(t *testing.T) {
 		if rec.Code != http.StatusNotFound {
 			t.Fatalf("root helper alias %s status = %d, want %d", path, rec.Code, http.StatusNotFound)
 		}
+	}
+}
+
+func TestCheckoutSessionRootAliasMatchesConfiguredBasePath(t *testing.T) {
+	const form = "client_reference_id=alias-contract"
+	configured := serveStripeRequest(
+		newStripeMux(t, adapter.Config{BasePath: "/stripe", Scenario: "payment_success"}),
+		http.MethodPost,
+		"/stripe/v1/checkout/sessions",
+		form,
+		nil,
+	)
+	root := serveStripeRequest(
+		newStripeMux(t, adapter.Config{BasePath: "/stripe", Scenario: "payment_success"}),
+		http.MethodPost,
+		"/v1/checkout/sessions",
+		form,
+		nil,
+	)
+
+	if root.Code != configured.Code {
+		t.Fatalf("root alias status = %d, configured path status = %d", root.Code, configured.Code)
+	}
+	for _, header := range []string{"Content-Type", "Request-Id", "Stripe-Version"} {
+		if got, want := root.Header().Get(header), configured.Header().Get(header); got != want {
+			t.Fatalf("root alias %s = %q, configured path = %q", header, got, want)
+		}
+	}
+	var rootBody, configuredBody map[string]any
+	if err := json.Unmarshal(root.Body.Bytes(), &rootBody); err != nil {
+		t.Fatalf("decode root alias response: %v", err)
+	}
+	if err := json.Unmarshal(configured.Body.Bytes(), &configuredBody); err != nil {
+		t.Fatalf("decode configured path response: %v", err)
+	}
+	if !reflect.DeepEqual(rootBody, configuredBody) {
+		t.Fatalf("root alias response = %#v, configured path response = %#v", rootBody, configuredBody)
 	}
 }
 
