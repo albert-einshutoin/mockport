@@ -209,6 +209,30 @@ func TestEmailsAndOrgsRequireScopes(t *testing.T) {
 	}
 }
 
+func TestOrgsRequiresValidBearerToken(t *testing.T) {
+	mux := newGitHubMux(t, adapter.Config{BasePath: "/github", Scenario: "oauth_success"})
+	token := issueGitHubToken(t, mux, "read:org")
+
+	valid := serveGitHubRequest(mux, http.MethodGet, "/github/user/orgs", "", map[string]string{"Authorization": "Bearer " + token})
+	if valid.Code != http.StatusOK {
+		t.Fatalf("valid token status = %d, want %d, body=%s", valid.Code, http.StatusOK, valid.Body.String())
+	}
+	var orgs []orgResponse
+	if err := json.Unmarshal(valid.Body.Bytes(), &orgs); err != nil {
+		t.Fatalf("decode orgs: %v", err)
+	}
+	want := orgResponse{Login: "mockport-org", ID: 431010, Description: "Mockport fake organization"}
+	if len(orgs) != 1 || orgs[0] != want {
+		t.Fatalf("orgs = %#v, want [%#v]", orgs, want)
+	}
+
+	unknown := serveGitHubRequest(mux, http.MethodGet, "/github/user/orgs", "", map[string]string{"Authorization": "Bearer unknown"})
+	if unknown.Code != http.StatusUnauthorized {
+		t.Fatalf("unknown token status = %d, want %d, body=%s", unknown.Code, http.StatusUnauthorized, unknown.Body.String())
+	}
+	assertGitHubMessage(t, unknown, "Bad credentials")
+}
+
 func TestEmailsAndOrgsHonorScopeMissingScenarioHeader(t *testing.T) {
 	mux := newGitHubMux(t, adapter.Config{BasePath: "/github", Scenario: "oauth_success"})
 
