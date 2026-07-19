@@ -22,5 +22,7 @@ For CLI output:
 
 ```bash
 mockport report --format text
-mockport report --format json
+mockport report --json
 ```
+
+`mockport report --format json` remains available for backward compatibility. JSON output contains only the report payload, without text headings or ANSI escape sequences.

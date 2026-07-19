@@ -84,7 +84,7 @@ STRIPE_API_URL=http://mockport:43101/stripe
 
 - [Support matrix](support-matrix.ja.md)
 - `/_mockport/report`
-- `mockport report --format json`
+- `mockport report --json`（`--format json` も引き続き利用可能）
 - Adapter examples
 - Public env safety checks
 
