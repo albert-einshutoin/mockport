@@ -7,8 +7,10 @@ Mockport reports are trust artifacts. They explain what ran, what was safe, what
 ## JSON Report
 
 ```bash
-mockport report --format json
+mockport report --json
 ```
+
+`mockport report --format json` remains supported for backward compatibility. Do not combine `--json` with an explicit non-JSON `--format` value.
 
 Field-level reference: [Report schema](site/report-schema.md).
 

@@ -7,7 +7,7 @@ reports は、Mockport の test run が何を実行し、どの safety check に
 ## 確認方法
 
 - HTTP では `/_mockport/report` を参照します。
-- CLI では `mockport report` または JSON format を使います。
+- CLI では text の `mockport report`、または機械可読な `mockport report --json` を使います。既存の `--format json` も後方互換として利用できます。
 - CI では report を artifact として保存すると、adapter coverage と safety status を追いやすくなります。
 - JSON フィールドの詳細は英語版 [Report schema](report-schema.md) を参照してください。
 

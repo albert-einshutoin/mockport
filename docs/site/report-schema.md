@@ -5,8 +5,10 @@ Mockport exposes a **runtime report** at `GET /_mockport/report`. The JSON shape
 The same snapshot is available through the CLI:
 
 ```bash
-mockport report --format json
+mockport report --json
 ```
+
+The legacy `mockport report --format json` spelling returns the same payload and remains supported for backward compatibility.
 
 For report usage and request-history limits, see [Reports](reports.md) and [Reporting](../reporting.md).
 

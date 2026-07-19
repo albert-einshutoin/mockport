@@ -89,7 +89,7 @@ Use:
 
 - [Support matrix](support-matrix.md)
 - `/_mockport/report`
-- `mockport report --format json`
+- `mockport report --json` (`--format json` remains supported)
 - Adapter examples
 - Public env safety checks
 
