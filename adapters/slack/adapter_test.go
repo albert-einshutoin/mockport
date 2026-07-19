@@ -90,6 +90,50 @@ func TestPostMessagePersistsConversationHistory(t *testing.T) {
 	}
 }
 
+func TestPostMessageRejectsNonStringJSONChannel(t *testing.T) {
+	for _, channel := range []string{`{"id":"C_MOCKPORT"}`, `null`, `[]`, `42`, `true`} {
+		t.Run(channel, func(t *testing.T) {
+			mux := newSlackMux(t, adapter.Config{BasePath: "/slack", Scenario: "message_success"})
+			header := http.Header{"Content-Type": []string{"application/json"}}
+			rec := adaptertest.Serve(
+				mux,
+				http.MethodPost,
+				"/slack/api/chat.postMessage",
+				strings.NewReader(`{"channel":`+channel+`,"text":"hello"}`),
+				header,
+			)
+
+			if rec.Code != http.StatusOK {
+				t.Fatalf("status = %d, want %d, body=%s", rec.Code, http.StatusOK, rec.Body.String())
+			}
+			assertSlackError(t, rec, "invalid_channel")
+		})
+	}
+}
+
+func TestPostMessageAcceptsJSONStringChannel(t *testing.T) {
+	mux := newSlackMux(t, adapter.Config{BasePath: "/slack", Scenario: "message_success"})
+	header := http.Header{"Content-Type": []string{"application/json; charset=utf-8"}}
+	rec := adaptertest.Serve(
+		mux,
+		http.MethodPost,
+		"/slack/api/chat.postMessage",
+		strings.NewReader(`{"channel":"C_TEST","text":"hello from JSON"}`),
+		header,
+	)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d, body=%s", rec.Code, http.StatusOK, rec.Body.String())
+	}
+	var body postMessageResponse
+	if err := json.Unmarshal(rec.Body.Bytes(), &body); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	if !body.OK || body.Channel != "C_TEST" || body.Message.Text != "hello from JSON" {
+		t.Fatalf("response = %#v", body)
+	}
+}
+
 func TestMessageLifecycleHistoryVisibility(t *testing.T) {
 	mux := newSlackMux(t, adapter.Config{BasePath: "/slack", Scenario: "message_success"})
 	const channel = "C_TEST"

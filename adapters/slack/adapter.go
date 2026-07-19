@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"io"
+	"mime"
 	"net/http"
 	"strconv"
 	"strings"
@@ -154,10 +155,10 @@ func (r *routes) writePostMessage(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	// ここに到達するのは message_success (default) のみ
-	if !parseSlackForm(w, req) {
+	channel, text, ok := parsePostMessageInput(w, req)
+	if !ok {
 		return
 	}
-	channel := req.Form.Get("channel")
 	if channel == "" {
 		channel = "C_MOCKPORT"
 	}
@@ -165,7 +166,6 @@ func (r *routes) writePostMessage(w http.ResponseWriter, req *http.Request) {
 		writeSlackError(w, http.StatusOK, "channel_not_found")
 		return
 	}
-	text := req.Form.Get("text")
 	if text == "" {
 		text = "Mockport message"
 	}
@@ -410,6 +410,54 @@ func messageBody(ts string, data map[string]any) messageData {
 
 func writeSlackError(w http.ResponseWriter, status int, code string) {
 	httpx.WriteJSON(w, status, slackErrorResponse{OK: false, Error: code})
+}
+
+func parsePostMessageInput(w http.ResponseWriter, req *http.Request) (channel, text string, ok bool) {
+	mediaType, _, _ := mime.ParseMediaType(req.Header.Get("Content-Type"))
+	if !strings.EqualFold(mediaType, "application/json") {
+		if !parseSlackForm(w, req) {
+			return "", "", false
+		}
+		return req.Form.Get("channel"), req.Form.Get("text"), true
+	}
+
+	raw, err := io.ReadAll(req.Body)
+	if err != nil {
+		if httpx.IsRequestBodyTooLarge(err) {
+			writeSlackError(w, http.StatusRequestEntityTooLarge, "request_too_large")
+			return "", "", false
+		}
+		writeSlackError(w, http.StatusBadRequest, "invalid_payload")
+		return "", "", false
+	}
+
+	// Keep the channel as RawMessage so a JSON type mismatch can return Slack's
+	// provider-shaped invalid_channel error instead of a generic decode error.
+	var payload map[string]json.RawMessage
+	if err := json.Unmarshal(raw, &payload); err != nil {
+		writeSlackError(w, http.StatusBadRequest, "invalid_payload")
+		return "", "", false
+	}
+	if value, exists := payload["channel"]; exists {
+		var decoded any
+		if err := json.Unmarshal(value, &decoded); err != nil {
+			writeSlackError(w, http.StatusBadRequest, "invalid_payload")
+			return "", "", false
+		}
+		var isString bool
+		channel, isString = decoded.(string)
+		if !isString {
+			writeSlackError(w, http.StatusOK, "invalid_channel")
+			return "", "", false
+		}
+	}
+	if value, exists := payload["text"]; exists {
+		if err := json.Unmarshal(value, &text); err != nil {
+			writeSlackError(w, http.StatusBadRequest, "invalid_payload")
+			return "", "", false
+		}
+	}
+	return channel, text, true
 }
 
 func parseSlackForm(w http.ResponseWriter, req *http.Request) bool {
