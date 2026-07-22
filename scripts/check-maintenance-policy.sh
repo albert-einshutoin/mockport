@@ -77,8 +77,9 @@ done
 
 require_text ".github/workflows/ci.yml" "actions/setup-go@v6"
 require_text ".github/workflows/ci.yml" "actions/setup-node@v6"
-require_text ".github/workflows/ci.yml" "bash scripts/run-sdk-contracts.sh all"
-require_text ".github/workflows/ci.yml" "bash scripts/check-maintenance-policy.sh"
+require_text ".github/workflows/ci.yml" "python3 ci/impact.py run"
+require_text "ci/run-full.sh" "bash scripts/run-sdk-contracts.sh all"
+require_text "ci/run-full.sh" "bash scripts/check-maintenance-policy.sh"
 
 require_text ".github/workflows/docker.yml" "docker/setup-buildx-action@v4"
 require_text ".github/workflows/docker.yml" "docker/login-action@v4"
