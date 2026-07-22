@@ -17,7 +17,7 @@ verify: vet test
 ci-impact-test:
 	python3 -m unittest discover -s ci/tests -v
 
-ci-full:
+ci-full: ci-impact-test
 	bash ci/run-full.sh
 
 build:

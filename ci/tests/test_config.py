@@ -53,6 +53,13 @@ class ConfigTests(unittest.TestCase):
         ):
             self.assertIn(("bash", f"scripts/{script}"), full_commands)
 
+    def test_emergency_full_runner_does_not_depend_on_impact_config(self):
+        runner = (ROOT / "ci/run-full.sh").read_text()
+
+        self.assertNotIn("ci/impact.py", runner)
+        self.assertNotIn("ci/config.json", runner)
+        self.assertNotIn("ci/tests", runner)
+
 
 if __name__ == "__main__":
     unittest.main()

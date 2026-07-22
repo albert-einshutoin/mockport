@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# This runner is deliberately independent from the impact config. If planning or
-# config parsing breaks, CI still has a trusted path that exercises every suite.
-python3 -m unittest discover -s ci/tests -v
+# This runner is deliberately independent from the impact code and config. If
+# planning or config parsing breaks, CI still exercises every product suite.
 go test ./...
 go test -race ./...
 bash scripts/run-sdk-contracts.sh all

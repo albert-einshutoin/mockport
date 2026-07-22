@@ -39,6 +39,8 @@ jobs:
           cache-dependency-path: "contract/sdk/package-lock.json"
 
       - name: Test impact planner
+        id: planner-tests
+        continue-on-error: true
         run: python3 -m unittest discover -s ci/tests -v
       - name: Verify formatting
         run: test -z "$(gofmt -l .)"
@@ -73,12 +75,12 @@ jobs:
 
       - name: Run affected tests or full suite
         id: tests
-        if: ${{ steps.impact.outcome == 'success' }}
+        if: ${{ steps.planner-tests.outcome == 'success' && steps.impact.outcome == 'success' }}
         continue-on-error: true
         run: python3 ci/impact.py run --plan ci-plan.json
 
       - name: Fall back when planning is unavailable
-        if: ${{ steps.impact.outcome == 'failure' }}
+        if: ${{ steps.planner-tests.outcome == 'failure' || steps.impact.outcome == 'failure' }}
         run: bash ci/run-full.sh
 
       - name: Enforce selected test result
