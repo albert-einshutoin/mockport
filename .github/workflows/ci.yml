@@ -1,8 +1,14 @@
 name: CI
 
 on:
-  push:
   pull_request:
+  push:
+    branches:
+      - main
+      - "release/**"
+  schedule:
+    - cron: "23 17 * * *"
+  workflow_dispatch:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
@@ -10,32 +16,80 @@ env:
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          # Merge-base analysis must see every PR commit, including fork PRs.
+          fetch-depth: 0
       - uses: actions/setup-go@v6
         with:
           go-version: "1.26.5"
+          cache: true
       - uses: actions/setup-node@v6
         with:
           node-version: "24"
           cache: "npm"
           cache-dependency-path: "contract/sdk/package-lock.json"
-      - run: go test ./...
+
+      - name: Test impact planner
+        run: python3 -m unittest discover -s ci/tests -v
+      - name: Verify formatting
+        run: test -z "$(gofmt -l .)"
       - run: go vet ./...
-      - run: go test -race ./...
       - run: go install honnef.co/go/tools/cmd/staticcheck@v0.7.0
       - run: $(go env GOPATH)/bin/staticcheck ./...
       - run: go install golang.org/x/vuln/cmd/govulncheck@v1.3.0
       - run: $(go env GOPATH)/bin/govulncheck ./...
       - run: go build ./cmd/mockport
       - run: bash scripts/check-go-engineering.sh
-      - run: bash scripts/run-sdk-contracts.sh all
-      - run: bash scripts/check-public-trust.sh
-      - run: bash scripts/check-public-env.sh
-      - run: bash scripts/check-adapter-completeness.sh
-      - run: bash scripts/check-compat-manifests.sh
-      - run: bash scripts/check-distribution.sh
-      - run: bash scripts/check-maintenance-policy.sh
+
+      - name: Plan affected tests
+        id: impact
+        continue-on-error: true
+        env:
+          CI_EVENT_NAME: ${{ github.event_name }}
+          CI_BASE_REF: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+          if [[ "$CI_EVENT_NAME" == "pull_request" ]]; then
+            python3 ci/impact.py plan \
+              --base "origin/$CI_BASE_REF" \
+              --head HEAD \
+              --output ci-plan.json
+          else
+            python3 ci/impact.py plan \
+              --base HEAD \
+              --head HEAD \
+              --force-full \
+              --output ci-plan.json
+          fi
+
+      - name: Run affected tests or full suite
+        id: tests
+        if: ${{ steps.impact.outcome == 'success' }}
+        continue-on-error: true
+        run: python3 ci/impact.py run --plan ci-plan.json
+
+      - name: Fall back when planning is unavailable
+        if: ${{ steps.impact.outcome == 'failure' }}
+        run: bash ci/run-full.sh
+
+      - name: Enforce selected test result
+        if: ${{ steps.tests.outcome == 'failure' }}
+        run: exit 1
+
+      - name: Upload test strategy
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: ci-impact-plan-${{ github.run_id }}
+          path: ci-plan.json
+          if-no-files-found: ignore
+          retention-days: 14
