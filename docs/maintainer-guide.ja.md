@@ -9,3 +9,7 @@ maintainer は、public preview の信頼性を保つために docs、tests、co
 - adapter behavior を変更したら docs、fixtures、reports、tests を同時に確認します。
 - release 前に public env safety と AI-safe warning を確認します。
 - issue/PR では supported scope と known gap を明確にします。
+
+Pull Request のテスト選択と fail-closed ルールは
+[選択的CIテスト実行](selective-ci.ja.md) に記載しています。判定器やmappingの変更後は
+`make ci-impact-test`、merge・releaseレーン全体の確認には `make ci-full` を実行してください。

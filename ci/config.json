@@ -1,0 +1,124 @@
+{
+  "adapter": {
+    "name": "go",
+    "path": "ci/adapters/go.py"
+  },
+  "fullTestPatterns": [
+    ".github/**",
+    "ci/**",
+    "cmd/**",
+    "docker/**",
+    "go.mod",
+    "go.sum",
+    "Makefile",
+    ".gitleaks.toml",
+    "contract/sdk/package.json",
+    "contract/sdk/package-lock.json",
+    "internal/adapter/**",
+    "internal/builtins/**",
+    "internal/config/**",
+    "internal/report/**",
+    "internal/security/**",
+    "internal/server/**",
+    "internal/state/**",
+    "scripts/**"
+  ],
+  "pathRules": [
+    {
+      "patterns": ["adapters/stripe/**"],
+      "integrationTests": ["./internal/server"],
+      "e2eTests": ["sdk-stripe"],
+      "checks": ["adapter-metadata", "compatibility-manifests"]
+    },
+    {
+      "patterns": ["adapters/openai/**"],
+      "integrationTests": ["./internal/server"],
+      "e2eTests": ["sdk-openai"],
+      "checks": ["adapter-metadata", "compatibility-manifests"]
+    },
+    {
+      "patterns": ["adapters/githuboauth/**"],
+      "integrationTests": ["./internal/server"],
+      "e2eTests": ["sdk-github-oauth"],
+      "checks": ["adapter-metadata", "compatibility-manifests"]
+    },
+    {
+      "patterns": ["adapters/line/**"],
+      "integrationTests": ["./internal/server"],
+      "e2eTests": ["sdk-line"],
+      "checks": ["adapter-metadata", "compatibility-manifests"]
+    },
+    {
+      "patterns": ["adapters/slack/**"],
+      "integrationTests": ["./internal/server"],
+      "e2eTests": ["sdk-slack"],
+      "checks": ["adapter-metadata", "compatibility-manifests"]
+    },
+    {
+      "patterns": ["adapters/zohooauth/**"],
+      "integrationTests": ["./internal/server"],
+      "e2eTests": ["multi-adapter"],
+      "checks": ["adapter-metadata", "compatibility-manifests"]
+    },
+    {
+      "patterns": ["internal/cli/**"],
+      "integrationTests": ["./internal/cli"],
+      "checks": ["public-trust"]
+    },
+    {
+      "patterns": ["internal/compat/**"],
+      "checks": ["compatibility-manifests"]
+    },
+    {
+      "patterns": ["contract/sdk/**"],
+      "e2eTests": ["sdk-all"]
+    },
+    {
+      "patterns": ["docs/**", "README.md", "README.ja.md", "CONTRIBUTING.md", "CONTRIBUTING.ja.md", "ROADMAP.md", "ROADMAP.ja.md", "SECURITY.md"],
+      "checks": ["docs", "public-trust"]
+    },
+    {
+      "patterns": ["examples/**", "configs/**"],
+      "checks": ["public-env", "adapter-metadata"],
+      "e2eTests": ["sdk-all"]
+    }
+  ],
+  "smokeTests": ["health"],
+  "commands": {
+    "unitPrefix": ["go", "test"],
+    "racePrefix": ["go", "test", "-race"],
+    "checks": {
+      "adapter-metadata": ["bash", "scripts/check-adapter-completeness.sh"],
+      "compatibility-manifests": ["bash", "scripts/check-compat-manifests.sh"],
+      "docs": ["bash", "scripts/check-doc-links.sh"],
+      "public-env": ["bash", "scripts/check-public-env.sh"],
+      "public-trust": ["bash", "scripts/check-public-trust.sh"]
+    },
+    "e2e": {
+      "multi-adapter": ["bash", "scripts/smoke-multi-adapter.sh"],
+      "sdk-all": ["bash", "scripts/run-sdk-contracts.sh", "all"],
+      "sdk-github-oauth": ["bash", "scripts/run-sdk-contracts.sh", "github-oauth"],
+      "sdk-line": ["bash", "scripts/run-sdk-contracts.sh", "line"],
+      "sdk-openai": ["bash", "scripts/run-sdk-contracts.sh", "openai"],
+      "sdk-slack": ["bash", "scripts/run-sdk-contracts.sh", "slack"],
+      "sdk-stripe": ["bash", "scripts/run-sdk-contracts.sh", "stripe"]
+    },
+    "smoke": {
+      "health": ["go", "test", "./internal/server", "-run", "^TestHealthReturnsOK$"]
+    },
+    "full": [
+      ["python3", "-m", "unittest", "discover", "-s", "ci/tests", "-v"],
+      ["go", "test", "./..."],
+      ["go", "test", "-race", "./..."],
+      ["bash", "scripts/run-sdk-contracts.sh", "all"],
+      ["bash", "scripts/smoke-multi-adapter.sh"],
+      ["bash", "scripts/check-public-trust.sh"],
+      ["bash", "scripts/check-public-env.sh"],
+      ["bash", "scripts/check-doc-links.sh"],
+      ["bash", "scripts/check-adapter-completeness.sh"],
+      ["bash", "scripts/check-compat-manifests.sh"],
+      ["bash", "scripts/check-distribution.sh"],
+      ["bash", "scripts/check-maintenance-policy.sh"]
+    ]
+  }
+}

@@ -33,7 +33,7 @@ require_pattern "signal.NotifyContext" internal/cli/run.go
 require_pattern "MaxBytesReader" internal/adapter/httpx/json.go
 require_pattern "func cloneValue" internal/state/store.go
 require_pattern "SetClock" internal/report/recorder.go
-require_pattern "go test -race ./..." .github/workflows/ci.yml
+require_pattern "go test -race ./..." ci/run-full.sh
 require_pattern "staticcheck ./..." .github/workflows/ci.yml
 require_pattern "govulncheck ./..." .github/workflows/ci.yml
 require_pattern "Ignored Error Policy" docs/go-engineering-readiness.md

@@ -104,6 +104,11 @@ When SDK/client compatibility is part of the claim, also run the relevant checks
 
 ## Dependency And CI Maintenance
 
+Pull request test selection and its fail-closed rules are documented in
+[Selective CI Test Execution](selective-ci.md). Run `make ci-impact-test` after
+changing the planner or mappings; `make ci-full` exercises the merge/release
+lane locally.
+
 - Dependabot covers GitHub Actions, Go modules, the experimental npm wrapper, and test-only SDK contracts.
 - GitHub Actions should use Node.js 24-compatible action releases where available.
 - If a Node.js 20 deprecation warning remains because an upstream action has no Node.js 24-compatible release, document the action, warning date, and upstream tracking reason in the relevant phase notes.
