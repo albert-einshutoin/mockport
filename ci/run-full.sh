@@ -10,6 +10,7 @@ bash scripts/run-sdk-contracts.sh all
 bash scripts/smoke-multi-adapter.sh
 bash scripts/check-public-trust.sh
 bash scripts/check-public-env.sh
+bash scripts/check-doc-links.sh
 bash scripts/check-adapter-completeness.sh
 bash scripts/check-compat-manifests.sh
 bash scripts/check-distribution.sh

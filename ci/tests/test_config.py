@@ -39,6 +39,20 @@ class ConfigTests(unittest.TestCase):
         self.assertIn("go.mod", config["fullTestPatterns"])
         self.assertIn("go.sum", config["fullTestPatterns"])
 
+    def test_full_suite_keeps_every_public_validation_gate(self):
+        config = json.loads((ROOT / "ci/config.json").read_text())
+        full_commands = {tuple(command) for command in config["commands"]["full"]}
+
+        for script in (
+            "check-adapter-completeness.sh",
+            "check-distribution.sh",
+            "check-doc-links.sh",
+            "check-maintenance-policy.sh",
+            "check-public-env.sh",
+            "check-public-trust.sh",
+        ):
+            self.assertIn(("bash", f"scripts/{script}"), full_commands)
+
 
 if __name__ == "__main__":
     unittest.main()
