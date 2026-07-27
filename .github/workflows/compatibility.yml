@@ -28,7 +28,7 @@ jobs:
           node-version: "24"
           cache: "npm"
           cache-dependency-path: "contract/sdk/package-lock.json"
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.13"
       - run: go test ./...
