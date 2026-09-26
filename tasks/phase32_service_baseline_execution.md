@@ -2,13 +2,28 @@
 
 [日本語版](phase32_service_baseline_execution.ja.md)
 
-**Goal:** Close the minimum useful integration-test baseline for every committed adapter, then add SendGrid only after the current service baselines are explicit and verifiable.
+**Goal:** Prove the selected Stripe/OpenAI app integrations first, then close further adapter baselines when a concrete app flow or published-contract regression warrants them. SendGrid stays a conditional candidate.
 
 **Current registered adapters:** `stripe`, `openai`, `github-oauth`, `slack`, `line`, and `zoho-oauth`.
 
 **Planned adapter:** `sendgrid`.
 
 **Source of truth:** Development rules live in `docs/maintainer-guide.md` and compatibility promotion rules live in `docs/compatibility-model.md`. Adapter-specific contracts and gaps live in `docs/adapters/*.md`.
+
+## Current Product Gate (2026-09-27)
+
+Phase 32's broad baseline below is a catalog, not the next implementation batch. The current objective is to prove two app integrations detect application defects without real provider keys. The selected order is:
+
+| Priority | Work | Current evidence and acceptance |
+| --- | --- | --- |
+| P0 | #315 source smoke | PR #384 is open; built and running image IDs must match, with source SHA and cleanup recorded. |
+| P0 | #82 fake-key auth | PR #385 is open; opt-in ordinary-request 401, SDK recognition, and report `auth_required` are required. |
+| P0 | #386 Responses streaming gap | PR #387 is open; `stream:true` must fail as a Mockport limitation and enter report unsupported history. |
+| P1 | #86 Stripe app flow | HTTP app entry → official SDK Checkout create/retrieve → signed, target-matched webhook → one order update; duplicate, tampered, and unpaid/failed cases must be detected. |
+| P1 | #86 OpenAI app flow | HTTP app entry → official Python SDK → non-streaming and Chat streaming response; wrong/missing key, bounded 429, timeout/cancel, and mutation detection must pass. |
+| P2 | #84 Slack event delivery | Signed v0 message event → app signature/timestamp verification → official SDK reply → Mockport state assertion. |
+
+The official Node Stripe/OpenAI/LINE and Python OpenAI SDK examples and CI smoke exist on main and in `v0.2.0-preview`; they do not yet prove the app-level webhook or response flows. Keep the selected app workflows at `workflow-compatible` until the compatibility model's evidence for any higher maturity is met. Limitations and request-history truncation must remain visible. An external first-time app trial is a later product validation, not a prerequisite for these local/CI gates.
 
 ## Cross-Adapter Baseline
 
@@ -150,7 +165,7 @@ Execution:
 3. Verify metadata, support matrix, multi-adapter examples, and task inventory include `zoho-oauth`.
 4. Do not expand Zoho endpoint surface in this track.
 
-### SendGrid
+### SendGrid (conditional candidate)
 
 Minimum surface:
 
@@ -163,27 +178,15 @@ Minimum surface:
 - Event webhook: local signed event sender for delivered, processed, dropped, bounce, open, click, spamreport, and unsubscribe.
 - Docs and examples: add `docs/adapters/sendgrid.md`, then promote README from planned to supported only after baseline tests pass.
 
-Execution:
-
-1. Create `adapters/sendgrid/adapter.go`, `models.go`, and `adapter_test.go`.
-2. Add config registration and `mockport init --adapter sendgrid`.
-3. Implement mail send happy path first with RED/GREEN.
-4. Add auth/rate/validation scenarios.
-5. Add signed event webhook sender.
-6. Add templates and suppressions only after core mail/webhook passes.
+Entry gate: record a concrete user need, the smallest transactional mail flow, official references or SDK evidence to verify it, and a maintenance plan. Only then turn the relevant subset of this candidate baseline into an implementation issue. Templates, suppressions, and event types need their own demonstrated app flow.
 7. Update README, support matrix, examples, and metadata conformance.
 
 ## Execution Order
 
-1. Documentation parity for existing adapters: Stripe, OpenAI, GitHub OAuth, Slack.
-2. Slack baseline gaps: interactions and Block Kit shallow validation.
-3. LINE validation expansion and webhook fixture catalog.
-4. OpenAI current SDK contract refresh.
-5. Stripe final audit against docs and idempotency/webhook evidence.
-6. GitHub OAuth scope/error hardening.
-7. Zoho OAuth baseline inventory and multi-adapter verification.
-8. SendGrid adapter from scratch.
-9. Generate/update compatibility reports and support matrix.
+1. Complete the P0 and P1 product gates above, updating docs and compatibility evidence with each corresponding implementation change.
+2. Deliver the #84 Slack app event/reply flow and verify signature and timestamp failures.
+3. Reprioritize other registered-adapter gaps only when an app workflow or regression against a published contract establishes the need.
+4. Reconsider SendGrid only with a concrete demand, narrow mail workflow, official-reference/SDK verification method, and maintenance plan. The broad SendGrid baseline below is exploratory and is not a current implementation order.
 
 ## Verification
 
