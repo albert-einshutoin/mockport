@@ -2,7 +2,7 @@
 
 [日本語版](latest.ja.md)
 
-Generated: 2026-07-19
+Generated: 2026-09-27
 
 Compatibility is measured from Mockport runtime metadata, SDK/client contract checks, fixture coverage, and known gaps. It is not a claim that provider internals or undocumented behavior are reproduced.
 
@@ -38,6 +38,7 @@ Compatibility is measured from Mockport runtime metadata, SDK/client contract ch
 
 ### openai
 - No real model quality, tokenization parity, hosted tools, vector stores, or provider scheduling.
+- Mockport rejects Responses API stream:true with 501; OpenAI supports Responses streaming, but this local SSE contract is not implemented.
 
 ### slack
 - No real delivery, Events API completeness, Block Kit validation, files, app scopes, enterprise policy, or full workspace directory.

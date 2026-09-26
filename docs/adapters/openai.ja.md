@@ -13,3 +13,5 @@ OpenAI adapter は、OpenAI-compatible な local API surface を使って、AI a
 - 実 model 品質、tokenization parity、hosted tools、provider scheduling の再現は対象外です。
 
 詳細な request/response contract と known gap は英語版を正とします。
+
+Responses API の `stream:true` はMockportで未対応のため、`501` / `mockport_unsupported_responses_stream` を返し、状態を作成しません。OpenAI本体が非対応という意味ではありません。Chat Completions streamingとResponsesの非streamingは従来の対象範囲です。

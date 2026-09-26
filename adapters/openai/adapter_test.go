@@ -318,6 +318,47 @@ func TestResponsesStreamSuccessReturnsJSON(t *testing.T) {
 	}
 }
 
+func TestResponsesStreamTrueFailsWithoutCreatingState(t *testing.T) {
+	for _, scenario := range []string{"chat_success", "stream_success"} {
+		t.Run(scenario, func(t *testing.T) {
+			mux := newOpenAIMux(t, adapter.Config{BasePath: "/openai", Scenario: scenario})
+			stream := serveOpenAIRequest(mux, http.MethodPost, "/openai/v1/responses", `{"model":"gpt-mockport","input":"hello","stream":true}`)
+			if stream.Code != http.StatusNotImplemented {
+				t.Fatalf("stream status = %d, want 501; body=%s", stream.Code, stream.Body.String())
+			}
+			assertErrorCode(t, stream, "mockport_unsupported_responses_stream")
+			if got := stream.Header().Get("Content-Type"); got != "application/json" {
+				t.Fatalf("Content-Type = %q", got)
+			}
+			if !strings.Contains(stream.Body.String(), "Mockport") {
+				t.Fatalf("error did not identify Mockport: %s", stream.Body.String())
+			}
+			nonStream := serveOpenAIRequest(mux, http.MethodPost, "/openai/v1/responses", `{"model":"gpt-mockport","input":"hello"}`)
+			if nonStream.Code != http.StatusOK || !strings.Contains(nonStream.Body.String(), `"id":"openai_response_000001"`) {
+				t.Fatalf("non-stream response after rejected stream = %d %s", nonStream.Code, nonStream.Body.String())
+			}
+		})
+	}
+}
+
+func TestChatStreamValidatesRequiredInput(t *testing.T) {
+	for _, scenario := range []string{"chat_success", "stream_success"} {
+		t.Run(scenario, func(t *testing.T) {
+			mux := newOpenAIMux(t, adapter.Config{BasePath: "/openai", Scenario: scenario})
+			missingMessages := serveOpenAIRequest(mux, http.MethodPost, "/openai/v1/chat/completions", `{"model":"gpt-mockport","stream":true}`)
+			if missingMessages.Code != http.StatusBadRequest {
+				t.Fatalf("missing messages status = %d; body=%s", missingMessages.Code, missingMessages.Body.String())
+			}
+			assertErrorCode(t, missingMessages, "missing_required_field")
+			invalidModel := serveOpenAIRequest(mux, http.MethodPost, "/openai/v1/chat/completions", `{"model":"invalid","messages":[{"role":"user","content":"hello"}],"stream":true}`)
+			if invalidModel.Code != http.StatusBadRequest {
+				t.Fatalf("invalid model status = %d; body=%s", invalidModel.Code, invalidModel.Body.String())
+			}
+			assertErrorCode(t, invalidModel, "model_not_found")
+		})
+	}
+}
+
 func parseSSEDataEvents(body string) []string {
 	lines := strings.Split(body, "\n")
 	events := make([]string, 0, len(lines))

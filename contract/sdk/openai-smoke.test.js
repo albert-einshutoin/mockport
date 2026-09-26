@@ -41,6 +41,14 @@ async function runOpenAISmoke(options) {
     input: "hello",
   });
   const retrievedResponse = await client.responses.retrieve(response.id);
+  try {
+    await client.responses.create({ model: "gpt-mockport", input: "hello", stream: true });
+    throw new Error("unsupported Responses streaming unexpectedly succeeded");
+  } catch (error) {
+    if (error.status !== 501 || error.code !== "mockport_unsupported_responses_stream") {
+      throw error;
+    }
+  }
   const embedding = await client.embeddings.create({
     model: "text-embedding-mockport",
     input: "hello",
@@ -170,8 +178,8 @@ async function assertChatCompletionStreamSSEContract(baseURL) {
     input: "stream contract",
     stream: true,
   });
-  if (!responses.response.ok) {
-    throw new Error(`responses stream status=${responses.response.status} body=${responses.text}`);
+  if (responses.response.status !== 501) {
+    throw new Error(`responses stream status=${responses.response.status}, want 501; body=${responses.text}`);
   }
   const responsesContentType = responses.response.headers.get("content-type") || "";
   if (!responsesContentType.startsWith("application/json")) {
@@ -186,8 +194,8 @@ async function assertChatCompletionStreamSSEContract(baseURL) {
   } catch (error) {
     throw new Error(`responses stream body is not JSON: ${responses.text}`);
   }
-  if (responsesBody.object !== "response") {
-    throw new Error(`responses stream object=${responsesBody.object}, want response`);
+  if (responsesBody.error?.code !== "mockport_unsupported_responses_stream") {
+    throw new Error(`responses stream error=${responsesBody.error?.code}, want Mockport unsupported code`);
   }
 }
 

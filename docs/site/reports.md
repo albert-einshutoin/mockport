@@ -18,6 +18,8 @@ Set `MOCKPORT_REQUEST_HISTORY` to a positive integer to override the default cap
 
 When history has been truncated, the report includes a `request_history` summary with `limit`, `retained`, `evicted`, and `truncated`. Text reports include a truncation line only when `truncated` is true.
 
+Known endpoints can also reject unsupported features. For example, OpenAI Responses `stream:true` returns 501 and a request with `reason=unsupported_feature`; the bounded `unsupported_endpoints` list includes it. When `request_history.truncated=true`, an empty `unsupported_endpoints` list does not prove that no unsupported feature was used earlier in the run.
+
 For CLI output:
 
 ```bash

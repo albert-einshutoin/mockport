@@ -190,6 +190,9 @@ func FromMetadata(meta adapter.Metadata) Manifest {
 			Category:  scenario.Category,
 		})
 	}
+	for _, unsupported := range meta.Unsupported {
+		manifest.Unsupported = append(manifest.Unsupported, UnsupportedBehavior{ID: unsupported.ID, Reason: unsupported.Reason})
+	}
 	if len(meta.StatefulResources) > 0 || meta.Idempotency || meta.Reset {
 		manifest.StateEvidence = &StateEvidence{
 			StatefulResources: slices.Clone(meta.StatefulResources),

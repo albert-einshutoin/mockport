@@ -18,3 +18,5 @@ reports は、Mockport の test run が何を実行し、どの safety check に
 `MOCKPORT_REQUEST_HISTORY` に正の整数を指定すると、デフォルト上限を上書きできます。無効な値（空、0、負数、非数値、オーバーフロー）は 500 にフォールバックします。
 
 履歴が切り詰められた場合、レポートには `request_history` サマリー（`limit`、`retained`、`evicted`、`truncated`）が含まれます。テキストレポートは `truncated` が true のときだけ切り詰め行を表示します。
+
+既知のendpointでも未対応機能は失敗します。OpenAI Responsesの `stream:true` は `501` と `reason=unsupported_feature` になり、`unsupported_endpoints` に含まれます。`request_history.truncated=true` の場合、この配列が空でも、過去に未対応機能が使われなかった証拠にはなりません。
