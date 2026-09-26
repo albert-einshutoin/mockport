@@ -106,6 +106,43 @@ func TestReportClassifiesUnsupportedResponsesStreaming(t *testing.T) {
 	}
 }
 
+func TestAuthAndResponsesStreamingAreReportedTogether(t *testing.T) {
+	reg := adapter.NewRegistry()
+	if err := reg.Register(openai.New()); err != nil {
+		t.Fatal(err)
+	}
+	cfg := config.Config{Adapters: map[string]config.AdapterConfig{
+		"openai": {Enabled: true, BasePath: "/openai", Scenario: "chat_success", FakeSecret: "mockport_openai_key", AuthRequired: true},
+	}}
+	recorder := report.NewRecorder()
+	handler, err := NewConfiguredHandler(cfg, reg, recorder)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, tt := range []struct {
+		key, code string
+		status    int
+	}{
+		{key: "Bearer mockport_openai_key", code: "mockport_unsupported_responses_stream", status: http.StatusNotImplemented},
+		{key: "Bearer mockport_wrong", code: "invalid_api_key", status: http.StatusUnauthorized},
+	} {
+		req := httptest.NewRequest(http.MethodPost, "/openai/v1/responses", strings.NewReader(`{"model":"gpt-mockport","input":"hello","stream":true}`))
+		req.Header.Set("Authorization", tt.key)
+		resp := httptest.NewRecorder()
+		handler.ServeHTTP(resp, req)
+		if resp.Code != tt.status || !strings.Contains(resp.Body.String(), tt.code) {
+			t.Fatalf("key=%q status=%d body=%s", tt.key, resp.Code, resp.Body.String())
+		}
+	}
+	snapshot := recorder.Snapshot()
+	if len(snapshot.Requests) != 2 || snapshot.Requests[0].Status != http.StatusNotImplemented || snapshot.Requests[0].Reason != "unsupported_feature" || snapshot.Requests[1].Status != http.StatusUnauthorized || snapshot.Requests[1].Reason != "" {
+		t.Fatalf("report requests=%#v", snapshot.Requests)
+	}
+	if len(snapshot.Adapters) != 1 || !snapshot.Adapters[0].AuthRequired || len(snapshot.UnsupportedEndpoints) != 1 {
+		t.Fatalf("report auth/unsupported=%#v %#v", snapshot.Adapters, snapshot.UnsupportedEndpoints)
+	}
+}
+
 func TestHealthRejectsNonGETMethod(t *testing.T) {
 	handler, err := NewConfiguredHandler(config.Config{}, adapter.NewRegistry(), report.NewRecorder())
 	if err != nil {
