@@ -41,6 +41,19 @@ func TestLoadRejectsInvalidPort(t *testing.T) {
 	}
 }
 
+func TestAuthRequiredRejectsUnsupportedAdapter(t *testing.T) {
+	cfg := Config{
+		Server: ServerConfig{Port: 43101},
+		Mode:   "ai-safe",
+		Adapters: map[string]AdapterConfig{
+			"slack": {Enabled: true, BasePath: "/slack", AuthRequired: true},
+		},
+	}
+	if err := Validate(&cfg); err == nil || !strings.Contains(err.Error(), "auth_required") {
+		t.Fatalf("Validate error = %v, want unsupported auth_required", err)
+	}
+}
+
 func TestValidateRejectsInvalidBasePaths(t *testing.T) {
 	tests := []struct {
 		name     string

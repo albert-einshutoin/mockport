@@ -16,6 +16,7 @@ import (
 type routes struct {
 	basePath      string
 	cfg           adapter.Config
+	fakeSecret    string
 	store         *state.Store
 	idempotency   *state.IdempotencyStore
 	resolver      *adapter.ScenarioResolver
@@ -28,27 +29,27 @@ func (rt *routes) register(mux *http.ServeMux, prefix string) {
 }
 
 func (rt *routes) registerV1Routes(mux *http.ServeMux, prefix string) {
-	handleLimited(mux, "POST "+prefix+"/v1/checkout/sessions", rt.writeCheckoutSession)
-	handleLimited(mux, "GET "+prefix+"/v1/checkout/sessions", func(w http.ResponseWriter, r *http.Request) {
+	rt.handleAPI(mux, "POST "+prefix+"/v1/checkout/sessions", rt.writeCheckoutSession)
+	rt.handleAPI(mux, "GET "+prefix+"/v1/checkout/sessions", func(w http.ResponseWriter, r *http.Request) {
 		if _, ok := rt.resolveScenario(w, r); !ok {
 			return
 		}
 		rt.writeList(w, "checkout_session", r.URL.Path)
 	})
-	handleLimited(mux, "GET "+prefix+"/v1/checkout/sessions/{id}", func(w http.ResponseWriter, r *http.Request) {
+	rt.handleAPI(mux, "GET "+prefix+"/v1/checkout/sessions/{id}", func(w http.ResponseWriter, r *http.Request) {
 		if _, ok := rt.resolveScenario(w, r); !ok {
 			return
 		}
 		rt.writeResource(w, "checkout_session", r.PathValue("id"), fallbackCheckoutSession)
 	})
-	handleLimited(mux, "POST "+prefix+"/v1/payment_intents", rt.writePaymentIntent)
-	handleLimited(mux, "GET "+prefix+"/v1/payment_intents", func(w http.ResponseWriter, r *http.Request) {
+	rt.handleAPI(mux, "POST "+prefix+"/v1/payment_intents", rt.writePaymentIntent)
+	rt.handleAPI(mux, "GET "+prefix+"/v1/payment_intents", func(w http.ResponseWriter, r *http.Request) {
 		if _, ok := rt.resolveScenario(w, r); !ok {
 			return
 		}
 		rt.writeList(w, "payment_intent", r.URL.Path)
 	})
-	handleLimited(mux, "GET "+prefix+"/v1/payment_intents/{id}", func(w http.ResponseWriter, r *http.Request) {
+	rt.handleAPI(mux, "GET "+prefix+"/v1/payment_intents/{id}", func(w http.ResponseWriter, r *http.Request) {
 		if _, ok := rt.resolveScenario(w, r); !ok {
 			return
 		}
@@ -69,19 +70,19 @@ func (rt *routes) registerTestRoutes(mux *http.ServeMux, prefix string) {
 
 func (rt *routes) registerResource(mux *http.ServeMux, prefix, resourceType, path string,
 	fallback func(string) map[string]any, body map[string]any, required []string) {
-	handleLimited(mux, "POST "+prefix+path, func(w http.ResponseWriter, r *http.Request) {
+	rt.handleAPI(mux, "POST "+prefix+path, func(w http.ResponseWriter, r *http.Request) {
 		if _, ok := rt.resolveScenario(w, r); !ok {
 			return
 		}
 		rt.writeGenericResource(w, r, resourceType, body, required)
 	})
-	handleLimited(mux, "GET "+prefix+path, func(w http.ResponseWriter, r *http.Request) {
+	rt.handleAPI(mux, "GET "+prefix+path, func(w http.ResponseWriter, r *http.Request) {
 		if _, ok := rt.resolveScenario(w, r); !ok {
 			return
 		}
 		rt.writeList(w, resourceType, r.URL.Path)
 	})
-	handleLimited(mux, "GET "+prefix+path+"/{id}", func(w http.ResponseWriter, r *http.Request) {
+	rt.handleAPI(mux, "GET "+prefix+path+"/{id}", func(w http.ResponseWriter, r *http.Request) {
 		if _, ok := rt.resolveScenario(w, r); !ok {
 			return
 		}
@@ -91,6 +92,16 @@ func (rt *routes) registerResource(mux *http.ServeMux, prefix, resourceType, pat
 
 func handleLimited(mux *http.ServeMux, pattern string, h http.HandlerFunc) {
 	mux.HandleFunc(pattern, withBodyLimit(h))
+}
+
+func (rt *routes) handleAPI(mux *http.ServeMux, pattern string, h http.HandlerFunc) {
+	handleLimited(mux, pattern, func(w http.ResponseWriter, r *http.Request) {
+		if rt.cfg.AuthRequired && !httpx.RequireBearerAuth(r, rt.fakeSecret) {
+			rt.writeStripeError(w, http.StatusUnauthorized, "invalid_request_error", "invalid_api_key", "Invalid API Key provided")
+			return
+		}
+		h(w, r)
+	})
 }
 
 func withBodyLimit(next http.HandlerFunc) http.HandlerFunc {

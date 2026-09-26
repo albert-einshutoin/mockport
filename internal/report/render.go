@@ -17,7 +17,7 @@ func RenderText(snapshot Snapshot) string {
 	fmt.Fprintln(&out, "Adapters:")
 	for _, adapter := range snapshot.Adapters {
 		if adapter.Enabled {
-			fmt.Fprintf(&out, "- %s enabled at %s", adapter.Name, adapter.BasePath)
+			fmt.Fprintf(&out, "- %s enabled at %s auth_required=%v", adapter.Name, adapter.BasePath, adapter.AuthRequired)
 			if adapter.Maturity != "" {
 				fmt.Fprintf(&out, " maturity=%s", adapter.Maturity)
 			}

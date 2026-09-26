@@ -620,3 +620,47 @@ func assertStripeErrorCode(t *testing.T, rec *httptest.ResponseRecorder, want st
 	t.Helper()
 	adaptertest.AssertJSONField(t, rec, "error.code", want)
 }
+
+func TestAuthRequiredOnAPIAndAlias(t *testing.T) {
+	for _, path := range []string{"/stripe/v1/checkout/sessions", "/v1/checkout/sessions"} {
+		for _, tc := range []struct {
+			name, key string
+			status    int
+		}{
+			{"correct", "Bearer mockport_stripe_secret", http.StatusOK},
+			{"wrong", "Bearer mockport_wrong", http.StatusUnauthorized},
+			{"missing", "", http.StatusUnauthorized},
+			{"malformed", "Basic mockport_stripe_secret", http.StatusUnauthorized},
+			{"extra token", "Bearer mockport_stripe_secret extra", http.StatusUnauthorized},
+		} {
+			t.Run(path+"/"+tc.name, func(t *testing.T) {
+				mux := newStripeMux(t, adapter.Config{BasePath: "/stripe", AuthRequired: true})
+				headers := map[string]string{}
+				if tc.key != "" {
+					headers["Authorization"] = tc.key
+				}
+				rec := serveStripeRequest(mux, http.MethodPost, path, "", headers)
+				if rec.Code != tc.status {
+					t.Fatalf("status = %d, want %d; body=%s", rec.Code, tc.status, rec.Body.String())
+				}
+				if tc.status == http.StatusUnauthorized {
+					assertStripeErrorCode(t, rec, "invalid_api_key")
+					adaptertest.AssertJSONField(t, rec, "error.type", "invalid_request_error")
+				}
+			})
+		}
+	}
+	if got := performStripeRequest(t, adapter.Config{BasePath: "/stripe"}, http.MethodPost, "/stripe/v1/checkout/sessions"); got.Code != http.StatusOK {
+		t.Fatalf("default auth status = %d", got.Code)
+	}
+	mux := newStripeMux(t, adapter.Config{BasePath: "/stripe", AuthRequired: true})
+	if got := serveStripeRequest(mux, http.MethodPost, "/stripe/test/reset", "", nil); got.Code != http.StatusOK {
+		t.Fatalf("loopback reset status = %d", got.Code)
+	}
+	if got := serveStripeRequestWithRemote(mux, http.MethodPost, "/stripe/test/reset", "", nil, "192.0.2.1:12345"); got.Code != http.StatusForbidden {
+		t.Fatalf("remote reset status = %d", got.Code)
+	}
+	if got := serveStripeRequest(mux, http.MethodPost, "/stripe/test/webhook/send", "", nil); got.Code != http.StatusBadRequest {
+		t.Fatalf("missing target webhook status = %d", got.Code)
+	}
+}

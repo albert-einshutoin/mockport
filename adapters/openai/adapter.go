@@ -30,10 +30,11 @@ func (a Adapter) Register(mux *http.ServeMux, cfg adapter.Config) error {
 	}
 	meta := a.Metadata()
 	r := &routes{
-		basePath: strings.TrimRight(basePath, "/"),
-		cfg:      cfg,
-		store:    state.NewStore(),
-		resolver: adapter.NewScenarioResolver(cfg, "chat_success", meta),
+		basePath:   strings.TrimRight(basePath, "/"),
+		cfg:        cfg,
+		fakeSecret: a.FakeEnv(cfg)["OPENAI_API_KEY"],
+		store:      state.NewStore(),
+		resolver:   adapter.NewScenarioResolver(cfg, "chat_success", meta),
 	}
 	mux.HandleFunc(r.basePath+"/", r.handle)
 	return nil
@@ -44,9 +45,13 @@ func (a Adapter) FakeEnv(cfg adapter.Config) map[string]string {
 	if basePath == "" {
 		basePath = "/openai"
 	}
+	secret := cfg.FakeSecret
+	if secret == "" {
+		secret = "mockport_openai_key"
+	}
 	return map[string]string{
 		"OPENAI_BASE_URL": adapter.LocalBaseURL(basePath + "/v1"),
-		"OPENAI_API_KEY":  "mockport_openai_key",
+		"OPENAI_API_KEY":  secret,
 	}
 }
 
@@ -89,15 +94,20 @@ func (a Adapter) Metadata() adapter.Metadata {
 }
 
 type routes struct {
-	basePath string
-	cfg      adapter.Config
-	store    *state.Store
-	resolver *adapter.ScenarioResolver
+	basePath   string
+	cfg        adapter.Config
+	fakeSecret string
+	store      *state.Store
+	resolver   *adapter.ScenarioResolver
 }
 
 func (r *routes) handle(w http.ResponseWriter, req *http.Request) {
 	httpx.LimitRequestBody(w, req)
 	path := strings.TrimPrefix(req.URL.Path, r.basePath)
+	if r.cfg.AuthRequired && strings.HasPrefix(path, "/v1/") && !httpx.RequireBearerAuth(req, r.fakeSecret) {
+		httpx.WriteJSON(w, http.StatusUnauthorized, errorBody{Error: errorDetail{Type: "invalid_request_error", Code: "invalid_api_key", Message: "Invalid API key provided"}})
+		return
+	}
 	// Reject unknown scenario names before routing. The /test/reset management
 	// endpoint only clears state and is exempt from scenario validation.
 	if path != "/test/reset" {

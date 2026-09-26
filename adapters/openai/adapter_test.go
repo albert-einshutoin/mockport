@@ -540,3 +540,54 @@ func assertErrorCode(t *testing.T, rec *httptest.ResponseRecorder, want string) 
 	t.Helper()
 	adaptertest.AssertJSONField(t, rec, "error.code", want)
 }
+
+func TestAuthRequiredOnAPI(t *testing.T) {
+	for _, tc := range []struct {
+		name, key string
+		status    int
+	}{
+		{"correct", "Bearer mockport_openai_key", http.StatusOK},
+		{"wrong", "Bearer mockport_wrong", http.StatusUnauthorized},
+		{"missing", "", http.StatusUnauthorized},
+		{"malformed", "Basic mockport_openai_key", http.StatusUnauthorized},
+		{"extra token", "Bearer mockport_openai_key extra", http.StatusUnauthorized},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			mux := newOpenAIMux(t, adapter.Config{BasePath: "/openai", AuthRequired: true})
+			req := httptest.NewRequest(http.MethodGet, "/openai/v1/models", nil)
+			if tc.key != "" {
+				req.Header.Set("Authorization", tc.key)
+			}
+			rec := httptest.NewRecorder()
+			mux.ServeHTTP(rec, req)
+			if rec.Code != tc.status {
+				t.Fatalf("status = %d, want %d; body=%s", rec.Code, tc.status, rec.Body.String())
+			}
+			if tc.status == http.StatusUnauthorized {
+				assertErrorCode(t, rec, "invalid_api_key")
+				adaptertest.AssertJSONField(t, rec, "error.type", "invalid_request_error")
+			}
+		})
+	}
+	if got := performRequest(t, adapter.Config{BasePath: "/openai"}, http.MethodGet, "/openai/v1/models"); got.Code != http.StatusOK {
+		t.Fatalf("default auth status = %d", got.Code)
+	}
+	if got := New().FakeEnv(adapter.Config{FakeSecret: "mockport_custom"})["OPENAI_API_KEY"]; got != "mockport_custom" {
+		t.Fatalf("FakeEnv key = %q", got)
+	}
+	mux := newOpenAIMux(t, adapter.Config{BasePath: "/openai", AuthRequired: true})
+	loopbackReq := httptest.NewRequest(http.MethodPost, "/openai/test/reset", nil)
+	loopbackReq.RemoteAddr = "127.0.0.1:12345"
+	loopbackRec := httptest.NewRecorder()
+	mux.ServeHTTP(loopbackRec, loopbackReq)
+	if loopbackRec.Code != http.StatusOK {
+		t.Fatalf("loopback reset status = %d", loopbackRec.Code)
+	}
+	req := httptest.NewRequest(http.MethodPost, "/openai/test/reset", nil)
+	req.RemoteAddr = "192.0.2.1:12345"
+	rec := httptest.NewRecorder()
+	mux.ServeHTTP(rec, req)
+	if rec.Code != http.StatusForbidden {
+		t.Fatalf("remote reset status = %d", rec.Code)
+	}
+}

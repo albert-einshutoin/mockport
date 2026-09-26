@@ -82,6 +82,8 @@ path = pathlib.Path(sys.argv[1])
 port = sys.argv[2]
 text = path.read_text()
 text = text.replace("  port: 43101", f"  port: {port}")
+for key in ("mockport_stripe_secret", "mockport_openai_key"):
+    text = text.replace(f"    fake_secret: {key}", f"    fake_secret: {key}\n    auth_required: true")
 path.write_text(text)
 PY
 

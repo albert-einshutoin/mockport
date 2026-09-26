@@ -73,6 +73,20 @@ async function runOpenAISmoke(options) {
 
   await assertChatCompletionStreamSSEContract(options.baseURL);
 
+  const wrongKey = new OpenAI({
+    apiKey: "mockport_wrong",
+    baseURL: new URL("/openai/v1", options.baseURL).toString(),
+    maxRetries: 0,
+  });
+  try {
+    await wrongKey.models.list();
+    throw new Error("wrong OpenAI key unexpectedly succeeded");
+  } catch (error) {
+    if (error.status !== 401 || error.code !== "invalid_api_key") {
+      throw error;
+    }
+  }
+
   return {
     provider: "openai",
     baseURL: options.baseURL,

@@ -29,7 +29,7 @@ function findPackageVersion(entrypoint, packageName) {
 
 async function runStripeSmoke(options) {
   const base = new URL(options.baseURL);
-  const stripe = new Stripe("sk_test_mockport", {
+  const stripe = new Stripe("mockport_stripe_secret", {
     apiVersion: "2025-10-29.clover",
     host: base.hostname,
     port: Number(base.port),
@@ -83,7 +83,7 @@ async function runStripeSmoke(options) {
   const scenarioRes = await fetch(`${options.baseURL}/v1/checkout/sessions`, {
     method: "POST",
     headers: {
-      "Authorization": "Bearer sk_test_mockport",
+      "Authorization": "Bearer mockport_stripe_secret",
       "Content-Type": "application/x-www-form-urlencoded",
       "X-Mockport-Scenario": "payment_failed",
     },
@@ -92,6 +92,22 @@ async function runStripeSmoke(options) {
   const scenarioBody = await scenarioRes.json();
   assertEqual(scenarioRes.status, 402, "X-Mockport-Scenario: payment_failed returns 402");
   assertEqual(scenarioBody.error?.code, "card_declined", "payment_failed error code");
+
+  const wrongKey = new Stripe("mockport_wrong", {
+    apiVersion: "2025-10-29.clover",
+    host: base.hostname,
+    port: Number(base.port),
+    protocol: base.protocol.replace(":", ""),
+    telemetry: false,
+  });
+  try {
+    await wrongKey.checkout.sessions.list({ limit: 1 });
+    throw new Error("wrong Stripe key unexpectedly succeeded");
+  } catch (error) {
+    if (error.statusCode !== 401 || error.code !== "invalid_api_key") {
+      throw error;
+    }
+  }
 
   return {
     provider: "stripe",
