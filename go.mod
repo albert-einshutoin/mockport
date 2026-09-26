@@ -2,7 +2,7 @@ module github.com/albert-einshutoin/mockport
 
 go 1.26
 
-toolchain go1.26.5
+toolchain go1.26.8
 
 require (
 	github.com/spf13/cobra v1.10.2

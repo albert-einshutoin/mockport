@@ -4,7 +4,7 @@
 
 ## セットアップ
 
-Go 1.26.5 を使用します。mise、asdf、Homebrew、公式インストーラーなどで Go toolchain を導入し、PATH 上で `go` が使えることを確認してください。
+Go 1.26.8 を使用します。mise、asdf、Homebrew、公式インストーラーなどで Go toolchain を導入し、PATH 上で `go` が使えることを確認してください。
 
 ```bash
 go test ./...
