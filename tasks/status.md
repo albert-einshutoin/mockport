@@ -54,7 +54,11 @@
 | Phase 29 | GitHub OAuth and Slack client evidence | done | GitHub OAuth client and Slack official SDK contracts cover selected workflows and failures |
 | Phase 30 | v0.2.0-preview release | done | Release artifacts, GHCR image, compatibility report, and post-release smoke are verified |
 | Phase 31 | Adapter reference docs | done | Registered adapter docs include official reference maps and implementation boundaries for `stripe`, `openai`, `github-oauth`, `slack`, `line`, and `zoho-oauth` |
-| Phase 32 | Service baseline execution | pending | Registered adapter baselines and SendGrid execution order are explicit and verifiable |
+| Phase 32 | Service baseline execution | pending | P0/P1 app proof, then Slack event/reply; other baselines and SendGrid require concrete demand |
+
+## Next Product Proof (2026-09-27)
+
+The baseline above records completed historical phases; it does not imply the next app integration is complete. Main and `v0.2.0-preview` include official Node Stripe/OpenAI/LINE and Python OpenAI SDK examples, but no completed app HTTP → provider SDK → business-result E2E for the selected Stripe/OpenAI flows. Current P0 PRs #384 (#315), #385 (#82), and #387 (#386) are open and unmerged. P1 is #86: Stripe Checkout and signed webhook state update; OpenAI Python app non-streaming, Chat streaming, auth, retry, and timeout handling; both must run against one Mockport process locally and in CI and fail for a deliberate app regression. P2 is #84 Slack signed message delivery and SDK reply. See [Phase 32](phase32_service_baseline_execution.md) and [ROADMAP](../ROADMAP.md). No new release or external first-time app trial is claimed.
 
 ## Phase 0 Tasks
 
