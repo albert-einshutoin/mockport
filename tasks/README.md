@@ -154,7 +154,7 @@ Phase 30 は「Phase 23-29 の成果を `v0.2.0-preview` として公開し、re
 
 Phase 31 は「登録済み adapter の公式参照 map と実装境界を棚卸しし、adapter docs と docs site の参照関係を揃える」までです。
 
-Phase 32 は「#315・#82・#386 のP0と、#86 のStripe／OpenAI実アプリE2Eを先に検証し、次に #84 のSlackイベント配送を扱う」順序です。広いadapter baselineは将来候補の目録であり、SendGridは利用需要・限定フロー・検証方法・保守条件が揃うまで着手しません。詳細と未merge／公開版の区別は [Phase 32](phase32_service_baseline_execution.md) を参照してください。
+Phase 32 は #315・#82・#386 のP0と #86 のStripe／OpenAI実アプリE2Eまでmainに入りました。次は #84 のSlackイベント配送です。広いadapter baselineは将来候補の目録であり、SendGridは利用需要・限定フロー・検証方法・保守条件が揃うまで着手しません。mainと公開版の区別は [Phase 32](phase32_service_baseline_execution.md) を参照してください。
 
 ## 参照資料
 

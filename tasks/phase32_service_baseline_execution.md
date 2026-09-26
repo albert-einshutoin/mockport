@@ -12,18 +12,18 @@
 
 ## Current Product Gate (2026-09-27)
 
-Phase 32's broad baseline below is a catalog, not the next implementation batch. The current objective is to prove two app integrations detect application defects without real provider keys. The selected order is:
+Phase 32's broad baseline below is a catalog, not the next implementation batch. The two app integrations now detect application defects without real provider keys on main; #84 is the next selected flow. The priority record is:
 
 | Priority | Work | Current evidence and acceptance |
 | --- | --- | --- |
-| P0 | #315 source smoke | PR #384 is open; built and running image IDs must match, with source SHA and cleanup recorded. |
-| P0 | #82 fake-key auth | PR #385 is open; opt-in ordinary-request 401, SDK recognition, and report `auth_required` are required. |
-| P0 | #386 Responses streaming gap | PR #387 is open; `stream:true` must fail as a Mockport limitation and enter report unsupported history. |
-| P1 | #86 Stripe app flow | HTTP app entry → official SDK Checkout create/retrieve → signed, target-matched webhook → one order update; duplicate, tampered, and unpaid/failed cases must be detected. |
-| P1 | #86 OpenAI app flow | HTTP app entry → official Python SDK → non-streaming and Chat streaming response; wrong/missing key, bounded 429, timeout/cancel, and mutation detection must pass. |
+| P0 | #315 source smoke | On main via PR #384; source SHA, built/running image ID equality, and owned image cleanup are verified. |
+| P0 | #82 fake-key auth | On main via PR #385; ordinary-request 401, SDK recognition, and report `auth_required` are covered. |
+| P0 | #386 Responses streaming gap | On main via PR #387; `stream:true` returns a Mockport 501 and enters unsupported history. |
+| P1 | #86 Stripe app flow | On main via PR #389; HTTP app → official SDK Checkout with inline item → signed webhook → one order update, including concurrent creation, replay, failure, and mutation checks. |
+| P1 | #86 OpenAI app flow | On main via PR #390; HTTP app → official Python SDK → non-streaming and Chat streaming, wrong/missing key, bounded 429, timeout/cancel, and mutation detection. |
 | P2 | #84 Slack event delivery | Signed v0 message event → app signature/timestamp verification → official SDK reply → Mockport state assertion. |
 
-The official Node Stripe/OpenAI/LINE and Python OpenAI SDK examples and CI smoke exist on main and in `v0.2.0-preview`; they do not yet prove the app-level webhook or response flows. Keep the selected app workflows at `workflow-compatible` until the compatibility model's evidence for any higher maturity is met. Limitations and request-history truncation must remain visible. An external first-time app trial is a later product validation, not a prerequisite for these local/CI gates.
+The official Node Stripe/OpenAI/LINE and Python OpenAI SDK examples exist in `v0.2.0-preview`. The app-level webhook and response proofs above are now on main; they have not been published in that preview. Keep the selected workflows at `workflow-compatible` until the compatibility model's evidence for any higher maturity is met. Limitations and request-history truncation must remain visible. An external first-time app trial remains unverified and is not a prerequisite for the main integration.
 
 ## Cross-Adapter Baseline
 

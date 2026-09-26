@@ -16,14 +16,14 @@ Mockport is a Docker-first local API environment for AI-native development and C
 
 ## Near Term
 
-1. P0: make the empty-directory source smoke run the built checkout image ([#315](https://github.com/albert-einshutoin/mockport/issues/315), [PR #384](https://github.com/albert-einshutoin/mockport/pull/384)); verify fake keys on ordinary Stripe/OpenAI requests ([#82](https://github.com/albert-einshutoin/mockport/issues/82), [PR #385](https://github.com/albert-einshutoin/mockport/pull/385)); and reject unsupported Responses streaming explicitly ([#386](https://github.com/albert-einshutoin/mockport/issues/386), [PR #387](https://github.com/albert-einshutoin/mockport/pull/387)). These PRs are not yet merged or published.
-2. P1: complete two app-level flows under [#86](https://github.com/albert-einshutoin/mockport/issues/86), with open [Stripe PR #389](https://github.com/albert-einshutoin/mockport/pull/389) and [OpenAI PR #390](https://github.com/albert-einshutoin/mockport/pull/390): Checkout create/retrieve → signed webhook → one business-state update; Python app HTTP request → official SDK non-streaming/Chat streaming → bounded error, retry, and timeout responses. Run both against one Mockport process locally and in CI, with mutation checks proving the E2E assertions detect app bugs.
-3. P2: deliver a signed Slack message event to an app and verify its SDK reply ([#84](https://github.com/albert-einshutoin/mockport/issues/84)). Include invalid signature and stale timestamp rejection in the app test design.
+1. P0 complete on main: empty-directory source smoke runs the built checkout image ([#315](https://github.com/albert-einshutoin/mockport/issues/315), [PR #384](https://github.com/albert-einshutoin/mockport/pull/384)); ordinary Stripe/OpenAI requests check fake keys ([#82](https://github.com/albert-einshutoin/mockport/issues/82), [PR #385](https://github.com/albert-einshutoin/mockport/pull/385)); Responses streaming is rejected explicitly ([#386](https://github.com/albert-einshutoin/mockport/issues/386), [PR #387](https://github.com/albert-einshutoin/mockport/pull/387)).
+2. P1 complete on main: [#86](https://github.com/albert-einshutoin/mockport/issues/86) has [Stripe PR #389](https://github.com/albert-einshutoin/mockport/pull/389) and [OpenAI PR #390](https://github.com/albert-einshutoin/mockport/pull/390): Checkout create/retrieve → signed webhook → one business-state update; Python app HTTP request → official SDK non-streaming/Chat streaming → bounded error, retry, and timeout responses. Both run against one Mockport process locally and in CI, with mutation checks proving the E2E assertions detect app bugs. These changes are not in the published `v0.2.0-preview`.
+3. P2 next: deliver a signed Slack message event to an app and verify its SDK reply ([#84](https://github.com/albert-einshutoin/mockport/issues/84)). Include invalid signature and stale timestamp rejection in the app acceptance conditions.
 
 ## Public Preview Follow-up
 
 - Expand Block Kit, interactions, LINE features, and additional OpenAI APIs only for a demonstrated app workflow; investigate regressions against published contracts sooner when their impact warrants it.
-- Implement Responses SSE only after a concrete app need and minimal event contract are recorded. The current P0 rejects `stream:true` instead of claiming success.
+- Implement Responses SSE only after a concrete app need and minimal event contract are recorded. Current main rejects `stream:true` with 501 rather than claiming success.
 - Seek a first-time external app trial after the reproducible local/CI flows exist; until then, adoption is an untested hypothesis.
 
 ## Adapter Direction

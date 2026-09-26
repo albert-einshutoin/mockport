@@ -13,9 +13,9 @@ Mockport の roadmap は、Docker-first な local emulator から provider-compa
 
 ## 次の優先順位（2026-09-27時点）
 
-1. P0: checkout imageの取り違え [#315](https://github.com/albert-einshutoin/mockport/issues/315) / [PR #384](https://github.com/albert-einshutoin/mockport/pull/384)、通常HTTPのfake-key認証 [#82](https://github.com/albert-einshutoin/mockport/issues/82) / [PR #385](https://github.com/albert-einshutoin/mockport/pull/385)、Responses `stream:true` の未対応明示 [#386](https://github.com/albert-einshutoin/mockport/issues/386) / [PR #387](https://github.com/albert-einshutoin/mockport/pull/387)。これらのPRは未merge・未公開です。
-2. P1: [#86](https://github.com/albert-einshutoin/mockport/issues/86) の [Stripe PR #389](https://github.com/albert-einshutoin/mockport/pull/389) と [OpenAI PR #390](https://github.com/albert-einshutoin/mockport/pull/390) は未mergeです。Checkout→署名付きWebhook→業務状態更新と、Python appのHTTP入口→公式SDK→応答・有限再試行・timeoutを、同じMockportプロセスでローカルとCIに再現します。意図的なアプリ不具合をE2Eが検出することも示します。
-3. P2: [#84](https://github.com/albert-einshutoin/mockport/issues/84) のSlack署名付きmessage event→アプリ→SDK返信を検証します。不正署名と古いtimestampの拒否もアプリ側で確認します。
+1. P0はmainへ反映済みです。checkout imageの取り違え [#315](https://github.com/albert-einshutoin/mockport/issues/315) / [PR #384](https://github.com/albert-einshutoin/mockport/pull/384)、通常HTTPのfake-key認証 [#82](https://github.com/albert-einshutoin/mockport/issues/82) / [PR #385](https://github.com/albert-einshutoin/mockport/pull/385)、Responses `stream:true` の未対応明示 [#386](https://github.com/albert-einshutoin/mockport/issues/386) / [PR #387](https://github.com/albert-einshutoin/mockport/pull/387) を含みます。
+2. P1もmainへ反映済みです。[#86](https://github.com/albert-einshutoin/mockport/issues/86) の [Stripe PR #389](https://github.com/albert-einshutoin/mockport/pull/389) と [OpenAI PR #390](https://github.com/albert-einshutoin/mockport/pull/390) は、Checkout→署名付きWebhook→業務状態更新と、Python appのHTTP入口→公式SDK→応答・有限再試行・timeoutを同じMockportプロセスでローカルとCIに再現します。mutationで意図的なアプリ不具合も検出します。公開 `v0.2.0-preview` には未反映です。
+3. 次のP2は [#84](https://github.com/albert-einshutoin/mockport/issues/84) のSlack署名付きmessage event→アプリ→SDK返信です。不正署名と古いtimestampの拒否もアプリ側で確認します。
 
 Block Kit、interactions、LINE追加機能、OpenAI追加APIは利用者フローを示してから優先します。Responses SSE本体は利用アプリと最小event契約を定めた後に判断します。SendGridは具体的需要、限定フロー、公式SDK等の検証方法、保守見通しが揃うまで着手しません。初見利用者の試行は、今回のローカル・CI再現後の製品検証です。
 

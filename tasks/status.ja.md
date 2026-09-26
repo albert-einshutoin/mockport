@@ -6,7 +6,7 @@
 
 ## 次の製品実証（2026-09-27）
 
-mainと公開版 `v0.2.0-preview` には公式SDK例がありますが、選択したStripe／OpenAIアプリのHTTP入口から業務結果までのE2Eは未完了です。P0の [PR #384](https://github.com/albert-einshutoin/mockport/pull/384)、[PR #385](https://github.com/albert-einshutoin/mockport/pull/385)、[PR #387](https://github.com/albert-einshutoin/mockport/pull/387) は未mergeです。P1は [#86](https://github.com/albert-einshutoin/mockport/issues/86) のアプリE2Eと不具合検出、P2は [#84](https://github.com/albert-einshutoin/mockport/issues/84) のSlackイベント配送です。公開版への反映や初見利用者の試行は未確認です。
+P0の [PR #384](https://github.com/albert-einshutoin/mockport/pull/384)、[PR #385](https://github.com/albert-einshutoin/mockport/pull/385)、[PR #387](https://github.com/albert-einshutoin/mockport/pull/387) と、P1の [PR #389](https://github.com/albert-einshutoin/mockport/pull/389)、[PR #390](https://github.com/albert-einshutoin/mockport/pull/390) はmainへ入りました。選択したStripe／OpenAIアプリのHTTP入口から公式SDK、業務結果までのE2Eとmutation検証があります。次は [#84](https://github.com/albert-einshutoin/mockport/issues/84) のSlackイベント配送です。公開 `v0.2.0-preview` への反映と外部アプリ・初見利用者の試行は未確認です。
 
 ## 確認ポイント
 
