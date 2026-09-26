@@ -21,16 +21,28 @@ services:
       - "127.0.0.1:33001:33001"
     depends_on: [mockport]
     networks: [isolated]
+  openai-app:
+    build: ./openai-app
+    environment:
+      OPENAI_BASE_URL: http://mockport:43101/openai/v1
+      OPENAI_API_KEY: mockport_openai_key
+      HOST: 0.0.0.0
+    ports:
+      - "127.0.0.1:33002:33002"
+    depends_on: [mockport]
+    networks: [isolated]
   runner:
-    image: node:24-alpine
+    build:
+      context: .
+      dockerfile: Dockerfile.runner
     volumes:
-      - ./stripe-app/e2e.mjs:/test/e2e.mjs:ro
+      - ./stripe-app/e2e.mjs:/test/stripe.mjs:ro
+      - ./openai-app/e2e.py:/test/openai.py:ro
     environment:
       MOCKPORT_BASE_URL: http://127.0.0.1:43101
-      APP_BASE_URL: http://app:33001
     network_mode: service:mockport
-    depends_on: [mockport, app]
-    command: ["node", "/test/e2e.mjs"]
+    depends_on: [mockport, app, openai-app]
+    command: ["sh", "-c", "APP_BASE_URL=http://app:33001 node /test/stripe.mjs && APP_BASE_URL=http://openai-app:33002 python3 /test/openai.py success"]
 
 networks:
   isolated:
