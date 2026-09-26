@@ -1,5 +1,7 @@
 # OpenAI Adapter 日本語版
 
+[PythonアプリE2E](../../examples/app-e2e/README.md)では、HTTP入口から公式 `openai==2.46.0` SDKを経由して、このadapterへ接続します。非streaming、Chat Completions streaming、アプリ側で見える認証失敗と429、有限回の再試行、timeoutと呼び出し側切断後の上限を確認します。固定のMockport応答は接続・制御フローの証拠であり、AIの回答品質は評価しません。エラー用scenarioと遅延はアプリ外のテストセットアップで注入します。
+
 [English](openai.md)
 
 共通ルール: [シナリオポリシー](../scenario-policy.ja.md)。

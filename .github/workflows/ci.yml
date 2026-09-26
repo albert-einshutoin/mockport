@@ -23,6 +23,11 @@ jobs:
           node-version: "24"
           cache: "npm"
           cache-dependency-path: "contract/sdk/package-lock.json"
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: examples/app-e2e/openai-app/requirements.lock
       - run: go test ./...
       - run: go vet ./...
       - run: go test -race ./...
@@ -33,7 +38,7 @@ jobs:
       - run: go build ./cmd/mockport
       - run: bash scripts/check-go-engineering.sh
       - run: bash scripts/run-sdk-contracts.sh all
-      - run: bash scripts/run-app-e2e.sh stripe
+      - run: bash scripts/run-app-e2e.sh all
       - run: bash scripts/check-public-trust.sh
       - run: bash scripts/check-public-env.sh
       - run: bash scripts/check-adapter-completeness.sh

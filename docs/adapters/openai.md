@@ -8,6 +8,8 @@ This document describes the Mockport `openai` adapter contract. It is not a copy
 
 ## Scope
 
+The [Python app E2E](../../examples/app-e2e/README.md) exercises a real application HTTP entry point through the pinned official `openai==2.46.0` SDK to this adapter. It checks nonstreaming and Chat Completions streaming, app-visible auth and 429 handling, finite SDK retries, and bounded timeout/cancelled-caller behavior. Fixed Mockport text verifies connection and control flow, not answer quality. Scenario and delay injection for the error cases live in test setup, outside the app.
+
 The `openai` adapter provides deterministic local behavior for selected OpenAI-like API workflows:
 
 - Model list.
