@@ -14,7 +14,7 @@ These are symptom-based limits verified against adapter specs, compatibility rep
 
 - **Stripe: no 3DS / SCA (`requires_action`) flow** — PaymentIntents and Checkout Sessions return success or decline shapes from built-in scenarios; card authentication UI branches and `requires_action` handling cannot be exercised locally.
 - **Stripe: no billing-network math** — Amount and currency fields are echoed from your request; Mockport does not validate tax, proration, settlement, disputes, Connect, or full Billing lifecycle behavior.
-- **OpenAI: `/v1/responses` streaming is not supported** — unlike `/v1/chat/completions`, which supports SSE when `stream: true` or the `stream_success` scenario is active, the Responses API always returns JSON (including when `stream_success` is configured). Provider-compatible SSE streaming for Responses is not implemented yet.
+- **OpenAI: Mockport does not implement `/v1/responses` streaming** — `/v1/chat/completions` supports SSE when `stream: true` or the `stream_success` scenario is active. A Responses request with `stream: true` fails with HTTP 501 and `error.code=mockport_unsupported_responses_stream`, including under `stream_success`. [OpenAI itself supports Responses streaming](https://platform.openai.com/docs/quickstart/make-your-first-api-request).
 
   ```bash
   curl -i -X POST http://localhost:43101/openai/v1/responses \
@@ -23,7 +23,7 @@ These are symptom-based limits verified against adapter specs, compatibility rep
     -d '{"model":"gpt-mockport","input":"hello","stream":true}'
   ```
 
-  Mockport responds with `Content-Type: application/json` and a deterministic response object. It does not return `text/event-stream`, `data:` chunks, or named events such as `response.output_text.delta`.
+  Mockport responds with a JSON error, records `reason=unsupported_feature`, and creates no response state. A Responses request without `stream:true` still returns deterministic JSON. Mockport does not return `text/event-stream`, `data:` chunks, or named events such as `response.output_text.delta` on this endpoint.
 - **OpenAI: no real inference quality** — Responses are deterministic placeholders; model quality, tokenization parity, hosted tools, vector stores, and provider scheduling are not reproduced.
 - **Slack: no real message delivery or full Events API** — Local message state and a URL-verification / message-callback subset are available; real workspace delivery, Block Kit validation, files, app scopes, and enterprise directory policy are not.
 - **LINE: no real Login UI or LIFF browser** — OAuth code/token/profile flows work locally; QR login, LIFF runtime, signed ID tokens, provider webhook redelivery, and quota enforcement beyond scenarios are not reproduced.

@@ -78,11 +78,12 @@ func (a Adapter) Metadata() adapter.Metadata {
 			"file",
 			"batch",
 		},
-		Reset: true,
+		Reset:       true,
+		Unsupported: []adapter.UnsupportedBehavior{{ID: "post_openai_v1_responses_stream_true", Reason: "Mockport does not implement Responses API streaming; stream:true returns 501"}},
 		Endpoints: []adapter.Endpoint{
 			{Method: http.MethodGet, Path: "/openai/v1/models", SupportedScenarios: []string{"chat_success"}, Notes: "OpenAI-like model list"},
 			{Method: http.MethodPost, Path: "/openai/v1/chat/completions", SupportedScenarios: []string{"chat_success", "stream_success", "rate_limited", "context_length_exceeded", "auth_error"}, Notes: "OpenAI-like chat completion"},
-			{Method: http.MethodPost, Path: "/openai/v1/responses", SupportedScenarios: []string{"chat_success", "rate_limited", "context_length_exceeded", "auth_error"}, Notes: "OpenAI-like responses endpoint"},
+			{Method: http.MethodPost, Path: "/openai/v1/responses", SupportedScenarios: []string{"chat_success", "rate_limited", "context_length_exceeded", "auth_error"}, Notes: "Non-streaming Responses; stream:true returns 501 from Mockport"},
 			{Method: http.MethodGet, Path: "/openai/v1/responses/{id}", SupportedScenarios: []string{"chat_success"}, Notes: "Deterministic response lookup"},
 			{Method: http.MethodPost, Path: "/openai/v1/embeddings", SupportedScenarios: []string{"chat_success"}, Notes: "OpenAI-like deterministic embeddings"},
 			{Method: http.MethodPost, Path: "/openai/v1/files", SupportedScenarios: []string{"chat_success"}, Notes: "OpenAI-like file creation for batch workflows"},
@@ -169,17 +170,13 @@ func (r *routes) writeCompletion(w http.ResponseWriter, req *http.Request, objec
 	case "context_length_exceeded":
 		writeError(w, http.StatusBadRequest, "context_length_exceeded", "Mockport simulated context length error")
 	case "stream_success":
-		if object == "chat.completion" {
-			writeChatCompletionStream(w)
-			return
-		}
-		r.writeStatefulCompletion(w, req, object)
+		r.writeStatefulCompletion(w, req, object, true)
 	default:
-		r.writeStatefulCompletion(w, req, object)
+		r.writeStatefulCompletion(w, req, object, false)
 	}
 }
 
-func (r *routes) writeStatefulCompletion(w http.ResponseWriter, req *http.Request, object string) {
+func (r *routes) writeStatefulCompletion(w http.ResponseWriter, req *http.Request, object string, forceStream bool) {
 	payload, err := decodePayload(req)
 	if err != nil {
 		if httpx.IsRequestBodyTooLarge(err) {
@@ -201,10 +198,6 @@ func (r *routes) writeStatefulCompletion(w http.ResponseWriter, req *http.Reques
 		writeError(w, http.StatusBadRequest, "unsupported_parameter", "Mockport simulated unsupported parameter")
 		return
 	}
-	if object == "chat.completion" && payload["stream"] == true {
-		writeChatCompletionStream(w)
-		return
-	}
 	if !validModel(payload["model"]) {
 		writeError(w, http.StatusBadRequest, "model_not_found", "Mockport simulated invalid model")
 		return
@@ -223,6 +216,14 @@ func (r *routes) writeStatefulCompletion(w http.ResponseWriter, req *http.Reques
 	}
 	if object == "chat.completion" && !validMessages(payload["messages"]) {
 		writeError(w, http.StatusBadRequest, "invalid_request_error", "messages must be an array")
+		return
+	}
+	if object == "response" && payload["stream"] == true {
+		writeError(w, http.StatusNotImplemented, "mockport_unsupported_responses_stream", "Mockport does not implement Responses API streaming; OpenAI supports it")
+		return
+	}
+	if object == "chat.completion" && (forceStream || payload["stream"] == true) {
+		writeChatCompletionStream(w)
 		return
 	}
 
