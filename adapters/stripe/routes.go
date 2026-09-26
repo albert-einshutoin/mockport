@@ -130,6 +130,22 @@ func (rt *routes) writeCheckoutSession(w http.ResponseWriter, r *http.Request) {
 		if !rt.validateFormFields(w, fields) {
 			return
 		}
+		if !fields.Empty() {
+			if fields.Get("mode") == "" {
+				rt.writeValidationError(w, "mode")
+				return
+			}
+			if fields.Get("mode") != "payment" {
+				rt.writeStripeError(w, http.StatusBadRequest, "invalid_request_error", "invalid_request", "Only mode=payment is supported")
+				return
+			}
+			for _, field := range []string{"line_items[0][price_data][currency]", "line_items[0][price_data][product_data][name]", "line_items[0][price_data][unit_amount]", "line_items[0][quantity]"} {
+				if fields.Get(field) == "" {
+					rt.writeValidationError(w, "line_items")
+					return
+				}
+			}
+		}
 		body := stripeDataFromStruct(checkoutSessionResponse{Object: "checkout.session", PaymentStatus: "unpaid"})
 		if clientReferenceID := fields.Get("client_reference_id"); clientReferenceID != "" {
 			body["client_reference_id"] = clientReferenceID

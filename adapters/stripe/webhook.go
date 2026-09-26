@@ -62,13 +62,15 @@ func (rt *routes) sendWebhook(w http.ResponseWriter, r *http.Request) {
 			rt.writeStripeError(w, http.StatusNotFound, "invalid_request_error", "checkout_session_not_found", "webhook session was not created in this Mockport process")
 			return
 		}
+		if input.EventType == "checkout.session.completed" {
+			resource, err = rt.store.Update("stripe", "checkout_session", input.SessionID, map[string]any{"payment_status": "paid"})
+			if err != nil {
+				rt.writeStripeError(w, http.StatusNotFound, "invalid_request_error", "checkout_session_not_found", "webhook session was not created in this Mockport process")
+				return
+			}
+		}
 		object = resource.Data
 		object["id"] = resource.ID
-		if input.EventType == "checkout.session.async_payment_failed" {
-			object["payment_status"] = "unpaid"
-		} else {
-			object["payment_status"] = "paid"
-		}
 		eventID, eventType = input.EventID, input.EventType
 	}
 	payload, err := json.Marshal(map[string]any{

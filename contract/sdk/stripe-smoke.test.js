@@ -39,6 +39,7 @@ async function runStripeSmoke(options) {
 
   const checkout = await stripe.checkout.sessions.create({
     mode: "payment",
+    line_items: [{ price_data: { currency: "usd", unit_amount: 1200, product_data: { name: "Mockport item" } }, quantity: 1 }],
     client_reference_id: "cart_sdk_1",
     success_url: "http://localhost/success",
     cancel_url: "http://localhost/cancel",
