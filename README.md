@@ -37,7 +37,7 @@ curl http://localhost:43101/_mockport/report
 
 ### From source
 
-Requirement for source development: Go 1.26.5 must be available on your PATH. The Docker quickstart above does not require a local Go install.
+Requirement for source development: Go 1.26.8 must be available on your PATH. The Docker quickstart above does not require a local Go install.
 
 Build the binary and image from a checkout of this repository:
 
