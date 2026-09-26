@@ -55,6 +55,8 @@ Or run the empty-directory smoke test:
 bash scripts/smoke-empty-dir.sh
 ```
 
+This builds the current checkout and starts that exact image from a fresh directory. Its output records the source SHA, built and running image IDs, Compose command, and health/API/report results. To check the published preview instead, use the pinned `ghcr.io/albert-einshutoin/mockport:0.2.0-preview` image in the distribution guide.
+
 Before opening a pull request, run the standard local trust gate:
 
 ```bash
