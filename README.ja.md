@@ -55,6 +55,8 @@ docker run --rm -p 127.0.0.1:43101:43101 \
 bash scripts/smoke-empty-dir.sh
 ```
 
+このスクリプトは現在の checkout をビルドし、空ディレクトリからその image を起動します。出力に source SHA、ビルド時と実行時の image ID、Compose コマンド、health/API/report の結果を残します。公開 preview の検証には、distribution guide にある固定タグ `ghcr.io/albert-einshutoin/mockport:0.2.0-preview` を使用してください。
+
 PR を開く前に、標準のローカル trust gate を実行してください:
 
 ```bash
