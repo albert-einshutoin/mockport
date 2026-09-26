@@ -14,7 +14,7 @@ adapter spec、compatibility report、runtime 挙動と突合した症状ベー�
 
 - **Stripe: 3DS / SCA（`requires_action`）フローは返しません** — PaymentIntent / Checkout Session は built-in シナリオの成功または decline 形状のみ。カード認証 UI の分岐や `requires_action` 処理は local では試せません。
 - **Stripe: 課金ネットワークの計算はしません** — 金額・通貨はリクエスト値をそのまま返します。tax、按分、settlement、disputes、Connect、Billing lifecycle 全体は再現しません。
-- **OpenAI: `/v1/responses` のストリーミングは未対応** — `/v1/chat/completions` は `stream: true` または `stream_success` シナリオで SSE 対応しますが、Responses API は常に JSON を返します（`stream_success` 設定時も同様）。Responses API の provider-compatible な SSE streaming は未実装です。
+- **OpenAI: Mockportの `/v1/responses` ストリーミングは未対応** — `/v1/chat/completions` は `stream: true` または `stream_success` シナリオで SSE 対応します。Responsesの `stream: true` は `stream_success` シナリオでも `501` / `mockport_unsupported_responses_stream` で失敗します。OpenAI本体はResponses streamingに対応しています。
 
   ```bash
   curl -i -X POST http://localhost:43101/openai/v1/responses \
@@ -23,7 +23,7 @@ adapter spec、compatibility report、runtime 挙動と突合した症状ベー�
     -d '{"model":"gpt-mockport","input":"hello","stream":true}'
   ```
 
-  Mockport は `Content-Type: application/json` と deterministic な response object を返します。`text/event-stream`、`data:` chunk、`response.output_text.delta` のような named event は返しません。
+  Mockport はJSONエラーを返し、reportに `reason=unsupported_feature` を記録し、response状態を作成しません。`stream:true` がないResponsesは従来どおりdeterministicなJSONを返します。このendpointで `text/event-stream` や `response.output_text.delta` のようなnamed eventは返しません。
 - **OpenAI: 実 inference 品質は再現しません** — 応答は deterministic な placeholder。model quality、tokenization parity、hosted tools、vector stores、provider scheduling は対象外。
 - **Slack: 実メッセージ配送や Events API 全体は対象外** — local message state と URL verification / message callback の subset のみ。実 workspace 配送、Block Kit validation、files、app scopes、enterprise directory は未対応。
 - **LINE: 実 Login UI や LIFF browser はありません** — OAuth code/token/profile は local で動作。QR login、LIFF runtime、署名付き ID token、provider 側 webhook 再配送、quota enforcement（シナリオ以外）は未対応。

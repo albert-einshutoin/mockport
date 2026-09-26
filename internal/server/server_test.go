@@ -12,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/albert-einshutoin/mockport/adapters/openai"
 	"github.com/albert-einshutoin/mockport/adapters/stripe"
 	"github.com/albert-einshutoin/mockport/internal/adapter"
 	"github.com/albert-einshutoin/mockport/internal/config"
@@ -74,6 +75,34 @@ func TestConfiguredAuthRequiredReachesAdapterAndReport(t *testing.T) {
 	}
 	if len(snapshot.Adapters) != 1 || !snapshot.Adapters[0].AuthRequired {
 		t.Fatalf("report adapters = %#v", snapshot.Adapters)
+	}
+}
+
+func TestReportClassifiesUnsupportedResponsesStreaming(t *testing.T) {
+	reg := adapter.NewRegistry()
+	if err := reg.Register(openai.New()); err != nil {
+		t.Fatal(err)
+	}
+	cfg := config.Config{Adapters: map[string]config.AdapterConfig{
+		"openai": {Enabled: true, BasePath: "/openai", Scenario: "chat_success"},
+	}}
+	recorder := report.NewRecorder()
+	handler, err := NewConfiguredHandler(cfg, reg, recorder)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req := httptest.NewRequest(http.MethodPost, "/openai/v1/responses", strings.NewReader(`{"model":"gpt-mockport","input":"hello","stream":true}`))
+	resp := httptest.NewRecorder()
+	handler.ServeHTTP(resp, req)
+	if resp.Code != http.StatusNotImplemented {
+		t.Fatalf("status = %d; body=%s", resp.Code, resp.Body.String())
+	}
+	snapshot := recorder.Snapshot()
+	if len(snapshot.Requests) != 1 || snapshot.Requests[0].Reason != "unsupported_feature" || len(snapshot.UnsupportedEndpoints) != 1 {
+		t.Fatalf("report did not classify unsupported feature: requests=%#v unsupported=%#v", snapshot.Requests, snapshot.UnsupportedEndpoints)
+	}
+	if len(snapshot.Compatibility) != 1 || len(snapshot.Compatibility[0].UnsupportedEndpoints) != 1 || snapshot.Compatibility[0].UnsupportedEndpoints[0] != "post_openai_v1_responses_stream_true" {
+		t.Fatalf("compatibility gap = %#v", snapshot.Compatibility)
 	}
 }
 

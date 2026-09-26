@@ -107,5 +107,11 @@
       "batch"
     ],
     "reset": true
-  }
+  },
+  "unsupported_behavior": [
+    {
+      "id": "post_openai_v1_responses_stream_true",
+      "reason": "Mockport does not implement Responses API streaming; stream:true returns 501"
+    }
+  ]
 }

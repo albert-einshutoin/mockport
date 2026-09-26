@@ -40,6 +40,13 @@ type Metadata struct {
 	StatefulResources []string
 	Idempotency       bool
 	Reset             bool
+	Unsupported       []UnsupportedBehavior
+}
+
+// UnsupportedBehavior names a known gap within an otherwise supported adapter surface.
+type UnsupportedBehavior struct {
+	ID     string
+	Reason string
 }
 
 // SDKVersion records a client SDK version used as compatibility evidence.
