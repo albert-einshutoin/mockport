@@ -15,3 +15,5 @@ OpenAI adapter は、OpenAI-compatible な local API surface を使って、AI a
 `auth_required: true` を設定すると、`/openai/v1/...` は `Authorization: Bearer <fake_secret>` を厳密に検証し、欠落・不正形式・誤キーに `401` / `invalid_api_key` を返します。未設定時は従来どおり検証しません。`fake_secret` 省略時は `FakeEnv` と同じ既定のfake keyを使います。`/openai/test/reset` は引き続きloopback限定です。`auth_error` scenarioは別の強制失敗です。
 
 詳細な request/response contract と known gap は英語版を正とします。
+
+Responses API の `stream:true` はMockportで未対応のため、`501` / `mockport_unsupported_responses_stream` を返し、状態を作成しません。OpenAI本体が非対応という意味ではありません。Chat Completions streamingとResponsesの非streamingは従来の対象範囲です。

@@ -62,7 +62,7 @@ Use this table to jump from Mockport's supported local surface to the closest of
 | --- | --- | --- |
 | `GET` | `/openai/v1/models` | Returns a deterministic model list. |
 | `POST` | `/openai/v1/chat/completions` | Returns deterministic chat completion JSON or SSE chunks when streaming. |
-| `POST` | `/openai/v1/responses` | Creates a deterministic response object. |
+| `POST` | `/openai/v1/responses` | Creates a deterministic non-streaming response object. `stream:true` returns HTTP 501 with `error.code=mockport_unsupported_responses_stream`; no state is created. |
 | `GET` | `/openai/v1/responses/{id}` | Retrieves a local response. |
 | `POST` | `/openai/test/reset` | Clears provider state and idempotency records for test isolation. |
 | `POST` | `/openai/v1/embeddings` | Creates deterministic embedding vectors. |
@@ -84,7 +84,7 @@ Use this table to jump from Mockport's supported local surface to the closest of
 
 | Priority | Task | Current source of truth |
 | --- | --- | --- |
-| P1 | Responses API SSE streaming (`stream: true`) is not implemented. `/v1/responses` always returns JSON, including when the `stream_success` scenario is active. Named events such as `response.output_text.delta` are out of scope for this adapter track. | `adapters/openai/adapter_test.go` (`TestResponsesStreamSuccessReturnsJSON`) and `docs/site/limitations.md` |
+| P1 | Responses API SSE streaming (`stream: true`) is not implemented. Mockport returns a 501 JSON error for this request, including under `stream_success`; without `stream:true`, Responses remains JSON. OpenAI itself supports Responses streaming. Named events such as `response.output_text.delta` require a separate app need and minimal event contract before implementation. | `adapters/openai/adapter_test.go` and `docs/site/limitations.md` |
 | P1 | Define selected OpenAI workflows in `compat/manifests/openai.json`, including explicit non-goals for model quality, tokenization parity, hosted tools, vector stores, and provider scheduling. | `tasks/phase28_openai_provider_compatible_track.md` |
 | P1 | Deepen SDK contracts for SSE chunk shape, terminal completion, content accumulation, malformed input, unsupported parameters, invalid model, context length, auth, and rate limit behavior. | `contract/sdk/openai-smoke.test.js` and `compat/fixtures/openai/` |
 | P1 | Verify response retrieve and batch retrieve consistency before any maturity promotion. | `tasks/phase28_openai_provider_compatible_track.md` |

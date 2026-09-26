@@ -26,7 +26,7 @@ For report usage and request-history limits, see [Reports](reports.md) and [Repo
 | `behavior_matrix` | array | Supported endpoints per adapter, with maturity, method, path, supported scenarios, and optional notes. |
 | `compatibility` | array | Measured compatibility level, score, provider version, SDK/client evidence, and known gaps. Omitted when empty. |
 | `state_coverage` | array | Stateful resource coverage, idempotency, and reset support per adapter. Omitted when empty. |
-| `unsupported_endpoints` | array | Requests whose recorded `reason` marks unsupported behavior. Derived from bounded `requests`. |
+| `unsupported_endpoints` | array | Requests whose recorded `reason` marks unsupported behavior, including unsupported features on known endpoints. Derived from bounded `requests`. |
 
 ## Safety summary
 
@@ -79,7 +79,7 @@ Other warning categories, such as `public_bind` and `unsupported_config`, still 
 | `status` | number | HTTP response status recorded for the request. |
 | `adapter` | string | Adapter that handled the request, when known. |
 | `scenario` | string | Active scenario when the request was recorded. |
-| `reason` | string | Classification such as `unsupported_endpoint` when applicable. |
+| `reason` | string | Classification such as `unsupported_endpoint` or `unsupported_feature` when applicable. |
 
 ### `unsupported_endpoints[]`
 
@@ -129,7 +129,7 @@ Each entry mirrors a request that has a non-empty `reason`, typically unsupporte
 | `sdk_versions` | array | Optional SDK versions used as evidence. |
 | `client_evidence` | array | Optional client contract evidence labels. |
 | `contract_evidence` | object | Optional fixtures, SDK contracts, and known gaps. |
-| `unsupported_endpoints` | array | Optional manifest endpoint ids still unsupported. |
+| `unsupported_endpoints` | array | Optional manifest ids for known unsupported endpoints or features within a supported endpoint. |
 
 `contract_evidence` objects use:
 

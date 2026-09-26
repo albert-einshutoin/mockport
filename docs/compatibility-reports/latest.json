@@ -1,6 +1,6 @@
 {
   "generated_by": "scripts/generate-compatibility-report.sh",
-  "generated_at": "2026-07-19",
+  "generated_at": "2026-09-27",
   "source": "_mockport/report",
   "release_labels": {
     "experimental": "Early adapter coverage for selected workflows. Expect gaps.",
@@ -197,7 +197,8 @@
         "POST /openai/test/reset"
       ],
       "known_gaps": [
-        "No real model quality, tokenization parity, hosted tools, vector stores, or provider scheduling."
+        "No real model quality, tokenization parity, hosted tools, vector stores, or provider scheduling.",
+        "Mockport rejects Responses API stream:true with 501; OpenAI supports Responses streaming, but this local SSE contract is not implemented."
       ]
     },
     {

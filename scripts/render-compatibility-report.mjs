@@ -24,6 +24,7 @@ const knownGaps = {
   ],
   openai: [
     "No real model quality, tokenization parity, hosted tools, vector stores, or provider scheduling.",
+    "Mockport rejects Responses API stream:true with 501; OpenAI supports Responses streaming, but this local SSE contract is not implemented.",
   ],
   "github-oauth": [
     "No real GitHub policy, repository permissions, SSO, org/enterprise enforcement, or app installation model.",

@@ -78,6 +78,7 @@ func TestManifestFromAdapterMetadata(t *testing.T) {
 		Capabilities:    []string{"chat_completions"},
 		Scenarios:       []adapter.Scenario{{Name: "chat_success", Supported: true}},
 		Endpoints:       []adapter.Endpoint{{Method: http.MethodPost, Path: "/openai/v1/chat/completions", SupportedScenarios: []string{"chat_success"}}},
+		Unsupported:     []adapter.UnsupportedBehavior{{ID: "responses_stream", Reason: "Mockport does not implement Responses streaming"}},
 	}
 
 	manifest := FromMetadata(meta)
@@ -98,6 +99,9 @@ func TestManifestFromAdapterMetadata(t *testing.T) {
 	}
 	if len(manifest.Scenarios) != 1 || !manifest.Scenarios[0].BuiltIn {
 		t.Fatalf("scenarios = %#v, want built-in scenario", manifest.Scenarios)
+	}
+	if len(manifest.Unsupported) != 1 || manifest.Unsupported[0].ID != "responses_stream" {
+		t.Fatalf("unsupported = %#v", manifest.Unsupported)
 	}
 }
 

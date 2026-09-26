@@ -181,6 +181,8 @@ func recordMiddleware(next http.Handler, rec *report.Recorder, adapters []report
 			reason := ""
 			if sr.status == http.StatusNotFound || sr.status == http.StatusMethodNotAllowed {
 				reason = "unsupported_endpoint"
+			} else if sr.status == http.StatusNotImplemented {
+				reason = "unsupported_feature"
 			}
 			rec.RecordRequestWithDetails(r.Method, r.URL.Path, sr.status, adapterName, scenario, reason)
 		}
