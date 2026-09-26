@@ -19,4 +19,4 @@ Follow the user's task instructions for scope and approvals. These commands are 
 | `docker build -f docker/Dockerfile -t mockport:local .` | Build the pinned Go toolchain image. |
 | `docker compose -f examples/app-e2e/compose.yml -p mockport-app-e2e up --build --abort-on-container-exit --exit-code-from runner` | Network-isolated Compose app smoke. Run `docker compose -f examples/app-e2e/compose.yml -p mockport-app-e2e down --remove-orphans` afterward. |
 
-The `CI` workflow runs the full Go, SDK, public safety, compatibility, distribution, and maintenance checks on pushes and pull requests. The Stripe app E2E is an additional step in that job. The planned `ci-pr` selector belongs to draft PR #366 and is not yet on main.
+The `CI` workflow runs the full Go, SDK, public safety, compatibility, distribution, and maintenance checks on pushes and pull requests. The Stripe and OpenAI app E2E is an additional step in that job. The planned `ci-pr` selector belongs to draft PR #366 and is not yet on main.
