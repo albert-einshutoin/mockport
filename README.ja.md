@@ -72,12 +72,21 @@ $ curl http://localhost:43101/health
 {"status":"ok"}
 ```
 
-Stripe 風 checkout session:
+上記の公開 `v0.2.0-preview` imageでのStripe風checkout session:
 
 ```bash
 $ curl -X POST http://localhost:43101/stripe/v1/checkout/sessions
 {"id":"stripe_checkout_session_000001","object":"checkout.session","payment_status":"paid"}
 ```
+
+最新sourceからbuildしたimageでは、同じ空bodyリクエストはMockport専用デモとして未払いで作成されます。
+
+```bash
+$ curl -X POST http://localhost:43101/stripe/v1/checkout/sessions
+{"id":"stripe_checkout_session_000001","object":"checkout.session","payment_status":"unpaid"}
+```
+
+実APIとして有効なpaymentリクエストは、inline price明細を公式SDKから送る[StripeアプリE2E例](examples/app-e2e/README.md)を参照してください。このsource変更は公開preview imageには含まれていません。
 
 CLI がインストール済みの場合、同じリクエストと安全性レポートを整形表示できます。
 

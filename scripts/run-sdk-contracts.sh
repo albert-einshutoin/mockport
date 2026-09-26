@@ -35,10 +35,21 @@ trap cleanup EXIT
 
 start_mockport() {
   cleanup_server
+  node - "$PORT" <<'NODE'
+const net = require("node:net");
+const port = Number(process.argv[2]);
+const server = net.createServer();
+server.once("error", () => { console.error(`port ${port} is already in use`); process.exitCode = 1; });
+server.listen(port, "127.0.0.1", () => server.close());
+NODE
   "$WORK_DIR/mockport" run --config "$WORK_DIR/mockport.yml" >"$WORK_DIR/mockport.log" 2>&1 &
   SERVER_PID="$!"
 
   for _ in $(seq 1 30); do
+    if ! kill -0 "$SERVER_PID" 2>/dev/null; then
+      cat "$WORK_DIR/mockport.log" >&2
+      return 1
+    fi
     if curl -fsS "$BASE_URL/health" >/dev/null 2>&1; then
       return 0
     fi

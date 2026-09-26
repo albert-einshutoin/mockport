@@ -8,7 +8,7 @@ Follow the user's task instructions for scope and approvals. These commands are 
 | `bash scripts/check-go-engineering.sh` | Go engineering checks. |
 | `bash scripts/run-sdk-contracts.sh all` | Pinned official SDK contracts against a local Mockport binary. |
 | `bash scripts/run-app-e2e.sh stripe` | Node Stripe app HTTP, official SDK, webhook, and business state. |
-| `bash scripts/check-stripe-app-mutation.sh` | Proves the Stripe E2E detects duplicate payment updates. |
+| `bash scripts/check-stripe-app-mutation.sh` | Proves the Stripe E2E detects duplicate event processing; the separate order guard keeps paid updates at one. |
 | `bash scripts/check-public-env.sh` | Public example secret and URL safety. |
 | `bash scripts/check-compat-manifests.sh` | Compatibility manifest checks. |
 | `bash scripts/check-distribution.sh` | Distribution checks. |

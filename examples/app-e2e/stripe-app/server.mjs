@@ -17,6 +17,7 @@ const stripe = new Stripe(apiKey, {
 });
 const orders = new Map();
 const processedEvents = new Set();
+const processingEvents = new Map();
 class RequestTooLargeError extends Error {}
 
 function reply(response, status, body) {
@@ -52,15 +53,22 @@ const server = createServer(async (request, response) => {
       if (typeof orderID !== "string" || !/^order_[a-zA-Z0-9_-]{1,40}$/.test(orderID) || orders.has(orderID)) {
         return reply(response, 400, { error: "invalid_or_duplicate_order" });
       }
-      const session = await stripe.checkout.sessions.create({
-        mode: "payment",
-        client_reference_id: orderID,
-        success_url: "http://localhost/success",
-        cancel_url: "http://localhost/cancel",
-      });
-      const order = { order_id: orderID, session_id: session.id, status: "pending", paid_updates: 0, processed_events: 0 };
-      orders.set(orderID, order);
-      return reply(response, 201, order);
+      orders.set(orderID, null);
+      try {
+        const session = await stripe.checkout.sessions.create({
+          mode: "payment",
+          line_items: [{ price_data: { currency: "usd", unit_amount: 1200, product_data: { name: "Mockport item" } }, quantity: 1 }],
+          client_reference_id: orderID,
+          success_url: "http://localhost/success",
+          cancel_url: "http://localhost/cancel",
+        });
+        const order = { order_id: orderID, session_id: session.id, status: "pending", paid_updates: 0, processed_events: 0 };
+        orders.set(orderID, order);
+        return reply(response, 201, order);
+      } catch (error) {
+        orders.delete(orderID);
+        throw error;
+      }
     }
     const match = /^\/orders\/(order_[a-zA-Z0-9_-]+)(\/session)?$/.exec(request.url);
     if (request.method === "GET" && match) {
@@ -86,16 +94,28 @@ const server = createServer(async (request, response) => {
         return reply(response, 400, { error: "unknown_session" });
       }
       if (processedEvents.has(event.id)) return reply(response, 200, { duplicate: true });
-      if (event.type === "checkout.session.completed" && session.payment_status === "paid") {
-        if (order.status === "pending") {
-          order.status = "paid";
-          order.paid_updates++;
-        }
-      } else if (event.type === "checkout.session.async_payment_failed" && order.status === "pending") {
-        order.status = "failed";
+      let processing = processingEvents.get(event.id);
+      if (!processing) {
+        processing = (async () => {
+          if (event.type === "checkout.session.completed" && session.payment_status === "paid") {
+            const current = await stripe.checkout.sessions.retrieve(session.id);
+            if (current.id !== session.id || current.client_reference_id !== order.order_id || current.payment_status !== "paid") {
+              throw new Error("session_not_paid_during_webhook");
+            }
+            if (order.status === "pending") {
+              order.status = "paid";
+              order.paid_updates++;
+            }
+          } else if (event.type === "checkout.session.async_payment_failed" && order.status === "pending") {
+            order.status = "failed";
+          }
+          processedEvents.add(event.id);
+          order.processed_events++;
+        })();
+        processingEvents.set(event.id, processing);
+        processing.then(() => processingEvents.delete(event.id), () => processingEvents.delete(event.id));
       }
-      processedEvents.add(event.id);
-      order.processed_events++;
+      await processing;
       return reply(response, 200, { received: true });
     }
     return reply(response, 404, { error: "not_found" });

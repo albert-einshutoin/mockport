@@ -72,12 +72,21 @@ $ curl http://localhost:43101/health
 {"status":"ok"}
 ```
 
-Stripe-like checkout session:
+Stripe-like checkout session from the published `v0.2.0-preview` image used above:
 
 ```bash
 $ curl -X POST http://localhost:43101/stripe/v1/checkout/sessions
 {"id":"stripe_checkout_session_000001","object":"checkout.session","payment_status":"paid"}
 ```
+
+The same empty-body request against an image built from current source is a Mockport-only demonstration and starts unpaid:
+
+```bash
+$ curl -X POST http://localhost:43101/stripe/v1/checkout/sessions
+{"id":"stripe_checkout_session_000001","object":"checkout.session","payment_status":"unpaid"}
+```
+
+For a valid payment request, use the [Stripe app E2E example](examples/app-e2e/README.md), which sends an inline price item through the official SDK. These source changes are not part of the published preview image.
 
 With the CLI installed, the same request and safety report renders as:
 

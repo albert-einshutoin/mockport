@@ -41,6 +41,13 @@ async function state(id, status, updates, events) {
   assert.equal(result.body.paid_updates, updates, JSON.stringify(result));
   assert.equal(result.body.processed_events, events, JSON.stringify(result));
 }
+async function sessionState(id, sessionID, paymentStatus) {
+  const result = await json(`${app}/orders/${id}/session`);
+  assert.equal(result.status, 200, JSON.stringify(result));
+  assert.equal(result.body.id, sessionID);
+  assert.equal(result.body.client_reference_id, id);
+  assert.equal(result.body.payment_status, paymentStatus);
+}
 async function send(sessionID, eventID, eventType) {
   const result = await post(`${mockport}/stripe/test/webhook/send`, {
     session_id: sessionID, event_id: eventID, event_type: eventType,
@@ -63,12 +70,44 @@ const failed = await order("order_3");
 await state("order_1", "pending", 0, 0);
 await send(first, "evt_order_1", "checkout.session.completed");
 await state("order_1", "paid", 1, 1);
+await sessionState("order_1", first, "paid");
 await send(first, "evt_order_1", "checkout.session.completed");
 await state("order_1", "paid", 1, 1);
 await send(second, "evt_order_2", "checkout.session.completed");
 await state("order_2", "paid", 1, 1);
 await send(failed, "evt_order_3_failed", "checkout.session.async_payment_failed");
 await state("order_3", "failed", 0, 1);
+await sessionState("order_3", failed, "unpaid");
+await send(first, "evt_order_1_late_failed", "checkout.session.async_payment_failed");
+await state("order_1", "paid", 1, 2);
+await sessionState("order_1", first, "paid");
+
+const concurrent = await Promise.all([post(`${app}/orders`, { order_id: "order_parallel" }), post(`${app}/orders`, { order_id: "order_parallel" })]);
+assert.deepEqual(concurrent.map(({ status }) => status).sort(), [201, 400]);
+const parallelSession = concurrent.find(({ status }) => status === 201).body.session_id;
+const sessions = await json(`${mockport}/stripe/v1/checkout/sessions`, { headers: { Authorization: "Bearer mockport_stripe_secret" } });
+assert.equal(sessions.status, 200);
+assert.equal(sessions.body.data.filter(({ client_reference_id }) => client_reference_id === "order_parallel").length, 1);
+await send(parallelSession, "evt_order_parallel", "checkout.session.completed");
+await state("order_parallel", "paid", 1, 1);
+await sessionState("order_parallel", parallelSession, "paid");
+
+const replayRace = await order("order_replay_race");
+await Promise.all([
+  send(replayRace, "evt_replay_race", "checkout.session.completed"),
+  send(replayRace, "evt_replay_race", "checkout.session.completed"),
+]);
+await state("order_replay_race", "paid", 1, 1);
+
+if (process.env.STRIPE_TEST_PROXY_URL) {
+  const armed = await post(`${process.env.STRIPE_TEST_PROXY_URL}/_test/fail-next`, {});
+  assert.equal(armed.status, 200);
+  const rejected = await post(`${app}/orders`, { order_id: "order_retry" });
+  assert.equal(rejected.status, 502, JSON.stringify(rejected));
+  const retrySession = await order("order_retry");
+  await send(retrySession, "evt_order_retry", "checkout.session.completed");
+  await state("order_retry", "paid", 1, 1);
+}
 
 for (const signature of ["bad-signature", undefined]) {
   const bad = await post(`${app}/webhooks/stripe`, {
@@ -102,4 +141,4 @@ assert.equal(report.status, 200);
 assert.equal(report.body.request_history.truncated, false);
 assert.equal(report.body.adapters.find(({ name }) => name === "stripe")?.auth_required, true);
 assert.ok(report.body.requests.some(({ path, status }) => path === "/stripe/test/webhook/send" && status === 202));
-console.log(JSON.stringify({ passed: true, sessions: [first, second, failed], webhook_deliveries: 4, duplicate_paid_updates: 1, rejected_signatures: 3, request_history: report.body.request_history }));
+console.log(JSON.stringify({ passed: true, sessions: [first, second, failed, parallelSession, replayRace], webhook_deliveries: process.env.STRIPE_TEST_PROXY_URL ? 9 : 8, duplicate_paid_updates: 1, rejected_signatures: 3, request_history: report.body.request_history }));
