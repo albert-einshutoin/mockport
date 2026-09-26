@@ -35,6 +35,7 @@ func (a Adapter) Register(mux *http.ServeMux, cfg adapter.Config) error {
 	rt := &routes{
 		basePath:      strings.TrimRight(basePath, "/"),
 		cfg:           cfg,
+		fakeSecret:    a.FakeEnv(cfg)["STRIPE_SECRET_KEY"],
 		store:         state.NewStore(),
 		idempotency:   state.NewIdempotencyStore(),
 		resolver:      adapter.NewScenarioResolver(cfg, scenarioPaymentSuccess, meta),

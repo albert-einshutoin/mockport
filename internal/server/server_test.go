@@ -41,6 +41,42 @@ func TestHealthReturnsOK(t *testing.T) {
 	}
 }
 
+func TestConfiguredAuthRequiredReachesAdapterAndReport(t *testing.T) {
+	cfg := config.Config{Adapters: map[string]config.AdapterConfig{
+		"stripe": {Enabled: true, BasePath: "/stripe", FakeSecret: "mockport_custom", AuthRequired: true},
+	}}
+	reg := adapter.NewRegistry()
+	if err := reg.Register(stripe.New()); err != nil {
+		t.Fatal(err)
+	}
+	handler, err := NewConfiguredHandler(cfg, reg, report.NewRecorder())
+	if err != nil {
+		t.Fatal(err)
+	}
+	request := func(path, key string) *httptest.ResponseRecorder {
+		req := httptest.NewRequest(http.MethodGet, path, nil)
+		if key != "" {
+			req.Header.Set("Authorization", key)
+		}
+		rec := httptest.NewRecorder()
+		handler.ServeHTTP(rec, req)
+		return rec
+	}
+	if got := request("/stripe/v1/checkout/sessions", ""); got.Code != http.StatusUnauthorized {
+		t.Fatalf("missing key status = %d", got.Code)
+	}
+	if got := request("/stripe/v1/checkout/sessions", "Bearer mockport_custom"); got.Code != http.StatusOK {
+		t.Fatalf("configured key status = %d", got.Code)
+	}
+	var snapshot report.Snapshot
+	if err := json.Unmarshal(request("/_mockport/report", "").Body.Bytes(), &snapshot); err != nil {
+		t.Fatal(err)
+	}
+	if len(snapshot.Adapters) != 1 || !snapshot.Adapters[0].AuthRequired {
+		t.Fatalf("report adapters = %#v", snapshot.Adapters)
+	}
+}
+
 func TestHealthRejectsNonGETMethod(t *testing.T) {
 	handler, err := NewConfiguredHandler(config.Config{}, adapter.NewRegistry(), report.NewRecorder())
 	if err != nil {

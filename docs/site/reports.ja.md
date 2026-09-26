@@ -11,6 +11,8 @@ reports は、Mockport の test run が何を実行し、どの safety check に
 - CI では report を artifact として保存すると、adapter coverage と safety status を追いやすくなります。
 - JSON フィールドの詳細は英語版 [Report schema](report-schema.md) を参照してください。
 
+adapterごとの `auth_required=false` は、その実行でStripe/OpenAIの通常リクエストのキー配線を検証していないことを示します。`auth_error` scenarioを実行していても、認証検証済みとはみなしません。
+
 ## リクエスト履歴
 
 リクエスト履歴は、実行中に記録された最新の500件のリクエストのメタデータを保持します。この制限を超えると、古いエントリから順に削除（プルーニング）され、レポートには常に最新のリクエストが時系列順に返されます。この制限付きの履歴は、レポートのペイロード内の `unsupported_endpoints` にも同様に適用されます。

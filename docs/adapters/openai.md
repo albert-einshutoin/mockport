@@ -35,7 +35,10 @@ adapters:
     base_path: /openai
     scenario: chat_success
     fake_secret: mockport_openai_key
+    auth_required: true
 ```
+
+`auth_required` is opt-in for existing configurations. When enabled, every `/openai/v1/...` API request requires exactly `Authorization: Bearer <fake_secret>`; missing, malformed, or incorrect keys return HTTP 401 with an `invalid_api_key` error. If `fake_secret` is omitted, the same built-in key emitted by `FakeEnv` is used. `/openai/test/reset` remains loopback-only and does not require a bearer key. The `auth_error` scenario is an independent forced failure, even when the key is correct.
 
 ## Official Reference Map
 

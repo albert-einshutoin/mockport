@@ -12,6 +12,7 @@ type Config struct {
 	BasePath             string
 	Scenario             string
 	FakeSecret           string
+	AuthRequired         bool
 	WebhookTargetURL     string
 	WebhookSigningSecret string
 }

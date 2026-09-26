@@ -70,6 +70,7 @@ func NewConfiguredHandler(cfg config.Config, reg *adapter.Registry, rec *report.
 			Name:         name,
 			BasePath:     adapterCfg.BasePath,
 			Enabled:      true,
+			AuthRequired: adapterCfg.AuthRequired,
 			Scenario:     adapterCfg.Scenario,
 			Maturity:     string(meta.Maturity),
 			Capabilities: slices.Clone(meta.Capabilities),
@@ -84,6 +85,7 @@ func NewConfiguredHandler(cfg config.Config, reg *adapter.Registry, rec *report.
 			BasePath:             adapterCfg.BasePath,
 			Scenario:             adapterCfg.Scenario,
 			FakeSecret:           adapterCfg.FakeSecret,
+			AuthRequired:         adapterCfg.AuthRequired,
 			WebhookTargetURL:     adapterCfg.Webhook.TargetURL,
 			WebhookSigningSecret: adapterCfg.Webhook.SigningSecret,
 		}); err != nil {

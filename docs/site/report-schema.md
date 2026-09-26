@@ -63,6 +63,7 @@ Other warning categories, such as `public_bind` and `unsupported_config`, still 
 | `name` | string | Adapter id, such as `stripe`. |
 | `base_path` | string | Mounted HTTP prefix, such as `/stripe`. |
 | `enabled` | boolean | Whether the adapter is enabled in config. |
+| `auth_required` | boolean | Whether ordinary Stripe/OpenAI API requests verify the configured fake key. `false` means this run has not verified authentication. |
 | `scenario` | string | Active scenario name when configured. |
 | `maturity` | string | Adapter maturity label. See [Support matrix](support-matrix.md). |
 | `capabilities` | array | Optional capability labels advertised by the adapter. |

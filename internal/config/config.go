@@ -19,12 +19,13 @@ type ServerConfig struct {
 }
 
 type AdapterConfig struct {
-	Enabled    bool          `yaml:"enabled" json:"enabled"`
-	BasePath   string        `yaml:"base_path" json:"base_path"`
-	Scenario   string        `yaml:"scenario" json:"scenario"`
-	FakeSecret string        `yaml:"fake_secret" json:"-"`
-	APIURL     string        `yaml:"api_url" json:"api_url,omitempty"`
-	Webhook    WebhookConfig `yaml:"webhook" json:"webhook,omitempty"`
+	Enabled      bool          `yaml:"enabled" json:"enabled"`
+	BasePath     string        `yaml:"base_path" json:"base_path"`
+	Scenario     string        `yaml:"scenario" json:"scenario"`
+	FakeSecret   string        `yaml:"fake_secret" json:"-"`
+	AuthRequired bool          `yaml:"auth_required" json:"auth_required"`
+	APIURL       string        `yaml:"api_url" json:"api_url,omitempty"`
+	Webhook      WebhookConfig `yaml:"webhook" json:"webhook,omitempty"`
 }
 
 type WebhookConfig struct {

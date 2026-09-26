@@ -35,6 +35,9 @@ func Validate(cfg *Config) error {
 	seenBasePaths := map[string]string{}
 	for _, name := range sortedAdapterNames(cfg.Adapters) {
 		adapter := cfg.Adapters[name]
+		if adapter.AuthRequired && name != "stripe" && name != "openai" {
+			return fmt.Errorf("adapter %s: auth_required is only supported for stripe and openai", name)
+		}
 		checks := map[string]string{
 			name + ".fake_secret":            adapter.FakeSecret,
 			name + ".api_url":                adapter.APIURL,

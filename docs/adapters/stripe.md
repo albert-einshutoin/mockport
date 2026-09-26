@@ -36,10 +36,13 @@ adapters:
     base_path: /stripe
     scenario: payment_success
     fake_secret: mockport_stripe_secret
+    auth_required: true
     webhook:
       target_url: http://app:3000/webhooks/stripe
       signing_secret: whsec_mockport
 ```
+
+`auth_required` is opt-in for existing configurations. When enabled, every `/stripe/v1/...` API route and its `/v1/...` SDK alias requires exactly `Authorization: Bearer <fake_secret>`; missing, malformed, or incorrect keys return HTTP 401 with Stripe's `invalid_request_error` / `invalid_api_key` JSON envelope. If `fake_secret` is omitted, the same built-in key emitted by `FakeEnv` is used. `/stripe/test/...` management routes remain guarded by their loopback and target checks, not bearer authentication. The `auth_error` scenario deliberately forces an error even with the correct key; it is separate from key validation.
 
 ## Official Reference Map
 

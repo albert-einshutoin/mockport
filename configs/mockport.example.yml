@@ -12,6 +12,7 @@ adapters:
     base_path: /stripe
     scenario: payment_success
     fake_secret: mockport_stripe_secret
+    # auth_required: true  # Verify the fake key on API requests.
     webhook:
       target_url: http://app:3000/webhooks/stripe
       signing_secret: whsec_mockport
@@ -20,6 +21,7 @@ adapters:
     base_path: /openai
     scenario: chat_success
     fake_secret: mockport_openai_key
+    # auth_required: true  # Verify the fake key on API requests.
   zoho-oauth:
     enabled: true
     base_path: /zoho

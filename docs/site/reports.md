@@ -10,6 +10,8 @@ curl http://localhost:43101/_mockport/report
 
 The report includes safety status, enabled adapters, request metadata, scenario coverage, behavior matrix entries, and unsupported endpoint attempts. For the full JSON field reference, see [Report schema](report-schema.md).
 
+Each adapter status includes `auth_required`. For Stripe and OpenAI, `false` means the run did not check API key wiring, even if the `auth_error` scenario was used. Enable `auth_required: true` in application E2E and recommended CI configurations.
+
 ## Request history
 
 Request history keeps metadata for the most recent 500 requests recorded during a run. When that limit is exceeded, older entries are pruned from the front so the report always returns the newest requests in chronological order. The same bounded history feeds `unsupported_endpoints` in the report payload.

@@ -28,6 +28,7 @@ type AdapterStatus struct {
 	Name         string   `json:"name"`
 	BasePath     string   `json:"base_path"`
 	Enabled      bool     `json:"enabled"`
+	AuthRequired bool     `json:"auth_required"`
 	Scenario     string   `json:"scenario,omitempty"`
 	Maturity     string   `json:"maturity,omitempty"`
 	Capabilities []string `json:"capabilities,omitempty"`
