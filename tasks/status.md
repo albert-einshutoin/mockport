@@ -2,7 +2,7 @@
 
 [日本語版](status.ja.md)
 
-最終更新: 2026-07-19
+最終更新: 2026-09-27
 
 ## Decisions
 
@@ -54,7 +54,11 @@
 | Phase 29 | GitHub OAuth and Slack client evidence | done | GitHub OAuth client and Slack official SDK contracts cover selected workflows and failures |
 | Phase 30 | v0.2.0-preview release | done | Release artifacts, GHCR image, compatibility report, and post-release smoke are verified |
 | Phase 31 | Adapter reference docs | done | Registered adapter docs include official reference maps and implementation boundaries for `stripe`, `openai`, `github-oauth`, `slack`, `line`, and `zoho-oauth` |
-| Phase 32 | Service baseline execution | pending | Registered adapter baselines and SendGrid execution order are explicit and verifiable |
+| Phase 32 | Service baseline execution | in progress | P0/P1 app proof is on main; #84 Slack event/reply is next, while other baselines and SendGrid require concrete demand |
+
+## Next Product Proof (2026-09-27)
+
+The historical phases above and the P0/P1 Stripe/OpenAI app proofs now coexist on main. PRs #384, #385, #387, #389, and #390 added the source smoke, fake-key auth, explicit Responses streaming rejection, and both app-level HTTP → official SDK → business-result flows. The selected E2E and mutation checks run locally and in CI. P2 is #84 Slack signed message delivery and SDK reply. See [Phase 32](phase32_service_baseline_execution.md) and [ROADMAP](../ROADMAP.md). The published `v0.2.0-preview` predates these changes; no new release or external first-time app trial is claimed.
 
 ## Phase 0 Tasks
 
