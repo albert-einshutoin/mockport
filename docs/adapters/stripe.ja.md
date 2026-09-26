@@ -11,7 +11,10 @@ Stripe adapter は、payment integration の selected workflow を local で検�
 - checkout sessions、payment intents、customers、products、prices、subscriptions、invoices、refunds。
 - `/stripe/v1/...` の全 API route は、`/stripe` prefix を除いた SDK-compatible な `/v1/...` alias でも同じ Stripe-like contract を返す。`/stripe/test/...` の test helper は他 adapter との衝突を避けるため `/test/...` では公開しない。
 - fake signed webhook、validation error、stateful list/retrieve、idempotency replay。
+- 選択したpaymentフローは、`mode=payment`、inline `line_items[0][price_data]` の `currency`・`unit_amount`・`product_data[name]`、および `line_items[0][quantity]` を要求します。事前作成済みPriceや実キーは不要です。明細がない明示的なpaymentリクエストは `400` / `parameter_missing`（`param=line_items`）です。空bodyでの作成はMockportのデモ用であり、実Stripe APIで有効なリクエストの証拠ではありません。[公式作成仕様](https://docs.stripe.com/api/checkout/sessions/create)。
+- Checkoutアプリ向けに、loopback専用の `/stripe/test/webhook/send` は `{"session_id":"<作成済みSession ID>","event_id":"evt_order_1","event_type":"checkout.session.completed"}` を受け取り、保存済みSessionのIDと `client_reference_id` をイベントに含めます。選べるイベントは支払済みの `checkout.session.completed` と未払いの `checkout.session.async_payment_failed` です。未知のSessionは `404`、不正入力は `400`。同じevent IDを再配送でき、Mockportは重複排除しません。署名timestampは毎回現在時刻で作り直します。空本文は既存の固定デモイベントです。[アプリE2E例](../../examples/app-e2e/README.md)を参照してください。
 - webhook send helper の outbound 配送は固定 `5s` timeout。timeout は `504` / `webhook_send_timeout`、target の non-2xx は `502` / `webhook_target_non_2xx`。
+- 完了イベントでは配送前に保存済みSessionをpaidにします。受信処理中のSDK retrieveでもpaidです。失敗イベントは未払いSessionを未払いのままにし、支払済みSessionを未払いに戻しません。配送失敗でも支払状態は戻しません。
 - `timeout` は即時の 504 レスポンス shape を返す。実レイテンシは server 全体の `X-Mockport-Delay`（`0`–`30000` ms、[Adapters](../site/adapters.ja.md#x-mockport-delay) 参照）で注入する。
 - real payment processing、fraud、settlement、tax、disputes、Connect、full Billing lifecycle は対象外です。
 

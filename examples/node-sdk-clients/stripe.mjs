@@ -13,6 +13,7 @@ const stripe = new Stripe("sk_test_mockport", {
 
 const session = await stripe.checkout.sessions.create({
   mode: "payment",
+  line_items: [{ price_data: { currency: "usd", unit_amount: 1200, product_data: { name: "Mockport item" } }, quantity: 1 }],
   client_reference_id: "example-cart",
   success_url: "http://localhost/success",
   cancel_url: "http://localhost/cancel",

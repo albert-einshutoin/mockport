@@ -3,7 +3,7 @@
   "provider_version": "2025-10-29.clover",
   "sdk": {
     "name": "stripe",
-    "version": "22.1.1"
+    "version": "22.3.1"
   },
   "source": {
     "type": "docs",
@@ -21,7 +21,11 @@
       "Content-Type": "application/x-www-form-urlencoded"
     },
     "body": {
-      "client_reference_id": "cart_2"
+      "mode": "payment",
+      "line_items": [{"price_data": {"currency": "usd", "unit_amount": 1200, "product_data": {"name": "Mockport item"}}, "quantity": 1}],
+      "client_reference_id": "cart_2",
+      "success_url": "http://localhost/success",
+      "cancel_url": "http://localhost/cancel"
     }
   },
   "response": {

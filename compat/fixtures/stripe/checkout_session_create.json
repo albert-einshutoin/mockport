@@ -3,13 +3,13 @@
   "provider_version": "2025-10-29.clover",
   "sdk": {
     "name": "stripe",
-    "version": "22.1.1"
+    "version": "22.3.1"
   },
   "source": {
     "type": "docs",
     "title": "Stripe Checkout Sessions API",
     "url_or_path": "https://docs.stripe.com/api/checkout/sessions/create",
-    "retrieved_at": "2026-05-26"
+    "retrieved_at": "2026-09-27"
   },
   "scenario": "payment_success",
   "request": {
@@ -21,6 +21,7 @@
     },
     "body": {
       "mode": "payment",
+      "line_items": [{"price_data": {"currency": "usd", "unit_amount": 1200, "product_data": {"name": "Mockport item"}}, "quantity": 1}],
       "client_reference_id": "cart_sdk_1",
       "success_url": "http://localhost/success",
       "cancel_url": "http://localhost/cancel"
@@ -36,7 +37,7 @@
     "body": {
       "id": "stripe_checkout_session_000001",
       "object": "checkout.session",
-      "payment_status": "paid",
+      "payment_status": "unpaid",
       "client_reference_id": "cart_sdk_1"
     }
   },
