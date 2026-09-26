@@ -104,8 +104,11 @@ fi
 node - "${ports[@]}" <<'NODE'
 const net = require("node:net");
 (async () => {
+  const seen = new Set();
   for (const value of process.argv.slice(2)) {
     const port = Number(value);
+    if (seen.has(port)) throw new Error(`port ${port} is configured for multiple services`);
+    seen.add(port);
     await new Promise((resolve, reject) => {
       const server = net.createServer();
       server.once("error", () => reject(new Error(`port ${port} is already in use`)));

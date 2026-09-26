@@ -24,7 +24,7 @@ The Node app uses `stripe@22.3.1`, matching the existing [Node SDK example](../n
 | Chat nonstreaming | `200`, text `Mockport response` | One successful completion | No answer-quality claim. |
 | Chat streaming | `200`, assembled `Mockport simulated streaming response.`, multiple chunks, completed iteration | One SSE completion | The official Python SDK consumes the terminal marker. |
 | Wrong fake key | `401`, `invalid_api_key` | One Mockport 401 | Separate from the forced `auth_error` scenario. |
-| Missing key | `503`, `missing_key_before_request` | Zero calls; SDK refuses construction | This is local configuration failure, not adapter authentication evidence. |
+| Missing key | `503`, `missing_key_before_request` | Zero calls; the app guard returns before SDK construction | This is local configuration failure, not adapter authentication evidence. |
 | Persistent 429 | `429`, `rate_limited` | Two Mockport 429 responses | SDK `max_retries=1`; finite failure within four seconds. |
 | Slow response and cancelled caller | `504`, `upstream_timeout`, or an abandoned HTTP response | SDK timeout `0.4s`, at most two attempts | Handler active count returns to zero within four seconds. |
 
@@ -32,7 +32,7 @@ The Python app uses the pinned official `openai==2.46.0` SDK, as in the [existin
 
 ## Run locally
 
-Prerequisites: Go from `PATH`, Node 24, npm, curl. From the repository root:
+Prerequisites: Go from `PATH`, Node 24, npm, curl, and Python 3.13 with working `venv` and `pip` modules for the `all` and OpenAI mutation commands. The local runner creates a temporary virtual environment and installs the pinned packages from `requirements.lock`; dependency downloads need network access. From the repository root:
 
 ```sh
 bash scripts/run-app-e2e.sh stripe
