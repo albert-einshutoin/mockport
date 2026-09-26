@@ -12,17 +12,30 @@ fi
 IMAGE_TAG="mockport:smoke-$$"
 WORK_DIR="$(mktemp -d)"
 PROJECT="mockport-smoke-$$"
+IMAGE_CREATED=false
 
 cleanup() {
-  (cd "$WORK_DIR" && docker compose -p "$PROJECT" -f docker-compose.mockport.yml down >/dev/null 2>&1 || true)
+  local result=$?
+  if [[ -f "$WORK_DIR/docker-compose.mockport.yml" ]]; then
+    (cd "$WORK_DIR" && docker compose -p "$PROJECT" -f docker-compose.mockport.yml down >/dev/null 2>&1) || result=1
+  fi
+  if [[ "$IMAGE_CREATED" == true ]]; then
+    docker image rm "$IMAGE_TAG" >/dev/null || result=1
+  fi
   rm -rf "$WORK_DIR"
+  exit "$result"
 }
 trap cleanup EXIT
 
 cd "$ROOT_DIR"
 SOURCE_SHA="$(git rev-parse HEAD)"
 "$GO_BIN" build -o "$WORK_DIR/mockport" ./cmd/mockport
+if docker image inspect "$IMAGE_TAG" >/dev/null 2>&1; then
+  echo "smoke image tag already exists: $IMAGE_TAG" >&2
+  exit 1
+fi
 docker build -t "$IMAGE_TAG" -f docker/Dockerfile .
+IMAGE_CREATED=true
 BUILT_IMAGE_ID="$(docker image inspect --format '{{.Id}}' "$IMAGE_TAG")"
 
 cd "$WORK_DIR"
