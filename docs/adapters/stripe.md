@@ -91,6 +91,8 @@ Use this table to jump from Mockport's supported local surface to the closest of
 | `POST` | `/stripe/test/webhook/send` | Sends a fake signed webhook to the configured target URL. Outbound delivery uses a fixed `5s` timeout; timeout failures return `504` / `webhook_send_timeout`, and non-2xx target responses return `502` / `webhook_target_non_2xx`. |
 | `POST` | `/stripe/test/reset` | Clears local state and idempotency records for test isolation. |
 
+For a Checkout app, send JSON to the loopback-only helper: `{"session_id":"<created Session ID>","event_id":"evt_order_1","event_type":"checkout.session.completed"}`. The event object contains that stored Session's ID and `client_reference_id`. The supported explicit event types are `checkout.session.completed` (paid) and `checkout.session.async_payment_failed` (unpaid). Unknown Session IDs return `404`; malformed requests return `400`. The same event ID can be sent repeatedly, and different IDs are independent. Mockport does not deduplicate deliveries. Each delivery signs the same event body with a fresh current timestamp so the app can apply the official signature tolerance. An empty request body retains the existing fixed demonstration event. The helper is available only from loopback, and the target URL must remain local. See [the app E2E example](../../examples/app-e2e/README.md).
+
 ## Scenarios
 
 | Scenario | Response shape | Latency behavior |

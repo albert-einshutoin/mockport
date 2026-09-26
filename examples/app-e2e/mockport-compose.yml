@@ -1,0 +1,24 @@
+version: "0.1"
+
+server:
+  host: 0.0.0.0
+  port: 43101
+
+mode: ai-safe
+
+adapters:
+  stripe:
+    enabled: true
+    base_path: /stripe
+    scenario: payment_success
+    fake_secret: mockport_stripe_secret
+    auth_required: true
+    webhook:
+      target_url: http://app:33001/webhooks/stripe
+      signing_secret: whsec_mockport
+  openai:
+    enabled: true
+    base_path: /openai
+    scenario: chat_success
+    fake_secret: mockport_openai_key
+    auth_required: true

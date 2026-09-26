@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"strings"
 
 	"github.com/albert-einshutoin/mockport/internal/adapter/httpx"
 	"github.com/albert-einshutoin/mockport/internal/security"
@@ -36,14 +38,44 @@ func (rt *routes) sendWebhook(w http.ResponseWriter, r *http.Request) {
 	if scenario == scenarioPaymentFailed {
 		eventType = "payment_intent.payment_failed"
 	}
+	eventID := "evt_mockport"
+	object := map[string]any{"id": "cs_test_mockport", "object": "checkout.session"}
+	if r.ContentLength != 0 {
+		var input struct {
+			SessionID string `json:"session_id"`
+			EventID   string `json:"event_id"`
+			EventType string `json:"event_type"`
+		}
+		decoder := json.NewDecoder(r.Body)
+		decoder.DisallowUnknownFields()
+		if err := decoder.Decode(&input); err != nil {
+			rt.writeStripeError(w, http.StatusBadRequest, "invalid_request_error", "invalid_webhook_event", "webhook event must be a JSON object with session_id, event_id, and event_type")
+			return
+		}
+		if err := decoder.Decode(new(any)); err != io.EOF || input.SessionID == "" || !validWebhookEventID(input.EventID) ||
+			(input.EventType != "checkout.session.completed" && input.EventType != "checkout.session.async_payment_failed") {
+			rt.writeStripeError(w, http.StatusBadRequest, "invalid_request_error", "invalid_webhook_event", "webhook event requires an existing session, an event ID, and a supported event type")
+			return
+		}
+		resource, ok := rt.store.Get("stripe", "checkout_session", input.SessionID)
+		if !ok {
+			rt.writeStripeError(w, http.StatusNotFound, "invalid_request_error", "checkout_session_not_found", "webhook session was not created in this Mockport process")
+			return
+		}
+		object = resource.Data
+		object["id"] = resource.ID
+		if input.EventType == "checkout.session.async_payment_failed" {
+			object["payment_status"] = "unpaid"
+		} else {
+			object["payment_status"] = "paid"
+		}
+		eventID, eventType = input.EventID, input.EventType
+	}
 	payload, err := json.Marshal(map[string]any{
-		"id":   "evt_mockport",
+		"id":   eventID,
 		"type": eventType,
 		"data": map[string]any{
-			"object": map[string]any{
-				"id":     "cs_test_mockport",
-				"object": "checkout.session",
-			},
+			"object": object,
 		},
 	})
 	if err != nil {
@@ -78,8 +110,21 @@ func (rt *routes) sendWebhook(w http.ResponseWriter, r *http.Request) {
 		"sent":        true,
 		"target_url":  rt.cfg.WebhookTargetURL,
 		"event_type":  eventType,
+		"event_id":    eventID,
 		"status_code": resp.StatusCode,
 	})
+}
+
+func validWebhookEventID(id string) bool {
+	if len(id) < 5 || len(id) > 128 || !strings.HasPrefix(id, "evt_") {
+		return false
+	}
+	for _, ch := range id[4:] {
+		if (ch < 'a' || ch > 'z') && (ch < 'A' || ch > 'Z') && (ch < '0' || ch > '9') && ch != '_' && ch != '-' {
+			return false
+		}
+	}
+	return true
 }
 
 func (rt *routes) handleReset(w http.ResponseWriter, r *http.Request) {

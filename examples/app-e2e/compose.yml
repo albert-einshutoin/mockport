@@ -1,0 +1,37 @@
+services:
+  mockport:
+    image: mockport:app-e2e
+    build:
+      context: ../..
+      dockerfile: docker/Dockerfile
+    command: ["run", "--config", "/etc/mockport/mockport.yml", "--host", "0.0.0.0"]
+    volumes:
+      - ./mockport-compose.yml:/etc/mockport/mockport.yml:ro
+    ports:
+      - "127.0.0.1:43101:43101"
+    networks: [isolated]
+  app:
+    build: ./stripe-app
+    environment:
+      MOCKPORT_BASE_URL: http://mockport:43101
+      STRIPE_SECRET_KEY: mockport_stripe_secret
+      STRIPE_WEBHOOK_SECRET: whsec_mockport
+      HOST: 0.0.0.0
+    ports:
+      - "127.0.0.1:33001:33001"
+    depends_on: [mockport]
+    networks: [isolated]
+  runner:
+    image: node:24-alpine
+    volumes:
+      - ./stripe-app/e2e.mjs:/test/e2e.mjs:ro
+    environment:
+      MOCKPORT_BASE_URL: http://127.0.0.1:43101
+      APP_BASE_URL: http://app:33001
+    network_mode: service:mockport
+    depends_on: [mockport, app]
+    command: ["node", "/test/e2e.mjs"]
+
+networks:
+  isolated:
+    internal: true

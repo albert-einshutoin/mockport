@@ -22,7 +22,7 @@ func TestCheckoutSessionSuccess(t *testing.T) {
 	if err := json.Unmarshal(rec.Body.Bytes(), &body); err != nil {
 		t.Fatalf("decode response: %v", err)
 	}
-	if body["object"] != "checkout.session" || body["payment_status"] != "paid" {
+	if body["object"] != "checkout.session" || body["payment_status"] != "unpaid" {
 		t.Fatalf("unexpected body: %#v", body)
 	}
 }
@@ -310,6 +310,73 @@ func TestWebhookSender(t *testing.T) {
 	case <-received:
 	default:
 		t.Fatal("webhook target did not receive request")
+	}
+}
+
+func TestWebhookSenderReferencesCreatedSessionAndCanReplayEvent(t *testing.T) {
+	type delivery struct {
+		body      map[string]any
+		signature string
+	}
+	deliveries := make(chan delivery, 3)
+	target := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var body map[string]any
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			t.Errorf("decode delivery: %v", err)
+		}
+		deliveries <- delivery{body: body, signature: r.Header.Get("Stripe-Signature")}
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	defer target.Close()
+	mux := newStripeMux(t, adapter.Config{BasePath: "/stripe", Scenario: "payment_success", WebhookTargetURL: target.URL, WebhookSigningSecret: "whsec_mockport"})
+	create := func(ref string) string {
+		rec := serveStripeRequest(mux, http.MethodPost, "/stripe/v1/checkout/sessions", "client_reference_id="+ref, nil)
+		if rec.Code != http.StatusOK {
+			t.Fatalf("create status=%d body=%s", rec.Code, rec.Body.String())
+		}
+		var body map[string]any
+		if err := json.Unmarshal(rec.Body.Bytes(), &body); err != nil {
+			t.Fatal(err)
+		}
+		return body["id"].(string)
+	}
+	firstID := create("order_1")
+	secondID := create("order_2")
+	send := func(sessionID, eventID, eventType string) delivery {
+		t.Helper()
+		body := `{"session_id":"` + sessionID + `","event_id":"` + eventID + `","event_type":"` + eventType + `"}`
+		rec := serveStripeRequest(mux, http.MethodPost, "/stripe/test/webhook/send", body, map[string]string{"Content-Type": "application/json"})
+		if rec.Code != http.StatusAccepted {
+			t.Fatalf("send status=%d body=%s", rec.Code, rec.Body.String())
+		}
+		return <-deliveries
+	}
+	for i, got := range []delivery{
+		send(firstID, "evt_order_1", "checkout.session.completed"),
+		send(firstID, "evt_order_1", "checkout.session.completed"),
+		send(secondID, "evt_order_2", "checkout.session.completed"),
+	} {
+		if got.signature == "" {
+			t.Fatal("missing Stripe signature")
+		}
+		object := got.body["data"].(map[string]any)["object"].(map[string]any)
+		if object["payment_status"] != "paid" {
+			t.Fatalf("completed event payment status=%#v", object["payment_status"])
+		}
+		if i < 2 && (got.body["id"] != "evt_order_1" || object["id"] != firstID || object["client_reference_id"] != "order_1") {
+			t.Fatalf("first event object=%#v", object)
+		}
+		if i == 2 && (got.body["id"] != "evt_order_2" || object["id"] != secondID || object["client_reference_id"] != "order_2") {
+			t.Fatalf("second event object=%#v", object)
+		}
+	}
+	failed := send(firstID, "evt_order_1_failed", "checkout.session.async_payment_failed")
+	if failed.body["type"] != "checkout.session.async_payment_failed" || failed.body["data"].(map[string]any)["object"].(map[string]any)["payment_status"] != "unpaid" {
+		t.Fatalf("failure event=%#v", failed.body)
+	}
+	unknown := serveStripeRequest(mux, http.MethodPost, "/stripe/test/webhook/send", `{"session_id":"cs_missing","event_id":"evt_missing","event_type":"checkout.session.completed"}`, nil)
+	if unknown.Code != http.StatusNotFound {
+		t.Fatalf("unknown session status=%d body=%s", unknown.Code, unknown.Body.String())
 	}
 }
 

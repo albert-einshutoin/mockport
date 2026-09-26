@@ -130,7 +130,7 @@ func (rt *routes) writeCheckoutSession(w http.ResponseWriter, r *http.Request) {
 		if !rt.validateFormFields(w, fields) {
 			return
 		}
-		body := stripeDataFromStruct(checkoutSessionResponse{Object: "checkout.session", PaymentStatus: "paid"})
+		body := stripeDataFromStruct(checkoutSessionResponse{Object: "checkout.session", PaymentStatus: "unpaid"})
 		if clientReferenceID := fields.Get("client_reference_id"); clientReferenceID != "" {
 			body["client_reference_id"] = clientReferenceID
 		}

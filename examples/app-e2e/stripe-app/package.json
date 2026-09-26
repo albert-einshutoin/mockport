@@ -1,0 +1,7 @@
+{
+  "name": "@mockport/stripe-app-e2e",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=24" },
+  "dependencies": { "stripe": "22.3.1" }
+}

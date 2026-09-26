@@ -33,6 +33,7 @@ jobs:
       - run: go build ./cmd/mockport
       - run: bash scripts/check-go-engineering.sh
       - run: bash scripts/run-sdk-contracts.sh all
+      - run: bash scripts/run-app-e2e.sh stripe
       - run: bash scripts/check-public-trust.sh
       - run: bash scripts/check-public-env.sh
       - run: bash scripts/check-adapter-completeness.sh

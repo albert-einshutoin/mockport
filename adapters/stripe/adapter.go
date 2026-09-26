@@ -139,7 +139,7 @@ func (a Adapter) Metadata() adapter.Metadata {
 			{Method: http.MethodPost, Path: "/stripe/v1/refunds", SupportedScenarios: []string{"payment_success"}, Notes: "Stripe-like refund creation"},
 			{Method: http.MethodGet, Path: "/stripe/v1/refunds", SupportedScenarios: []string{"payment_success"}, Notes: "Stripe-like refund list"},
 			{Method: http.MethodGet, Path: "/stripe/v1/refunds/{id}", SupportedScenarios: []string{"payment_success"}, Notes: "Stripe-like refund lookup"},
-			{Method: http.MethodPost, Path: "/stripe/test/webhook/send", SupportedScenarios: []string{"payment_success", "payment_failed"}, Notes: "Sends fake signed webhook to configured target"},
+			{Method: http.MethodPost, Path: "/stripe/test/webhook/send", SupportedScenarios: []string{"payment_success", "payment_failed"}, Notes: "Sends fake signed webhook to configured target; JSON input can reference a created Checkout Session and replay an event ID"},
 			{Method: http.MethodPost, Path: "/stripe/test/reset", SupportedScenarios: []string{"payment_success", "payment_failed", "auth_error", "rate_limited", "timeout"}, Notes: "Clears state and idempotency records for test isolation"},
 		},
 	}
