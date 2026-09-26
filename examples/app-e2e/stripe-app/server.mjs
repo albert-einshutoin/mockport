@@ -17,6 +17,7 @@ const stripe = new Stripe(apiKey, {
 });
 const orders = new Map();
 const processedEvents = new Set();
+class RequestTooLargeError extends Error {}
 
 function reply(response, status, body) {
   response.writeHead(status, { "Content-Type": "application/json" });
@@ -28,7 +29,7 @@ async function bodyBytes(request) {
   let size = 0;
   for await (const chunk of request) {
     size += chunk.length;
-    if (size > 64 * 1024) throw new Error("request body too large");
+    if (size > 64 * 1024) throw new RequestTooLargeError("request body too large");
     chunks.push(chunk);
   }
   return Buffer.concat(chunks);
@@ -40,7 +41,14 @@ const server = createServer(async (request, response) => {
       return reply(response, 200, { ready: true });
     }
     if (request.method === "POST" && request.url === "/orders") {
-      const { order_id: orderID } = JSON.parse((await bodyBytes(request)).toString());
+      const raw = await bodyBytes(request);
+      let input;
+      try {
+        input = JSON.parse(raw.toString());
+      } catch {
+        return reply(response, 400, { error: "invalid_json" });
+      }
+      const orderID = input?.order_id;
       if (typeof orderID !== "string" || !/^order_[a-zA-Z0-9_-]{1,40}$/.test(orderID) || orders.has(orderID)) {
         return reply(response, 400, { error: "invalid_or_duplicate_order" });
       }
@@ -92,6 +100,7 @@ const server = createServer(async (request, response) => {
     }
     return reply(response, 404, { error: "not_found" });
   } catch (error) {
+    if (error instanceof RequestTooLargeError) return reply(response, 413, { error: "request_too_large" });
     return reply(response, 502, { error: "provider_or_application_error", detail: String(error.message) });
   }
 });

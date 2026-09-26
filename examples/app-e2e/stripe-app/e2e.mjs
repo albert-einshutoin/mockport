@@ -5,7 +5,7 @@ const mockport = process.env.MOCKPORT_BASE_URL || "http://127.0.0.1:43101";
 const app = process.env.APP_BASE_URL || "http://127.0.0.1:33001";
 
 async function json(url, options = {}) {
-  const response = await fetch(url, options);
+  const response = await fetch(url, { ...options, signal: options.signal ?? AbortSignal.timeout(5000) });
   const text = await response.text();
   let body;
   try { body = JSON.parse(text); } catch { throw new Error(`${url} returned ${response.status}: ${text}`); }
@@ -17,7 +17,7 @@ function post(url, body, headers = {}) {
 async function waitFor(url) {
   for (let attempt = 0; attempt < 30; attempt++) {
     try {
-      if ((await json(url)).status === 200) return;
+      if ((await json(url, { signal: AbortSignal.timeout(500) })).status === 200) return;
     } catch { /* The Compose service may still be starting. */ }
     await new Promise((resolve) => setTimeout(resolve, 200));
   }
@@ -51,6 +51,12 @@ async function send(sessionID, eventID, eventType) {
 
 await waitFor(`${mockport}/health`);
 await waitFor(`${app}/health`);
+const invalidJSON = await json(`${app}/orders`, { method: "POST", headers: { "Content-Type": "application/json" }, body: "{" });
+assert.equal(invalidJSON.status, 400);
+assert.equal(invalidJSON.body.error, "invalid_json");
+const oversized = await json(`${app}/orders`, { method: "POST", headers: { "Content-Type": "application/json" }, body: "x".repeat(64 * 1024 + 1) });
+assert.equal(oversized.status, 413);
+assert.equal(oversized.body.error, "request_too_large");
 const first = await order("order_1");
 const second = await order("order_2");
 const failed = await order("order_3");
