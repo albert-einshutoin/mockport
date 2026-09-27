@@ -10,12 +10,12 @@ Prerequisites: Git, Python 3.13 with `venv` and `pip`, Docker for the published-
 git clone --branch v0.3.0-preview --depth 1 https://github.com/albert-einshutoin/mockport.git
 cd mockport
 git rev-parse HEAD
-export MOCKPORT_IMAGE='ghcr.io/albert-einshutoin/mockport:0.3.0-preview'
+export MOCKPORT_IMAGE='ghcr.io/albert-einshutoin/mockport@sha256:497f6ec7dc6f1fea8afd292f9480872983bc940425a090aa8ad8580350d8e9a5'
 docker pull "$MOCKPORT_IMAGE"
 MOCKPORT_IMAGE="$MOCKPORT_IMAGE" bash scripts/run-external-llm.sh
 ```
 
-For exact repetition, replace the versioned tag with the digest from the release record. Expected CLI exits are `0,0,1,0`; report statuses are `200,200,401,200`. Run `bash scripts/run-external-llm.sh` without `MOCKPORT_IMAGE` only for a source-build check.
+The image selector above is the published digest of `0.3.0-preview`, also recorded in the [release record](../../docs/releases/v0.3.0-preview.md). The published-image run on macOS arm64 / Docker linux/arm64 returned CLI exits `0,0,1,0` and report statuses `200,200,401,200`, with image ID equal to the pulled digest. Run `bash scripts/run-external-llm.sh` without `MOCKPORT_IMAGE` only for a source-build check.
 
 The runner creates and removes its own Python venv and empty `LLM_USER_PATH`. It installs the exact Python 3.13 versions in [requirements.lock](requirements.lock), copies only [extra-openai-models.yaml](extra-openai-models.yaml) into that user directory, and uses the normal `--key` option. The model file follows [LLM's documented configuration](https://llm.datasette.io/en/stable/other-models.html). Its `api_key_name` is essential: LLM 0.36 otherwise treats a model with only `api_base` as not needing a key and supplies a dummy key. No user keys or existing conversation history are read.
 

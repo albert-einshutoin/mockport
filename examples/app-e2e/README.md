@@ -69,13 +69,13 @@ Compose builds Mockport from this checkout and installs the pinned Node and Pyth
 [`compose.published.yml`](compose.published.yml) uses `MOCKPORT_IMAGE` only for Mockport and has no Mockport build instruction. Check out the `v0.3.0-preview` tag as shown in the [trial guide](../../docs/site/app-trial.md). The sample apps and pinned SDK dependencies are built or downloaded locally. `PUBLISHED_FLOWS=all` checks Stripe, OpenAI, and Slack; `p0p1` is retained for an earlier historical digest.
 
 ```sh
-export MOCKPORT_IMAGE='ghcr.io/albert-einshutoin/mockport:0.3.0-preview'
+export MOCKPORT_IMAGE='ghcr.io/albert-einshutoin/mockport@sha256:497f6ec7dc6f1fea8afd292f9480872983bc940425a090aa8ad8580350d8e9a5'
 export PUBLISHED_FLOWS=all
 docker pull "$MOCKPORT_IMAGE"
 docker compose -f examples/app-e2e/compose.published.yml -p mockport-published up --build --abort-on-container-exit --exit-code-from runner
 docker compose -f examples/app-e2e/compose.published.yml -p mockport-published down --remove-orphans
 ```
 
-For exact repetition, use the digest recorded in the [release record](../../docs/releases/v0.3.0-preview.md). The older P0/P1 digest `sha256:eae6ba56f01cc9969038da36982e6699732379028f27313ba86dba5d1e43b8fb` needs `PUBLISHED_FLOWS=p0p1`. Clean up after failures too.
+The image selector above is the published digest of `0.3.0-preview`, also recorded in the [release record](../../docs/releases/v0.3.0-preview.md). The older P0/P1 digest `sha256:eae6ba56f01cc9969038da36982e6699732379028f27313ba86dba5d1e43b8fb` needs `PUBLISHED_FLOWS=p0p1`. Clean up after failures too.
 
 CI runs the SDK contracts and local `all` command on every PR and push. The Docker Compose runs are additional network-isolated smoke checks. These selected flows are example contracts, not full provider compatibility claims.
