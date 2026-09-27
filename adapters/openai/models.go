@@ -1,5 +1,7 @@
 package openai
 
+import "encoding/json"
+
 type errorBody struct {
 	Error errorDetail `json:"error"`
 }
@@ -12,15 +14,24 @@ type errorDetail struct {
 
 type chatCompletion struct {
 	Object  string       `json:"object"`
+	Created int64        `json:"created"`
 	Choices []chatChoice `json:"choices"`
+	Usage   chatUsage    `json:"usage"`
 	Model   any          `json:"model,omitempty"`
 	Status  string       `json:"status,omitempty"`
 	Output  []outputItem `json:"output,omitempty"`
 }
 
 type chatChoice struct {
-	Index   int         `json:"index"`
-	Message chatMessage `json:"message"`
+	Index        int         `json:"index"`
+	Message      chatMessage `json:"message"`
+	FinishReason string      `json:"finish_reason,omitempty"`
+}
+
+type chatUsage struct {
+	PromptTokens     int `json:"prompt_tokens"`
+	CompletionTokens int `json:"completion_tokens"`
+	TotalTokens      int `json:"total_tokens"`
 }
 
 type chatMessage struct {
@@ -77,6 +88,7 @@ type chatCompletionChunk struct {
 	Model             string                      `json:"model"`
 	SystemFingerprint string                      `json:"system_fingerprint"`
 	Choices           []chatCompletionChunkChoice `json:"choices"`
+	Usage             json.RawMessage             `json:"usage,omitempty"`
 }
 
 type chatCompletionChunkChoice struct {

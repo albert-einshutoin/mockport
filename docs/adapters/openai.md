@@ -63,7 +63,7 @@ Use this table to jump from Mockport's supported local surface to the closest of
 | Method | Path | Purpose |
 | --- | --- | --- |
 | `GET` | `/openai/v1/models` | Returns a deterministic model list. |
-| `POST` | `/openai/v1/chat/completions` | Returns deterministic chat completion JSON or SSE chunks when streaming. |
+| `POST` | `/openai/v1/chat/completions` | Returns deterministic chat completion JSON with simulated usage, or SSE chunks when streaming. For `stream_options.include_usage: true`, a final usage chunk precedes `[DONE]`. These fixed counts do not measure tokens or inference. |
 | `POST` | `/openai/v1/responses` | Creates a deterministic non-streaming response object. `stream:true` returns HTTP 501 with `error.code=mockport_unsupported_responses_stream`; no state is created. |
 | `GET` | `/openai/v1/responses/{id}` | Retrieves a local response. |
 | `POST` | `/openai/test/reset` | Clears provider state and idempotency records for test isolation. |
