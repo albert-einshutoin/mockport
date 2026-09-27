@@ -9,11 +9,13 @@ STRIPE_PORT="${STRIPE_APP_E2E_PORT:-33001}"
 STRIPE_PROXY_PORT="${STRIPE_TEST_PROXY_PORT:-43103}"
 OPENAI_PORT="${OPENAI_APP_E2E_PORT:-33002}"
 PROXY_PORT="${OPENAI_TEST_PROXY_PORT:-43102}"
+SLACK_PORT="${SLACK_APP_E2E_PORT:-33003}"
 MOCKPORT_URL="http://127.0.0.1:${MOCKPORT_PORT}"
 STRIPE_URL="http://127.0.0.1:${STRIPE_PORT}"
 STRIPE_PROXY_URL="http://127.0.0.1:${STRIPE_PROXY_PORT}"
 OPENAI_URL="http://127.0.0.1:${OPENAI_PORT}"
 PROXY_URL="http://127.0.0.1:${PROXY_PORT}"
+SLACK_URL="http://127.0.0.1:${SLACK_PORT}"
 
 stop_pid() {
   if [[ -n "${1:-}" ]]; then
@@ -39,13 +41,14 @@ cleanup() {
   stop_pid "${PROXY_PID:-}"
   stop_pid "${STRIPE_PID:-}"
   stop_pid "${STRIPE_PROXY_PID:-}"
+  stop_pid "${SLACK_PID:-}"
   stop_pid "${MOCKPORT_PID:-}"
   rm -rf "$WORK_DIR"
 }
 trap cleanup EXIT
 
-if [[ "$KIND" != "stripe" && "$KIND" != "openai" && "$KIND" != "all" ]]; then
-  echo "usage: bash scripts/run-app-e2e.sh [stripe|openai|all]" >&2
+if [[ "$KIND" != "stripe" && "$KIND" != "openai" && "$KIND" != "slack" && "$KIND" != "all" ]]; then
+  echo "usage: bash scripts/run-app-e2e.sh [stripe|openai|slack|all]" >&2
   exit 2
 fi
 
@@ -101,6 +104,9 @@ fi
 if [[ "$KIND" == "openai" || "$KIND" == "all" ]]; then
   ports+=("$OPENAI_PORT" "$PROXY_PORT")
 fi
+if [[ "$KIND" == "slack" || "$KIND" == "all" ]]; then
+  ports+=("$SLACK_PORT")
+fi
 node - "${ports[@]}" <<'NODE'
 const net = require("node:net");
 (async () => {
@@ -120,6 +126,7 @@ NODE
 "${GO_BIN:-go}" build -o "$WORK_DIR/mockport" ./cmd/mockport
 sed -e "s/port: 43101/port: ${MOCKPORT_PORT}/" \
   -e "s/127.0.0.1:33001/127.0.0.1:${STRIPE_PORT}/" \
+  -e "s/127.0.0.1:33003/127.0.0.1:${SLACK_PORT}/" \
   examples/app-e2e/mockport.yml > "$WORK_DIR/mockport.yml"
 "$WORK_DIR/mockport" run --config "$WORK_DIR/mockport.yml" >"$WORK_DIR/mockport.log" 2>&1 &
 MOCKPORT_PID="$!"
@@ -138,14 +145,24 @@ if [[ "$KIND" == "stripe" || "$KIND" == "all" ]]; then
   wait_for "$STRIPE_URL" "$STRIPE_PID" "$WORK_DIR/stripe.log"
 fi
 
-if [[ "$KIND" == "openai" || "$KIND" == "all" ]]; then
+if [[ "$KIND" == "openai" || "$KIND" == "slack" || "$KIND" == "all" ]]; then
   python3 -m venv "$WORK_DIR/venv"
   PYTHON="$WORK_DIR/venv/bin/python"
+fi
+if [[ "$KIND" == "openai" || "$KIND" == "all" ]]; then
   "$PYTHON" -m pip install -r "$ROOT_DIR/examples/app-e2e/openai-app/requirements.lock" --quiet
   start_openai mockport_openai_key "$MOCKPORT_URL"
 fi
+if [[ "$KIND" == "slack" || "$KIND" == "all" ]]; then
+  "$PYTHON" -m pip install -r "$ROOT_DIR/examples/app-e2e/slack-app/requirements.lock" --quiet
+  SLACK_BASE_URL="$MOCKPORT_URL/slack/api/" SLACK_BOT_TOKEN=mockport_slack_token \
+    SLACK_SIGNING_SECRET=mockport_slack_signing_secret PORT="$SLACK_PORT" \
+    "$PYTHON" "${SLACK_APP_ENTRY:-$ROOT_DIR/examples/app-e2e/slack-app/server.py}" >"$WORK_DIR/slack.log" 2>&1 &
+  SLACK_PID="$!"
+  wait_for "$SLACK_URL" "$SLACK_PID" "$WORK_DIR/slack.log"
+fi
 
-echo "head=$(git rev-parse HEAD) dirty=$(if [[ -n "$(git status --porcelain)" ]]; then echo true; else echo false; fi) binary=$WORK_DIR/mockport stripe=22.3.1 openai=2.46.0"
+echo "head=$(git rev-parse HEAD) dirty=$(if [[ -n "$(git status --porcelain)" ]]; then echo true; else echo false; fi) binary=$WORK_DIR/mockport stripe=22.3.1 openai=2.46.0 slack=3.44.1"
 if [[ "$KIND" == "stripe" || "$KIND" == "all" ]]; then
   cd "$ROOT_DIR/examples/app-e2e/stripe-app"
   MOCKPORT_BASE_URL="$MOCKPORT_URL" APP_BASE_URL="$STRIPE_URL" STRIPE_TEST_PROXY_URL="$STRIPE_PROXY_URL" node e2e.mjs
@@ -166,4 +183,10 @@ if [[ "$KIND" == "openai" || "$KIND" == "all" ]]; then
   restart_openai mockport_openai_key "$PROXY_URL"
   MOCKPORT_BASE_URL="$MOCKPORT_URL" APP_BASE_URL="$OPENAI_URL" "$PYTHON" examples/app-e2e/openai-app/e2e.py timeout
   MOCKPORT_BASE_URL="$MOCKPORT_URL" APP_BASE_URL="$OPENAI_URL" "$PYTHON" examples/app-e2e/openai-app/e2e.py cancel
+fi
+if [[ "$KIND" == "slack" || "$KIND" == "all" ]]; then
+  cd "$ROOT_DIR"
+  MOCKPORT_BASE_URL="$MOCKPORT_URL" APP_BASE_URL="$SLACK_URL" \
+    SLACK_EVENT_FIXTURE="$ROOT_DIR/compat/fixtures/slack/events_message_callback.json" \
+    "$PYTHON" examples/app-e2e/slack-app/e2e.py
 fi

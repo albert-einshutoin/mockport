@@ -69,7 +69,7 @@ func TestSlackUnknownScenarioReturns400(t *testing.T) {
 
 func TestSlackEventsUnknownScenarioReturns400(t *testing.T) {
 	// /events も dispatch 前に未知シナリオを 400 で拒否する（署名検証より前で早期リターン）
-	mux := newSlackScenarioMux(t, adapter.Config{BasePath: "/slack", Scenario: "message_success"})
+	mux := newSlackScenarioMux(t, adapter.Config{BasePath: "/slack", Scenario: "message_success", WebhookSigningSecret: "mockport_slack_signing_secret"})
 	req := httptest.NewRequest(http.MethodPost, "/slack/events", strings.NewReader(`{"type":"url_verification","challenge":"abc"}`))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("X-Mockport-Scenario", "no_such_scenario")

@@ -88,7 +88,7 @@ $ curl -X POST http://localhost:43101/stripe/v1/checkout/sessions
 {"id":"stripe_checkout_session_000001","object":"checkout.session","payment_status":"unpaid"}
 ```
 
-For a valid payment request, use the [Stripe app E2E example](examples/app-e2e/README.md), which sends an inline price item through the official SDK. These source changes are not part of the published preview image.
+For a valid payment request, use the [Stripe app E2E example](examples/app-e2e/README.md), which sends an inline price item through the official SDK. The [digest-pinned app trial](docs/site/app-trial.md) separates the P0/P1 published image from the source-build and #84 Slack paths. These source changes are not part of the versioned preview image.
 
 With the CLI installed, the same request and safety report renders as:
 

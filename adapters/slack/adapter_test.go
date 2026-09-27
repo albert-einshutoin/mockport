@@ -5,8 +5,11 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"reflect"
 	"strconv"
 	"strings"
 	"testing"
@@ -14,6 +17,7 @@ import (
 
 	"github.com/albert-einshutoin/mockport/internal/adapter"
 	"github.com/albert-einshutoin/mockport/internal/adapter/adaptertest"
+	"github.com/albert-einshutoin/mockport/internal/state"
 )
 
 func TestAuthTest(t *testing.T) {
@@ -30,6 +34,14 @@ func TestAuthTest(t *testing.T) {
 	}
 	if body["team_id"] != "T_MOCKPORT" || body["bot_id"] != "B_MOCKPORT" {
 		t.Fatalf("auth body = %#v", body)
+	}
+}
+
+func TestEventDeliveryClientDoesNotUseEnvironmentProxy(t *testing.T) {
+	client := newWithWebhookTimeout(time.Second).webhookClient
+	transport, ok := client.Transport.(*http.Transport)
+	if !ok || transport.Proxy != nil {
+		t.Fatalf("local signed event delivery must use a direct transport, got %T", client.Transport)
 	}
 }
 
@@ -87,6 +99,83 @@ func TestPostMessagePersistsConversationHistory(t *testing.T) {
 	}
 	if !body.OK || len(body.Messages) != 1 || body.Messages[0]["text"] != "hello" {
 		t.Fatalf("history = %#v", body)
+	}
+}
+
+func TestThreadReplyIsStoredAndExcludedFromChannelHistory(t *testing.T) {
+	cfg := adapter.Config{BasePath: "/slack", Scenario: "message_success"}
+	r := &routes{basePath: "/slack", cfg: cfg, store: state.NewStore(), resolver: adapter.NewScenarioResolver(cfg, "message_success", New().Metadata())}
+	handler := http.HandlerFunc(r.handle)
+	header := http.Header{"Content-Type": []string{"application/json"}}
+	rec := adaptertest.Serve(handler, http.MethodPost, "/slack/api/chat.postMessage", strings.NewReader(`{"channel":"C_MOCKPORT","text":"Mockport thread reply","thread_ts":"1710000000.000001"}`), header)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("post status = %d, body=%s", rec.Code, rec.Body.String())
+	}
+	var posted postMessageResponse
+	if err := json.Unmarshal(rec.Body.Bytes(), &posted); err != nil {
+		t.Fatal(err)
+	}
+	if !posted.OK || posted.Channel != "C_MOCKPORT" || posted.TS == "" || posted.Message.ThreadTS != "1710000000.000001" || posted.Message.Text != "Mockport thread reply" {
+		t.Fatalf("SDK response = %#v", posted)
+	}
+	stored := r.store.List("slack", "message")
+	if len(stored) != 1 || stored[0].ID != posted.TS || stored[0].Data["channel"] != posted.Channel || stored[0].Data["thread_ts"] != posted.Message.ThreadTS || stored[0].Data["text"] != posted.Message.Text {
+		t.Fatalf("stored replies = %#v", stored)
+	}
+	history := adaptertest.Serve(handler, http.MethodGet, "/slack/api/conversations.history?channel=C_MOCKPORT", nil, nil)
+	var channelHistory struct {
+		Messages []messageData `json:"messages"`
+	}
+	if err := json.Unmarshal(history.Body.Bytes(), &channelHistory); err != nil {
+		t.Fatal(err)
+	}
+	if history.Code != http.StatusOK || len(channelHistory.Messages) != 0 {
+		t.Fatalf("channel history includes thread reply: %d %s", history.Code, history.Body.String())
+	}
+}
+
+func TestSendMessageEventUsesFixtureAndFreshSignature(t *testing.T) {
+	fixtureBytes, err := os.ReadFile("../../compat/fixtures/slack/events_message_callback.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var fixture struct {
+		Request struct {
+			Body map[string]any `json:"body"`
+		} `json:"request"`
+	}
+	if err := json.Unmarshal(fixtureBytes, &fixture); err != nil {
+		t.Fatal(err)
+	}
+	var delivered []byte
+	var signature, timestamp string
+	target := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		defer req.Body.Close()
+		delivered, _ = io.ReadAll(req.Body)
+		signature = req.Header.Get("X-Slack-Signature")
+		timestamp = req.Header.Get("X-Slack-Request-Timestamp")
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer target.Close()
+	cfg := adapter.Config{BasePath: "/slack", Scenario: "message_success", FakeSecret: "mockport_slack_token", WebhookSigningSecret: "mockport_slack_signing_secret", WebhookTargetURL: target.URL}
+	mux := newSlackMux(t, cfg)
+	rec := adaptertest.ServeWithRemote(mux, http.MethodPost, "/slack/test/event/send", nil, nil, "127.0.0.1:12345")
+	if rec.Code != http.StatusAccepted {
+		t.Fatalf("delivery status = %d, body=%s", rec.Code, rec.Body.String())
+	}
+	var payload map[string]any
+	if err := json.Unmarshal(delivered, &payload); err != nil {
+		t.Fatalf("decode delivered event: %v", err)
+	}
+	if !reflect.DeepEqual(payload, fixture.Request.Body) {
+		t.Fatalf("delivered event = %#v, fixture = %#v", payload, fixture.Request.Body)
+	}
+	when, err := strconv.ParseInt(timestamp, 10, 64)
+	if err != nil || time.Now().Unix()-when > 5 || when-time.Now().Unix() > 5 {
+		t.Fatalf("stale or invalid signature timestamp = %q", timestamp)
+	}
+	if signature != slackSignature(cfg.WebhookSigningSecret, timestamp, string(delivered)) || signature == slackSignature(cfg.FakeSecret, timestamp, string(delivered)) {
+		t.Fatalf("signature did not use webhook.signing_secret: %q", signature)
 	}
 }
 
@@ -302,7 +391,7 @@ func TestSlackErrorsAndHeaders(t *testing.T) {
 }
 
 func TestEventsURLVerificationAndCallback(t *testing.T) {
-	mux := newSlackMux(t, adapter.Config{BasePath: "/slack", Scenario: "message_success", FakeSecret: "mockport_slack_signing_secret"})
+	mux := newSlackMux(t, adapter.Config{BasePath: "/slack", Scenario: "message_success", FakeSecret: "mockport_slack_token", WebhookSigningSecret: "mockport_slack_signing_secret"})
 
 	challenge := `{"type":"url_verification","challenge":"challenge-123"}`
 	verify := serveSlackSignedRequest(mux, http.MethodPost, "/slack/events", challenge, "mockport_slack_signing_secret")
@@ -326,12 +415,98 @@ func TestEventsURLVerificationAndCallback(t *testing.T) {
 		t.Fatalf("bad signature status = %d, body=%s", bad.Code, bad.Body.String())
 	}
 	assertSlackError(t, bad, "invalid_signature")
+	tokenSigned := serveSlackSignedRequest(mux, http.MethodPost, "/slack/events", callback, "mockport_slack_token")
+	if tokenSigned.Code != http.StatusUnauthorized {
+		t.Fatalf("token used as signing secret: status=%d body=%s", tokenSigned.Code, tokenSigned.Body.String())
+	}
 
 	old := serveSlackSignedRequestWithTimestamp(mux, http.MethodPost, "/slack/events", callback, "mockport_slack_signing_secret", strconv.FormatInt(time.Now().Add(-10*time.Minute).Unix(), 10))
 	if old.Code != http.StatusUnauthorized {
 		t.Fatalf("old signature status = %d, body=%s", old.Code, old.Body.String())
 	}
 	assertSlackError(t, old, "invalid_signature")
+	missing := newSlackMux(t, adapter.Config{BasePath: "/slack", Scenario: "message_success", FakeSecret: "mockport_slack_token"})
+	missingRec := serveSlackSignedRequest(missing, http.MethodPost, "/slack/events", callback, "mockport_slack_token")
+	if missingRec.Code != http.StatusServiceUnavailable {
+		t.Fatalf("missing signing secret status = %d, body=%s", missingRec.Code, missingRec.Body.String())
+	}
+	assertSlackError(t, missingRec, "missing_signing_secret")
+}
+
+func TestSendMessageEventGuardsAndDeliveryFailures(t *testing.T) {
+	base := adapter.Config{BasePath: "/slack", Scenario: "message_success", FakeSecret: "mockport_slack_token", WebhookSigningSecret: "mockport_slack_signing_secret"}
+	call := func(cfg adapter.Config, remote string, a Adapter) *httptest.ResponseRecorder {
+		t.Helper()
+		mux := adaptertest.NewMux(t, a, cfg)
+		return adaptertest.ServeWithRemote(mux, http.MethodPost, "/slack/test/event/send", nil, nil, remote)
+	}
+	missingTarget := call(base, "127.0.0.1:12345", New())
+	if missingTarget.Code != http.StatusBadRequest {
+		t.Fatalf("missing target status=%d body=%s", missingTarget.Code, missingTarget.Body.String())
+	}
+	assertSlackError(t, missingTarget, "missing_webhook_target")
+	unsafeCfg := base
+	unsafeCfg.WebhookTargetURL = "http://169.254.169.254/latest/meta-data"
+	unsafe := call(unsafeCfg, "127.0.0.1:12345", New())
+	if unsafe.Code != http.StatusBadRequest {
+		t.Fatalf("unsafe target status=%d body=%s", unsafe.Code, unsafe.Body.String())
+	}
+	assertSlackError(t, unsafe, "unsafe_webhook_target")
+	remoteCfg := base
+	remoteCfg.WebhookTargetURL = "http://127.0.0.1:3000/events"
+	remote := call(remoteCfg, "192.0.2.1:12345", New())
+	if remote.Code != http.StatusForbidden {
+		t.Fatalf("remote status=%d body=%s", remote.Code, remote.Body.String())
+	}
+	assertSlackError(t, remote, "local_request_required")
+	noSecretCfg := remoteCfg
+	noSecretCfg.WebhookSigningSecret = ""
+	noSecret := call(noSecretCfg, "127.0.0.1:12345", New())
+	if noSecret.Code != http.StatusBadRequest {
+		t.Fatalf("missing secret status=%d body=%s", noSecret.Code, noSecret.Body.String())
+	}
+	assertSlackError(t, noSecret, "missing_signing_secret")
+	unsupportedCfg := remoteCfg
+	unsupportedCfg.Scenario = "rate_limited"
+	unsupported := call(unsupportedCfg, "127.0.0.1:12345", New())
+	if unsupported.Code != http.StatusBadRequest {
+		t.Fatalf("unsupported scenario status=%d body=%s", unsupported.Code, unsupported.Body.String())
+	}
+	assertSlackError(t, unsupported, "unsupported_event_scenario")
+
+	non2xxTarget := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(http.StatusServiceUnavailable) }))
+	defer non2xxTarget.Close()
+	non2xxCfg := base
+	non2xxCfg.WebhookTargetURL = non2xxTarget.URL
+	non2xx := call(non2xxCfg, "127.0.0.1:12345", New())
+	if non2xx.Code != http.StatusBadGateway || !strings.Contains(non2xx.Body.String(), `"target_status_code":503`) {
+		t.Fatalf("non-2xx status=%d body=%s", non2xx.Code, non2xx.Body.String())
+	}
+
+	slowTarget := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		time.Sleep(100 * time.Millisecond)
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer slowTarget.Close()
+	timeoutCfg := base
+	timeoutCfg.WebhookTargetURL = slowTarget.URL
+	timeout := call(timeoutCfg, "127.0.0.1:12345", newWithWebhookTimeout(20*time.Millisecond))
+	if timeout.Code != http.StatusGatewayTimeout {
+		t.Fatalf("timeout status=%d body=%s", timeout.Code, timeout.Body.String())
+	}
+	assertSlackError(t, timeout, "event_send_timeout")
+
+	redirected := 0
+	external := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { redirected++; w.WriteHeader(http.StatusOK) }))
+	defer external.Close()
+	redirect := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) { http.Redirect(w, req, external.URL, http.StatusFound) }))
+	defer redirect.Close()
+	redirectCfg := base
+	redirectCfg.WebhookTargetURL = redirect.URL
+	redirectRec := call(redirectCfg, "127.0.0.1:12345", New())
+	if redirectRec.Code != http.StatusBadGateway || redirected != 0 {
+		t.Fatalf("redirect status=%d followed=%d body=%s", redirectRec.Code, redirected, redirectRec.Body.String())
+	}
 }
 
 func TestMetadata(t *testing.T) {

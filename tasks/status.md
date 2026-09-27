@@ -54,11 +54,11 @@
 | Phase 29 | GitHub OAuth and Slack client evidence | done | GitHub OAuth client and Slack official SDK contracts cover selected workflows and failures |
 | Phase 30 | v0.2.0-preview release | done | Release artifacts, GHCR image, compatibility report, and post-release smoke are verified |
 | Phase 31 | Adapter reference docs | done | Registered adapter docs include official reference maps and implementation boundaries for `stripe`, `openai`, `github-oauth`, `slack`, `line`, and `zoho-oauth` |
-| Phase 32 | Service baseline execution | in progress | P0/P1 app proof is on main; #84 Slack event/reply is next, while other baselines and SendGrid require concrete demand |
+| Phase 32 | Service baseline execution | in progress | P0/P1 app proof is on main; selected #84 source flow adds signed Slack event delivery, official SDK thread reply, and app/adapter checks; external-app trial remains separate |
 
 ## Next Product Proof (2026-09-27)
 
-The historical phases above and the P0/P1 Stripe/OpenAI app proofs now coexist on main. PRs #384, #385, #387, #389, and #390 added the source smoke, fake-key auth, explicit Responses streaming rejection, and both app-level HTTP → official SDK → business-result flows. The selected E2E and mutation checks run locally and in CI. P2 is #84 Slack signed message delivery and SDK reply. See [Phase 32](phase32_service_baseline_execution.md) and [ROADMAP](../ROADMAP.md). The published `v0.2.0-preview` predates these changes; no new release or external first-time app trial is claimed.
+The historical phases above and the P0/P1 Stripe/OpenAI app proofs now coexist on main. PRs #384, #385, #387, #389, and #390 added the source smoke, fake-key auth, explicit Responses streaming rejection, and both app-level HTTP → official SDK → business-result flows. The selected #84 source flow adds signed Slack message delivery and an official SDK thread reply; its [app E2E](../examples/app-e2e/README.md) and adapter test provide separate SDK and storage evidence. See [Phase 32](phase32_service_baseline_execution.md), [ROADMAP](../ROADMAP.md), and the [digest-pinned trial guide](../docs/site/app-trial.md). The versioned `v0.2.0-preview` predates these changes; an external first-time app trial is not claimed.
 
 ## Phase 0 Tasks
 

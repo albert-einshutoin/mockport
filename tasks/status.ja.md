@@ -6,7 +6,7 @@
 
 ## 次の製品実証（2026-09-27）
 
-P0の [PR #384](https://github.com/albert-einshutoin/mockport/pull/384)、[PR #385](https://github.com/albert-einshutoin/mockport/pull/385)、[PR #387](https://github.com/albert-einshutoin/mockport/pull/387) と、P1の [PR #389](https://github.com/albert-einshutoin/mockport/pull/389)、[PR #390](https://github.com/albert-einshutoin/mockport/pull/390) はmainへ入りました。選択したStripe／OpenAIアプリのHTTP入口から公式SDK、業務結果までのE2Eとmutation検証があります。次は [#84](https://github.com/albert-einshutoin/mockport/issues/84) のSlackイベント配送です。公開 `v0.2.0-preview` への反映と外部アプリ・初見利用者の試行は未確認です。
+P0の [PR #384](https://github.com/albert-einshutoin/mockport/pull/384)、[PR #385](https://github.com/albert-einshutoin/mockport/pull/385)、[PR #387](https://github.com/albert-einshutoin/mockport/pull/387) と、P1の [PR #389](https://github.com/albert-einshutoin/mockport/pull/389)、[PR #390](https://github.com/albert-einshutoin/mockport/pull/390) はmainへ入りました。選択したStripe／OpenAIアプリのHTTP入口から公式SDK、業務結果までのE2Eとmutation検証があります。#84 の選択 source フローは、署名付き Slack message 配送と公式SDKのthread返信を追加し、[app E2E](../examples/app-e2e/README.md)とadapterテストでSDK応答と保存状態を分けて確認します。[digest固定の試用手順](../docs/site/app-trial.ja.md)も参照してください。版付き `v0.2.0-preview` には未反映で、外部アプリ・初見利用者の試行は未確認です。
 
 ## 確認ポイント
 

@@ -20,3 +20,4 @@ Built-in adapters: `stripe`, `openai`, `github-oauth`, `slack`, `line`, and `zoh
 - [AI coding agents](ai-agents.md)
 - [Reports](reports.md)
 - [Distribution](distribution.md)
+- [Digest-pinned app trial](app-trial.md)

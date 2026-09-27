@@ -106,6 +106,7 @@ func TestSafeWebhookTargetURLAllowsOnlyLocalTargets(t *testing.T) {
 		"http://[::1]:3000/webhook",
 		"http://host.docker.internal:3000/webhook",
 		"http://app:3000/webhook",
+		"http://slack-app:33003/slack/events",
 	} {
 		if !IsSafeWebhookTargetURL(value) {
 			t.Fatalf("target %q was rejected, want allowed", value)

@@ -165,9 +165,11 @@ func adapterSpecFor(name string) (adapterSpec, bool) {
 			BasePath:   "/slack",
 			Scenario:   "message_success",
 			FakeSecret: "mockport_slack_token",
+			Webhook:    config.WebhookConfig{SigningSecret: "mockport_slack_signing_secret"},
 			Env: map[string]string{
-				"SLACK_API_URL":   adapter.LocalBaseURL("/slack/api"),
-				"SLACK_BOT_TOKEN": "mockport_slack_token",
+				"SLACK_API_URL":        adapter.LocalBaseURL("/slack/api"),
+				"SLACK_BOT_TOKEN":      "mockport_slack_token",
+				"SLACK_SIGNING_SECRET": "mockport_slack_signing_secret",
 			},
 		}, true
 	case "line":

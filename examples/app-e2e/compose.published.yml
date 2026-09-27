@@ -1,9 +1,6 @@
 services:
   mockport:
-    image: mockport:app-e2e
-    build:
-      context: ../..
-      dockerfile: docker/Dockerfile
+    image: ${MOCKPORT_IMAGE:?Set MOCKPORT_IMAGE to a verified ghcr.io digest}
     command: ["run", "--config", "/etc/mockport/mockport.yml", "--host", "0.0.0.0"]
     volumes:
       - ./mockport-compose.yml:/etc/mockport/mockport.yml:ro
@@ -53,9 +50,10 @@ services:
       - ../../compat/fixtures/slack/events_message_callback.json:/test/slack-fixture.json:ro
     environment:
       MOCKPORT_BASE_URL: http://127.0.0.1:43101
+      PUBLISHED_FLOWS: ${PUBLISHED_FLOWS:-p0p1}
     network_mode: service:mockport
     depends_on: [mockport, app, openai-app, slack-app]
-    command: ["sh", "-c", "APP_BASE_URL=http://app:33001 node /test/stripe.mjs && APP_BASE_URL=http://openai-app:33002 python3 /test/openai.py success && APP_BASE_URL=http://slack-app:33003 SLACK_EVENT_FIXTURE=/test/slack-fixture.json python3 /test/slack.py"]
+    command: ["sh", "-c", "APP_BASE_URL=http://app:33001 node /test/stripe.mjs && APP_BASE_URL=http://openai-app:33002 python3 /test/openai.py success && if [ \"$$PUBLISHED_FLOWS\" = all ]; then APP_BASE_URL=http://slack-app:33003 SLACK_EVENT_FIXTURE=/test/slack-fixture.json python3 /test/slack.py; elif [ \"$$PUBLISHED_FLOWS\" != p0p1 ]; then echo 'PUBLISHED_FLOWS must be p0p1 or all' >&2; exit 2; fi"]
 
 networks:
   isolated:

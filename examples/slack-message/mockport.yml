@@ -12,3 +12,5 @@ adapters:
     base_path: /slack
     scenario: message_success
     fake_secret: mockport_slack_token
+    webhook:
+      signing_secret: mockport_slack_signing_secret

@@ -23,12 +23,13 @@ type postMessageResponse struct {
 }
 
 type messageData struct {
-	Type    string `json:"type"`
-	Team    any    `json:"team"`
-	Channel any    `json:"channel"`
-	TS      string `json:"ts"`
-	User    any    `json:"user"`
-	Text    any    `json:"text"`
+	Type     string `json:"type"`
+	Team     any    `json:"team"`
+	Channel  any    `json:"channel"`
+	TS       string `json:"ts"`
+	ThreadTS string `json:"thread_ts,omitempty"`
+	User     any    `json:"user"`
+	Text     any    `json:"text"`
 }
 
 type conversationsListResponse struct {

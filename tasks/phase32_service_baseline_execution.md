@@ -12,7 +12,7 @@
 
 ## Current Product Gate (2026-09-27)
 
-Phase 32's broad baseline below is a catalog, not the next implementation batch. The two app integrations now detect application defects without real provider keys on main; #84 is the next selected flow. The priority record is:
+Phase 32's broad baseline below is a catalog, not the next implementation batch. Stripe/OpenAI app integrations detect defects without real provider keys on main; #84 adds one signed Slack event and SDK reply in current source. The priority record is:
 
 | Priority | Work | Current evidence and acceptance |
 | --- | --- | --- |
@@ -21,7 +21,7 @@ Phase 32's broad baseline below is a catalog, not the next implementation batch.
 | P0 | #386 Responses streaming gap | On main via PR #387; `stream:true` returns a Mockport 501 and enters unsupported history. |
 | P1 | #86 Stripe app flow | On main via PR #389; HTTP app → official SDK Checkout with inline item → signed webhook → one order update, including concurrent creation, replay, failure, and mutation checks. |
 | P1 | #86 OpenAI app flow | On main via PR #390; HTTP app → official Python SDK → non-streaming and Chat streaming, wrong/missing key, bounded 429, timeout/cancel, and mutation detection. |
-| P2 | #84 Slack event delivery | Signed v0 message event → app signature/timestamp verification → official SDK reply → Mockport state assertion. |
+| P2 | #84 Slack event delivery | Selected source flow: signed v0 message fixture → official Python SignatureVerifier → pinned SDK thread reply. App E2E checks SDK result and one report call; an HTTP-handler adapter test checks saved reply fields. Published digest and external-app trial are tracked separately. |
 
 The official Node Stripe/OpenAI/LINE and Python OpenAI SDK examples exist in `v0.2.0-preview`. The app-level webhook and response proofs above are now on main; they have not been published in that preview. Keep the selected workflows at `workflow-compatible` until the compatibility model's evidence for any higher maturity is met. Limitations and request-history truncation must remain visible. An external first-time app trial remains unverified and is not a prerequisite for the main integration.
 

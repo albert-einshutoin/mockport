@@ -60,7 +60,7 @@ func IsSafeWebhookTargetURL(value string) bool {
 	}
 	host := normalizedURLHost(parsed)
 	switch host {
-	case "localhost", "host.docker.internal", "app":
+	case "localhost", "host.docker.internal", "app", "slack-app":
 		return true
 	}
 	ip := net.ParseIP(host)
