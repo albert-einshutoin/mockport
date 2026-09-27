@@ -37,6 +37,7 @@
     "body": {
       "id": "openai_chat_completion_000001",
       "object": "chat.completion",
+      "created": 1700000000,
       "model": "gpt-mockport",
       "choices": [
         {
@@ -44,14 +45,21 @@
           "message": {
             "role": "assistant",
             "content": "Mockport response"
-          }
+          },
+          "finish_reason": "stop"
         }
-      ]
+      ],
+      "usage": {
+        "prompt_tokens": 1,
+        "completion_tokens": 1,
+        "total_tokens": 2
+      }
     }
   },
   "normalization": [
     "credentials use the mockport_ fake namespace",
     "model name is deterministic and local",
-    "resource IDs use deterministic Mockport state IDs"
+    "resource IDs use deterministic Mockport state IDs",
+    "usage values are fixed simulated counts, not inference measurements"
   ]
 }

@@ -19,3 +19,5 @@ OpenAI adapter は、OpenAI-compatible な local API surface を使って、AI a
 詳細な request/response contract と known gap は英語版を正とします。
 
 Responses API の `stream:true` はMockportで未対応のため、`501` / `mockport_unsupported_responses_stream` を返し、状態を作成しません。OpenAI本体が非対応という意味ではありません。Chat Completions streamingとResponsesの非streamingは従来の対象範囲です。
+
+Chat Completions の非streaming応答には固定の `created`、`finish_reason`、`usage` を含めます。streaming要求で `stream_options.include_usage: true` を指定すると、`[DONE]` の直前にusageチャンクを返します。usageの値は模擬値で、実際のトークン計測や推論結果を表しません。

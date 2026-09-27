@@ -30,6 +30,7 @@ jobs:
           cache-dependency-path: |
             examples/app-e2e/openai-app/requirements.lock
             examples/app-e2e/slack-app/requirements.lock
+            examples/external-llm/requirements.lock
       - run: go test ./...
       - run: go vet ./...
       - run: go test -race ./...
@@ -41,6 +42,7 @@ jobs:
       - run: bash scripts/check-go-engineering.sh
       - run: bash scripts/run-sdk-contracts.sh all
       - run: bash scripts/run-app-e2e.sh all
+      - run: bash scripts/run-external-llm.sh
       - run: bash scripts/check-public-trust.sh
       - run: bash scripts/check-public-env.sh
       - run: bash scripts/check-adapter-completeness.sh

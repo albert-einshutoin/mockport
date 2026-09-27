@@ -217,6 +217,77 @@ func TestChatCompletionUsesStatefulIDsAndValidatesRequiredFields(t *testing.T) {
 	assertErrorCode(t, missing, "missing_required_field")
 }
 
+func TestChatCompletionIncludesClientUsableMetadata(t *testing.T) {
+	rec := performRequest(t, adapter.Config{BasePath: "/openai", Scenario: "chat_success"}, http.MethodPost, "/openai/v1/chat/completions")
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, body=%s", rec.Code, rec.Body.String())
+	}
+	var body struct {
+		Created int64 `json:"created"`
+		Choices []struct {
+			FinishReason string `json:"finish_reason"`
+		} `json:"choices"`
+		Usage struct {
+			PromptTokens     int `json:"prompt_tokens"`
+			CompletionTokens int `json:"completion_tokens"`
+			TotalTokens      int `json:"total_tokens"`
+		} `json:"usage"`
+	}
+	if err := json.Unmarshal(rec.Body.Bytes(), &body); err != nil {
+		t.Fatal(err)
+	}
+	if body.Created == 0 || len(body.Choices) != 1 || body.Choices[0].FinishReason != "stop" {
+		t.Fatalf("chat completion metadata missing: %s", rec.Body.String())
+	}
+	if body.Usage.TotalTokens == 0 || body.Usage.TotalTokens != body.Usage.PromptTokens+body.Usage.CompletionTokens {
+		t.Fatalf("chat completion usage missing or inconsistent: %s", rec.Body.String())
+	}
+}
+
+func TestChatStreamIncludeUsageEmitsFinalUsageChunk(t *testing.T) {
+	mux := newOpenAIMux(t, adapter.Config{BasePath: "/openai", Scenario: "chat_success"})
+	rec := serveOpenAIRequest(mux, http.MethodPost, "/openai/v1/chat/completions", `{"model":"gpt-mockport","messages":[{"role":"user","content":"hello"}],"stream":true,"stream_options":{"include_usage":true}}`)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, body=%s", rec.Code, rec.Body.String())
+	}
+	events := parseSSEDataEvents(rec.Body.String())
+	if len(events) < 3 || events[len(events)-1] != "[DONE]" {
+		t.Fatalf("incomplete SSE: %v", events)
+	}
+	for _, raw := range events[:len(events)-2] {
+		var chunk map[string]json.RawMessage
+		if err := json.Unmarshal([]byte(raw), &chunk); err != nil {
+			t.Fatal(err)
+		}
+		if string(chunk["usage"]) != "null" {
+			t.Fatalf("intermediate SSE chunk usage = %s, want null", chunk["usage"])
+		}
+	}
+	var usageChunk struct {
+		Choices []json.RawMessage `json:"choices"`
+		Usage   struct {
+			PromptTokens     int `json:"prompt_tokens"`
+			CompletionTokens int `json:"completion_tokens"`
+			TotalTokens      int `json:"total_tokens"`
+		} `json:"usage"`
+	}
+	if err := json.Unmarshal([]byte(events[len(events)-2]), &usageChunk); err != nil {
+		t.Fatal(err)
+	}
+	if len(usageChunk.Choices) != 0 || usageChunk.Usage.TotalTokens == 0 || usageChunk.Usage.TotalTokens != usageChunk.Usage.PromptTokens+usageChunk.Usage.CompletionTokens {
+		t.Fatalf("last SSE chunk lacks usage: %s", events[len(events)-2])
+	}
+	defaultStream := serveOpenAIRequest(mux, http.MethodPost, "/openai/v1/chat/completions", `{"model":"gpt-mockport","messages":[{"role":"user","content":"hello"}],"stream":true}`)
+	if defaultStream.Code != http.StatusOK {
+		t.Fatalf("default stream status = %d, body=%s", defaultStream.Code, defaultStream.Body.String())
+	}
+	for _, raw := range parseSSEDataEvents(defaultStream.Body.String()) {
+		if strings.Contains(raw, `"usage"`) {
+			t.Fatalf("default stream unexpectedly includes usage: %s", raw)
+		}
+	}
+}
+
 func TestChatCompletionStreamSuccessReturnsSSE(t *testing.T) {
 	rec := performRequest(t, adapter.Config{BasePath: "/openai", Scenario: "stream_success"}, http.MethodPost, "/openai/v1/chat/completions")
 	if rec.Code != http.StatusOK {

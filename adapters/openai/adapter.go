@@ -223,7 +223,8 @@ func (r *routes) writeStatefulCompletion(w http.ResponseWriter, req *http.Reques
 		return
 	}
 	if object == "chat.completion" && (forceStream || payload["stream"] == true) {
-		writeChatCompletionStream(w)
+		options, _ := payload["stream_options"].(map[string]any)
+		writeChatCompletionStream(w, options["include_usage"] == true)
 		return
 	}
 
@@ -250,11 +251,15 @@ func (r *routes) writeResponseLookup(w http.ResponseWriter, id string) {
 }
 
 func completionBody(object string) map[string]any {
+	// Fixed usage values keep client usage parsing testable without claiming tokenization or inference.
 	body := dataFromStruct(chatCompletion{
-		Object: object,
+		Object:  object,
+		Created: streamCompletionCreated,
+		Usage:   chatUsage{PromptTokens: 1, CompletionTokens: 1, TotalTokens: 2},
 		Choices: []chatChoice{{
-			Index:   0,
-			Message: chatMessage{Role: "assistant", Content: "Mockport response"},
+			Index:        0,
+			Message:      chatMessage{Role: "assistant", Content: "Mockport response"},
+			FinishReason: "stop",
 		}},
 	})
 	if object == "response" {
@@ -461,7 +466,7 @@ const (
 	streamCompletionFullText    = "Mockport simulated streaming response."
 )
 
-func writeChatCompletionStream(w http.ResponseWriter) {
+func writeChatCompletionStream(w http.ResponseWriter, includeUsage bool) {
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
@@ -474,6 +479,9 @@ func writeChatCompletionStream(w http.ResponseWriter) {
 		Model:             streamCompletionModel,
 		SystemFingerprint: streamCompletionFingerprint,
 	}
+	if includeUsage {
+		base.Usage = json.RawMessage("null")
+	}
 
 	// OpenAI streams an initial role chunk before content deltas.
 	emptyContent := ""
@@ -483,6 +491,7 @@ func writeChatCompletionStream(w http.ResponseWriter) {
 		Created:           base.Created,
 		Model:             base.Model,
 		SystemFingerprint: base.SystemFingerprint,
+		Usage:             base.Usage,
 		Choices: []chatCompletionChunkChoice{{
 			Index:        0,
 			Delta:        chatCompletionChunkDelta{Role: "assistant", Content: &emptyContent},
@@ -499,6 +508,7 @@ func writeChatCompletionStream(w http.ResponseWriter) {
 			Created:           base.Created,
 			Model:             base.Model,
 			SystemFingerprint: base.SystemFingerprint,
+			Usage:             base.Usage,
 			Choices: []chatCompletionChunkChoice{{
 				Index:        0,
 				Delta:        chatCompletionChunkDelta{Content: &content},
@@ -514,12 +524,21 @@ func writeChatCompletionStream(w http.ResponseWriter) {
 		Created:           base.Created,
 		Model:             base.Model,
 		SystemFingerprint: base.SystemFingerprint,
+		Usage:             base.Usage,
 		Choices: []chatCompletionChunkChoice{{
 			Index:        0,
 			Delta:        chatCompletionChunkDelta{},
 			FinishReason: &stop,
 		}},
 	})
+	if includeUsage {
+		writeSSEChunk(w, chatCompletionChunk{
+			ID: base.ID, Object: base.Object, Created: base.Created, Model: base.Model,
+			SystemFingerprint: base.SystemFingerprint,
+			Choices:           []chatCompletionChunkChoice{},
+			Usage:             json.RawMessage(`{"prompt_tokens":1,"completion_tokens":1,"total_tokens":2}`),
+		})
+	}
 
 	_, _ = fmt.Fprint(w, "data: [DONE]\n\n")
 	_ = http.NewResponseController(w).Flush()
