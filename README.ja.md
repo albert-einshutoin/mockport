@@ -88,7 +88,7 @@ $ curl -X POST http://localhost:43101/stripe/v1/checkout/sessions
 {"id":"stripe_checkout_session_000001","object":"checkout.session","payment_status":"unpaid"}
 ```
 
-実APIとして有効なpaymentリクエストは、inline price明細を公式SDKから送る[StripeアプリE2E例](examples/app-e2e/README.md)を参照してください。このsource変更は公開preview imageには含まれていません。
+実APIとして有効なpaymentリクエストは、inline price明細を公式SDKから送る[StripeアプリE2E例](examples/app-e2e/README.md)を参照してください。[digest 固定のアプリ試用](docs/site/app-trial.ja.md)には P0/P1 公開 image と source-build・#84 Slack の対象版を分けた手順があります。このsource変更は版付き preview image には含まれていません。
 
 CLI がインストール済みの場合、同じリクエストと安全性レポートを整形表示できます。
 

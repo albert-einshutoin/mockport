@@ -15,5 +15,6 @@ Mockport は、外部サービス連携テストのための Docker-first なロ
 - [AI-safe mode](ai-safe.ja.md)
 - [Reports](reports.ja.md)
 - [Distribution](distribution.ja.md)
+- [digest 固定のアプリ試用](app-trial.ja.md)
 
 日本語版は公開導線と主要な導入ページを中心に整備しています。詳細な仕様、制限、互換性レポートは英語版 docs を正とします。

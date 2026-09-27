@@ -16,7 +16,7 @@ Mockport の support は explicit かつ scenario-driven です。adapter ごと
 
 Built-in adapter は `stripe`、`openai`、`github-oauth`、`slack`、`line`、`zoho-oauth` です。
 
-SDK evidence は English support matrix と compatibility report を正とし、current SDK contract は `stripe@22.3.1`、`openai@6.46.0`、`@line/bot-sdk@11.0.0` です。
+SDK evidence は English support matrix と compatibility report を正とし、current SDK contract は `stripe@22.3.1`、`openai@6.46.0`、`@line/bot-sdk@11.0.0`、Slack の `@slack/web-api` と Python `slack-sdk==3.44.1` です。Slack の選択フローは署名付きローカル event 配送と thread 返信までで、実 workspace 配送や thread 取得は含みません。
 
 詳細な endpoint、scenario、known gap は英語版を正とします。
 OpenAIの `stream:true` はChat CompletionsでのみSSE対応します。Responsesで指定するとMockportが `501` を返します。

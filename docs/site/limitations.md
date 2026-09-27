@@ -25,7 +25,7 @@ These are symptom-based limits verified against adapter specs, compatibility rep
 
   Mockport responds with a JSON error, records `reason=unsupported_feature`, and creates no response state. A Responses request without `stream:true` still returns deterministic JSON. Mockport does not return `text/event-stream`, `data:` chunks, or named events such as `response.output_text.delta` on this endpoint.
 - **OpenAI: no real inference quality** — Responses are deterministic placeholders; model quality, tokenization parity, hosted tools, vector stores, and provider scheduling are not reproduced.
-- **Slack: no real message delivery or full Events API** — Local message state and a URL-verification / message-callback subset are available; real workspace delivery, Block Kit validation, files, app scopes, and enterprise directory policy are not.
+- **Slack: no real workspace delivery or full Events API** — A fixed signed message event can be delivered to a configured local app and replied to in its thread. The parent message is fixture input; parent/thread retrieval, redelivery scheduling, other event types, Block Kit validation, files, app scopes, and enterprise directory policy are not implemented.
 - **LINE: no real Login UI or LIFF browser** — OAuth code/token/profile flows work locally; QR login, LIFF runtime, signed ID tokens, provider webhook redelivery, and quota enforcement beyond scenarios are not reproduced.
 - **General: `scenarios:` block in `mockport.yml` is not implemented** — parsed but not applied at runtime; Mockport warns at startup, in `--check`, and in `/_mockport/report` when present.
 - **General: state is in-memory only** — container or process restart clears adapter state; there is no persistence layer.
