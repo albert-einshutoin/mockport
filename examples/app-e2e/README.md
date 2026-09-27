@@ -66,16 +66,16 @@ Compose builds Mockport from this checkout and installs the pinned Node and Pyth
 
 ## Run the published Mockport image
 
-[`compose.published.yml`](compose.published.yml) uses `MOCKPORT_IMAGE` only for the Mockport service; it contains no Mockport build instruction. Set it to a verified registry digest. `PUBLISHED_FLOWS=p0p1` checks Stripe and OpenAI against the current P0/P1 image. After #84 is published, `PUBLISHED_FLOWS=all` additionally checks Slack. The sample app images and their pinned SDK dependencies are built/downloaded locally; a digest pin for Mockport does not pin those builds. Check out the sample commit recorded in [the trial guide](../../docs/site/app-trial.md) before running from a fresh directory.
+[`compose.published.yml`](compose.published.yml) uses `MOCKPORT_IMAGE` only for the Mockport service; it contains no Mockport build instruction. Set it to a verified registry digest. `PUBLISHED_FLOWS=all` checks Stripe, OpenAI, and Slack against the #84 image; `p0p1` checks only Stripe and OpenAI with the earlier digest. The sample app images and their pinned SDK dependencies are built/downloaded locally; a digest pin for Mockport does not pin those builds. Check out the sample commit recorded in [the trial guide](../../docs/site/app-trial.md) before running from a fresh directory.
 
 ```sh
-export MOCKPORT_IMAGE='ghcr.io/albert-einshutoin/mockport@sha256:eae6ba56f01cc9969038da36982e6699732379028f27313ba86dba5d1e43b8fb'
-export PUBLISHED_FLOWS=p0p1
+export MOCKPORT_IMAGE='ghcr.io/albert-einshutoin/mockport@sha256:534cfaa092373cf1a307a9a140415a015b414cad8301a24e0b546b9ed46dbb04'
+export PUBLISHED_FLOWS=all
 docker pull "$MOCKPORT_IMAGE"
 docker compose -f examples/app-e2e/compose.published.yml -p mockport-published up --build --abort-on-container-exit --exit-code-from runner
 docker compose -f examples/app-e2e/compose.published.yml -p mockport-published down --remove-orphans
 ```
 
-This digest contains P0/P1, not #84. The versioned `0.2.0-preview` image is older still. See the trial guide for the verified #84 digest and three-flow command after publication.
+This digest includes #84 and was built from main `01ab1614e40e0d92122123639eba799633e3e6c1`. The earlier P0/P1 digest is `sha256:eae6ba56f01cc9969038da36982e6699732379028f27313ba86dba5d1e43b8fb`; use it with `PUBLISHED_FLOWS=p0p1`. The versioned `0.2.0-preview` image is older still. The trial guide records the verified sample commit, platform, and measurement limits.
 
 CI runs the SDK contracts and local `all` command on every PR and push. The Docker Compose runs are additional network-isolated smoke checks. These selected flows are example contracts, not full provider compatibility claims.

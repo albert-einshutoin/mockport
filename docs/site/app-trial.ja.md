@@ -9,11 +9,13 @@
 | フロー | Mockport source commit | registry image | サンプル commit | platform | 結果 |
 | --- | --- | --- | --- | --- | --- |
 | P0/P1 Stripe + OpenAI | `67a81591e48526c88b96381cd56c54386d93341a` | `ghcr.io/albert-einshutoin/mockport@sha256:eae6ba56f01cc9969038da36982e6699732379028f27313ba86dba5d1e43b8fb` | `f6fe7d573ee37b282767aa112d30615be1941298` | `linux/arm64` | 新規ディレクトリの Compose runner exit 0、2フロー成功 |
-| #84 Stripe + OpenAI + Slack | main 反映・公開後に確定 | 確認後に固定 | `f6fe7d573ee37b282767aa112d30615be1941298` | `linux/arm64` | 公開待ち |
+| #84 Stripe + OpenAI + Slack | `01ab1614e40e0d92122123639eba799633e3e6c1` | `ghcr.io/albert-einshutoin/mockport@sha256:534cfaa092373cf1a307a9a140415a015b414cad8301a24e0b546b9ed46dbb04` | `f6fe7d573ee37b282767aa112d30615be1941298` | `linux/arm64` | 新規ディレクトリの Compose runner exit 0、3フロー成功 |
 
 版付き `0.2.0-preview` は従来版です。可変の `latest` だけでは版を再現できません。サンプル Dockerfile は build 時に固定した SDK 依存を取得するため、Mockport の digest に加えてサンプル commit と lock file を記録します。
 
 P0/P1 は新規一時ディレクトリに固定 commit をローカル clone し、GHCR から公開 digest を pull して配布用 Compose で実行しました。実行 container の image ID は digest と一致し、`down --remove-orphans` 後に対象 container は残りませんでした。ローカル clone 0.76 秒、Compose 7.02 秒ですが、base image と依存 layer はキャッシュ済みです。前提導入・新規依存取得を含む cold 時間として扱いません。
+
+#84 は新規ディレクトリへ固定 sample commit を GitHub から clone しました。clone 0.94 秒、sample app image の `docker compose build --no-cache` 8.52 秒、公開 Mockport digest の pull 3.21 秒、3フローの `up --no-build` 5.43 秒でした。別の新規ディレクトリで下記と同じ `up --build` も実行し、依存 cache 済みで 6.77 秒でした。Docker・Git・base image・OS・registry 側 cache は既存のため、完全な新規マシンの cold 導入時間ではありません。実行 Mockport image ID は固定 digest と一致し、対象 container は後始末済みです。
 
 ## 新規作業ディレクトリから実行
 
@@ -23,15 +25,15 @@ P0/P1 は新規一時ディレクトリに固定 commit をローカル clone �
 git clone https://github.com/albert-einshutoin/mockport.git
 cd mockport
 git checkout f6fe7d573ee37b282767aa112d30615be1941298
-export MOCKPORT_IMAGE='ghcr.io/albert-einshutoin/mockport@sha256:eae6ba56f01cc9969038da36982e6699732379028f27313ba86dba5d1e43b8fb'
-export PUBLISHED_FLOWS=p0p1
+export MOCKPORT_IMAGE='ghcr.io/albert-einshutoin/mockport@sha256:534cfaa092373cf1a307a9a140415a015b414cad8301a24e0b546b9ed46dbb04'
+export PUBLISHED_FLOWS=all
 docker pull "$MOCKPORT_IMAGE"
 docker image inspect "$MOCKPORT_IMAGE" --format '{{.Id}} {{.Os}}/{{.Architecture}}'
 docker compose -f examples/app-e2e/compose.published.yml -p mockport-published up --build --abort-on-container-exit --exit-code-from runner
 docker compose -f examples/app-e2e/compose.published.yml -p mockport-published down --remove-orphans
 ```
 
-配布用 Compose には Mockport の `build:` がなく、`MOCKPORT_IMAGE` の digest を使います。runner の正常終了時は Stripe の注文、OpenAI の stream、`PUBLISHED_FLOWS=all` なら Slack の SDK 返信が出ます。終了 code が非 0 なら成功と扱いません。`git rev-parse HEAD`、digest、`docker image inspect` の image ID/platform、実行 command と結果を記録し、失敗時も `down` で片付けます。#84 公開後は表の確認済み digest と sample commit を使い、`PUBLISHED_FLOWS=all` にします。
+配布用 Compose には Mockport の `build:` がなく、`MOCKPORT_IMAGE` の digest を使います。runner の正常終了時は Stripe の注文、OpenAI の stream、Slack の SDK 返信が出ます。終了 code が非 0 なら成功と扱いません。`git rev-parse HEAD`、digest、`docker image inspect` の image ID/platform、実行 command と結果を記録し、失敗時も `down` で片付けます。従来の P0/P1 image だけを試す場合は表の1行目の digest と `PUBLISHED_FLOWS=p0p1` を使用します。その image に #84 は含まれません。
 
 ## 初見利用者・別アプリ試用の記録票
 
