@@ -20,7 +20,7 @@ docker compose -f examples/app-e2e/compose.published.yml -p mockport-published u
 docker compose -f examples/app-e2e/compose.published.yml -p mockport-published down --remove-orphans
 ```
 
-Composeがbuildするのはsampleアプリとrunnerだけで、Mockportは取得したimageを使います。`all`はStripe注文更新、OpenAI streaming、Slack thread返信を確認します。失敗後も`down --remove-orphans`を実行します。別のLLM 0.36試験には`venv`と`pip`を含むPython 3.13が必要です。同じcheckoutで`MOCKPORT_IMAGE="$MOCKPORT_IMAGE" bash scripts/run-external-llm.sh`を実行します。[ガイド](../../examples/external-llm/README.md)にlockと偽モデル設定があります。
+Composeがbuildするのはsampleアプリとrunnerだけで、Mockportは取得したimageを使います。`all`はStripe注文更新、OpenAI streaming、Slack thread返信を確認します。失敗後も`down --remove-orphans`を実行します。別のLLM 0.36試験には`venv`と`pip`を含むPython 3.13が必要です。同じcheckoutで`MOCKPORT_IMAGE="$MOCKPORT_IMAGE" bash scripts/run-external-llm.sh`を実行します。[ガイド](../../examples/external-llm/README.md)にlockと偽モデル設定があります。公開tag内のLLM READMEに`:0.3.0-preview`指定が残っていても、runnerには上記の`@sha256:` digestを指定してください。
 
 2026-09-28の公開image確認は、公開tagのsample commit `d54f03d164f0cea1dfdbc4ef838ad1b7ef703259`をmacOS arm64 / Docker 29.8.0 linux/arm64で使用しました。`docker image inspect .Id`と実行中containerの`.Image`はいずれもlocal image-store ID `sha256:497f6ec7dc6f1fea8afd292f9480872983bc940425a090aa8ad8580350d8e9a5`でした。選択されたlinux/arm64 registry manifestは別の`sha256:574638d691a6cd6c1009b4cc4e3565d17c52af54c5cc10847b922c19bf6d9d39`で、configは`sha256:9f5d7cfda57baeac21b1538b73d7a95d4f54368e9126a4b116aef26be46b6ded`です。上記index digestと`PUBLISHED_FLOWS=all`でCompose runner exit 0となり、Stripe注文更新、OpenAI streaming（4 chunk）、Slack SDK thread返信が通過しました。同じsource/imageのLLM runnerはCLI exit `0,0,1,0`、request status `200,200,401,200`です。所有container/networkは後始末し、host portも空いています。registryにはlinux/amd64 manifestもありますが、そのplatformでの動作試験は行っていません。archive、checksum、workflow URLは[公開記録](../releases/v0.3.0-preview.ja.md)を参照してください。
 
@@ -56,18 +56,21 @@ docker compose -f examples/app-e2e/compose.published.yml -p mockport-published d
 
 配布用 Compose には Mockport の `build:` がなく、`MOCKPORT_IMAGE` の digest を使います。runner の正常終了時は Stripe の注文、OpenAI の stream、Slack の SDK 返信が出ます。終了 code が非 0 なら成功と扱いません。`git rev-parse HEAD`、digest、`docker image inspect` の image ID/platform、実行 command と結果を記録し、失敗時も `down` で片付けます。従来の P0/P1 image だけを試す場合は表の1行目の digest と `PUBLISHED_FLOWS=p0p1` を使用します。その image に #84 は含まれません。
 
-## 初見利用者・別アプリ試用の記録票
+## 実アプリ試用の記録票
 
-LLM 0.36はCodexが既存の外部アプリを接続した技術試験です。基準の公開imageではChat Completions応答の不足が見つかり、修正sourceと最終公開imageの証拠は [Issue #395](https://github.com/albert-einshutoin/mockport/issues/395) で追跡します。下の初見利用者の記録票を実施済みにはしません。
+LLM 0.36はCodexが既存の外部アプリを接続した技術試験です。基準の公開imageではChat Completions応答の不足が見つかり、修正sourceと最終公開imageの証拠は [Issue #395](https://github.com/albert-einshutoin/mockport/issues/395) で追跡します。下の本人の課題についての試用記録を実施済みにはしません。
 
 利用者自身の通常フローを一つ選び、接続先と偽 credential を Mockport に向けます。Slack なら token と署名鍵を別の偽値にして、選択 message event を送り、受信の成功と同じ channel/thread への SDK 返信を確認します。代表的な失敗として署名後の本文改ざんか古い timestamp を送り、返信が増えず拒否されることを確かめます。Stripe/OpenAI の失敗例は [app E2E](../../examples/app-e2e/README.md) を参照します。
 
 | 記録項目 | 観測結果 |
 | --- | --- |
 | 接続した別アプリと選択フロー |  |
+| 本人が解決したい課題、現在の確認方法、期待するアプリ側の結果 |  |
+| 導入操作の実行者（初見利用者本人／所有者本人／Codex代行）、支援者 |  |
 | 環境準備開始→最初のアプリ成功、前提導入・依存取得・実行の内訳 |  |
 | 接続先と偽 credential 以外のコード変更 |  |
 | 文書だけで進めた箇所、手助け・手戻りが必要だった箇所 |  |
 | 期待した失敗を認識し、原因を特定できたか |  |
+| 試行で変わった判断・作業、次に使う具体的な場面（本人の評価・再利用意向と実績を区別） |  |
 
-各段階の開始・終了を壁時計で記録します。キャッシュ後の再実行は cold 導入時間ではありません。Codex がサンプルを別ディレクトリで動かしても初見利用者・別アプリの成功とは数えません。導入の阻害要因が見つかれば次の API 拡張より先に修正します。
+各段階の開始・終了を壁時計で記録します。キャッシュ後の再実行は cold 導入時間ではありません。所有者の支援を受けた実利用とCodex代行は、初見利用者自身の導入とは区別します。Codexが本人の実アプリに適用した場合は本人の評価を記録し、人の導入操作の容易さは未検証とします。Codex がサンプルを別ディレクトリで動かしても人による実利用の成功とは数えません。導入の阻害要因が見つかれば次の API 拡張より先に修正します。

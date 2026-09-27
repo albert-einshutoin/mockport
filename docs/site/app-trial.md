@@ -20,7 +20,7 @@ docker compose -f examples/app-e2e/compose.published.yml -p mockport-published u
 docker compose -f examples/app-e2e/compose.published.yml -p mockport-published down --remove-orphans
 ```
 
-Compose builds only sample apps and the runner; it pulls Mockport. The `all` run checks a Stripe order update, OpenAI streaming, and a Slack thread reply. Clean up with `down --remove-orphans` after failures too. The separate LLM 0.36 trial requires Python 3.13 with `venv` and `pip`; from this same checkout, run `MOCKPORT_IMAGE="$MOCKPORT_IMAGE" bash scripts/run-external-llm.sh`. Its [guide](../../examples/external-llm/README.md) describes the lock and fake model configuration.
+Compose builds only sample apps and the runner; it pulls Mockport. The `all` run checks a Stripe order update, OpenAI streaming, and a Slack thread reply. Clean up with `down --remove-orphans` after failures too. The separate LLM 0.36 trial requires Python 3.13 with `venv` and `pip`; from this same checkout, run `MOCKPORT_IMAGE="$MOCKPORT_IMAGE" bash scripts/run-external-llm.sh`. Its [guide](../../examples/external-llm/README.md) describes the lock and fake model configuration. If the LLM README in the release-tag checkout still uses `:0.3.0-preview`, pass the `@sha256:` digest above to the runner instead.
 
 The 2026-09-28 published-image check used sample commit `d54f03d164f0cea1dfdbc4ef838ad1b7ef703259` from the release tag on macOS arm64 / Docker 29.8.0 linux/arm64. `docker image inspect .Id` and a running container's `.Image` both reported local image-store ID `sha256:497f6ec7dc6f1fea8afd292f9480872983bc940425a090aa8ad8580350d8e9a5`; the selected linux/arm64 registry manifest was separately `sha256:574638d691a6cd6c1009b4cc4e3565d17c52af54c5cc10847b922c19bf6d9d39` with config `sha256:9f5d7cfda57baeac21b1538b73d7a95d4f54368e9126a4b116aef26be46b6ded`. With the index digest above and `PUBLISHED_FLOWS=all`, Compose runner exited 0: Stripe order update, OpenAI streaming (4 chunks), and Slack SDK thread reply all passed. The LLM runner on the same source and image reported CLI exits `0,0,1,0` and request statuses `200,200,401,200`. Both commands cleaned up their owned containers and network; the host port was free afterward. The registry also has a linux/amd64 manifest, but that platform was not run in this check. See the [release record](../releases/v0.3.0-preview.md) for archives, checksums, and workflow URLs.
 
@@ -56,18 +56,21 @@ docker compose -f examples/app-e2e/compose.published.yml -p mockport-published d
 
 The published Compose file has an `image:` selector for Mockport and no Mockport `build:`. The runner prints the Stripe order, OpenAI streamed text, and the Slack SDK reply. A nonzero runner exit means the selected flow failed. Record `git rev-parse HEAD`, the pulled digest, `docker image inspect` platform/image ID, the command and result together. Clean up with the `down` command even after an unsuccessful run. To exercise only the earlier P0/P1 image, use its digest from the first table row and set `PUBLISHED_FLOWS=p0p1`; that image does not contain #84.
 
-## First-time external app trial card
+## Real app trial card
 
-The LLM 0.36 trial is a Codex-run technical connection of an existing external app. Its baseline public image exposed a Chat Completions response gap; the corrected source and final published-image evidence are tracked in [Issue #395](https://github.com/albert-einshutoin/mockport/issues/395). It does not fill the human onboarding record below.
+The LLM 0.36 trial is a Codex-run technical connection of an existing external app. Its baseline public image exposed a Chat Completions response gap; the corrected source and final published-image evidence are tracked in [Issue #395](https://github.com/albert-einshutoin/mockport/issues/395). It does not fill the record below for a person's actual problem.
 
 Choose one ordinary app flow and wire only its provider URL and fake credentials to Mockport. For Slack, configure distinct fake `SLACK_BOT_TOKEN` and `SLACK_SIGNING_SECRET`, then deliver the selected message event. Expected success is one accepted event and one SDK reply to the event channel/thread. As a representative failure, send a changed body after signing or an old timestamp and check that the app rejects it without another reply. For Stripe or OpenAI, use their [app examples](../../examples/app-e2e/README.md) to select a matching failure case. Avoid real credentials.
 
 | Record | Observation |
 | --- | --- |
 | Connected app and selected flow |  |
+| Person's problem, current way of checking it, and expected app result |  |
+| Who performed setup (first-time user / app owner / Codex on the person's behalf), and who helped |  |
 | Preparation start → first app success; prerequisite install / dependency fetch / execution split |  |
 | Code changes beyond endpoint and fake credential configuration |  |
 | Steps completed from docs alone; help or rework needed |  |
 | Expected failure noticed and root cause identified |  |
+| Decision or work changed by the trial; specific next use (separate the person's assessment and intent from observed reuse) |  |
 
-Record the environment preparation start and each phase boundary with wall-clock times. A cached run measures only a warm rerun. A Codex-run bundled sample does not count as a first-time user's separate app. If the trial exposes a setup blocker, prioritize that repair before expanding the API surface.
+Record the environment preparation start and each phase boundary with wall-clock times. A cached run measures only a warm rerun. Distinguish owner-assisted real use and Codex-operated use from setup by a first-time user. If Codex applies Mockport to the person's actual app, record that person's assessment; ease of human setup remains untested. A Codex-run bundled sample does not count as human real use. If the trial exposes a setup blocker, prioritize that repair before expanding the API surface.
