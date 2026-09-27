@@ -47,7 +47,7 @@ require_text "packaging/npm/package.json" "\"experimental\""
 require_file "packaging/npm/bin/mockport.js"
 require_text "packaging/npm/bin/mockport.js" "MOCKPORT_BIN"
 require_text "packaging/npm/bin/mockport.js" "MOCKPORT_IMAGE"
-require_text "packaging/npm/bin/mockport.js" "ghcr.io/albert-einshutoin/mockport:0.2.0-preview"
+require_text "packaging/npm/bin/mockport.js" "ghcr.io/albert-einshutoin/mockport:0.3.0-preview"
 require_text "packaging/npm/bin/mockport.js" "docker"
 
 for page in index quickstart adapters ai-safe reports distribution; do

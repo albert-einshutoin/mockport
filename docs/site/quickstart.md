@@ -6,16 +6,20 @@
 
 ### Option A: Docker (recommended, no install)
 
+Prerequisites: Docker and Git. Get the configuration from the fixed release tag:
+
 ```bash
+git clone --branch v0.3.0-preview --depth 1 https://github.com/albert-einshutoin/mockport.git
+cd mockport
 docker run --rm -p 127.0.0.1:43101:43101 \
   -v $(pwd)/examples/stripe-checkout/mockport.yml:/etc/mockport/mockport.yml \
-  ghcr.io/albert-einshutoin/mockport:0.2.0-preview \
+  ghcr.io/albert-einshutoin/mockport:0.3.0-preview \
   run --config /etc/mockport/mockport.yml --host 0.0.0.0
 ```
 
 `-p 127.0.0.1:43101:43101` publishes port 43101 only on the host loopback address. `--host 0.0.0.0` makes the process listen on all interfaces inside the container so Docker can forward traffic to it. These settings work together; they are not contradictory.
 
-Use the explicit `0.2.0-preview` image tag for preview installs. The `latest` tag follows the default branch image and is not the preview release contract.
+Use the explicit `0.3.0-preview` image tag for preview installs. The `latest` tag follows the default branch image and is not the preview release contract.
 
 ### Option B: Release binary
 
@@ -54,8 +58,10 @@ Besides fixing a scenario in `mockport.yml`, you can switch per request using th
 # Test the Stripe failure path without restarting the server
 curl -X POST http://localhost:43101/stripe/v1/checkout/sessions \
   -H "X-Mockport-Scenario: payment_failed" \
-  -H "Authorization: Bearer $STRIPE_KEY" \
-  -d "mode=payment&success_url=http://localhost/success&cancel_url=http://localhost/cancel"
+  -H "Authorization: Bearer mockport_stripe_secret" \
+  -d 'mode=payment' -d 'success_url=http://localhost/success' -d 'cancel_url=http://localhost/cancel' \
+  -d 'line_items[0][price_data][currency]=usd' -d 'line_items[0][price_data][unit_amount]=1200' \
+  -d 'line_items[0][price_data][product_data][name]=Mockport item' -d 'line_items[0][quantity]=1'
 ```
 
 See the [adapter reference](adapters.md) for the list of supported scenarios per adapter.

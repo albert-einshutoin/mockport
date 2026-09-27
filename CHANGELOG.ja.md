@@ -6,6 +6,14 @@
 
 ## Unreleased
 
+## v0.3.0-preview - 2026-09-27
+
+- Stripe・OpenAIの通常リクエストに対して、設定時に偽キーを検証する機能を追加。未対応のOpenAI Responses `stream:true` は501を返します。
+- 有効なinline明細でのStripe Checkout、作成時未払いSession、署名付き完了Webhook、注文の一回更新をアプリで確認します。
+- OpenAIの通常応答・Chat streaming・有限の失敗制御と、無変更のLLM 0.36への技術接続を追加。模擬usageは固定値です。
+- 署名付きSlack message event、公式SDKでの署名検証、同threadへの返信を確認します。
+- Docker・binary・CLI init・実験的npm wrapperの版を揃えました。移行と制限は[日本語release notes](docs/releases/v0.3.0-preview.ja.md)を参照してください。
+
 ## v0.2.0-preview - 2026-07-19
 
 ### Compatibility release track

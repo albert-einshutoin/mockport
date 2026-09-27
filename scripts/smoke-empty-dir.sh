@@ -40,7 +40,7 @@ BUILT_IMAGE_ID="$(docker image inspect --format '{{.Id}}' "$IMAGE_TAG")"
 
 cd "$WORK_DIR"
 "$WORK_DIR/mockport" init --adapter stripe
-sed "s|image: ghcr.io/albert-einshutoin/mockport:0.2.0-preview|image: $IMAGE_TAG|" docker-compose.mockport.yml > docker-compose.local.yml
+sed "s|image: ghcr.io/albert-einshutoin/mockport:0.3.0-preview|image: $IMAGE_TAG|" docker-compose.mockport.yml > docker-compose.local.yml
 if ! grep -q "image: $IMAGE_TAG" docker-compose.local.yml; then
   echo "generated Compose image could not be replaced" >&2
   exit 1

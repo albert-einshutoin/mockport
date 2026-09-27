@@ -18,10 +18,14 @@ Unlike single-service mocks such as [stripe-mock](https://github.com/stripe/stri
 
 No local install required:
 
+Prerequisites: Docker and Git. Fetch the configuration from the published source tag before running the container:
+
 ```bash
+git clone --branch v0.3.0-preview --depth 1 https://github.com/albert-einshutoin/mockport.git
+cd mockport
 docker run --rm -p 127.0.0.1:43101:43101 \
   -v $(pwd)/examples/stripe-checkout/mockport.yml:/etc/mockport/mockport.yml \
-  ghcr.io/albert-einshutoin/mockport:0.2.0-preview \
+  ghcr.io/albert-einshutoin/mockport:0.3.0-preview \
   run --config /etc/mockport/mockport.yml --host 0.0.0.0
 ```
 
@@ -55,7 +59,7 @@ Or run the empty-directory smoke test:
 bash scripts/smoke-empty-dir.sh
 ```
 
-This builds the current checkout and starts that exact image from a fresh directory. Its output records the source SHA, built and running image IDs, Compose command, and health/API/report results. To check the published preview instead, use the pinned `ghcr.io/albert-einshutoin/mockport:0.2.0-preview` image in the distribution guide.
+This builds the current checkout and starts that exact image from a fresh directory. Its output records the source SHA, built and running image IDs, Compose command, and health/API/report results. To check the published preview instead, use the pinned `ghcr.io/albert-einshutoin/mockport:0.3.0-preview` image in the distribution guide.
 
 Before opening a pull request, run the standard local trust gate:
 
@@ -74,21 +78,14 @@ $ curl http://localhost:43101/health
 {"status":"ok"}
 ```
 
-Stripe-like checkout session from the published `v0.2.0-preview` image used above:
-
-```bash
-$ curl -X POST http://localhost:43101/stripe/v1/checkout/sessions
-{"id":"stripe_checkout_session_000001","object":"checkout.session","payment_status":"paid"}
-```
-
-The same empty-body request against an image built from current source is a Mockport-only demonstration and starts unpaid:
+Stripe-like checkout session from the published preview image above. This empty-body request is a Mockport-only demo, not a valid provider payment request:
 
 ```bash
 $ curl -X POST http://localhost:43101/stripe/v1/checkout/sessions
 {"id":"stripe_checkout_session_000001","object":"checkout.session","payment_status":"unpaid"}
 ```
 
-For a valid payment request, use the [Stripe app E2E example](examples/app-e2e/README.md), which sends an inline price item through the official SDK. The [digest-pinned app trial](docs/site/app-trial.md) separates the P0/P1 published image from the source-build and #84 Slack paths. These source changes are not part of the versioned preview image.
+For a valid payment request, use the [Stripe app E2E example](examples/app-e2e/README.md), which sends an inline price item through the official SDK. The [published app trial](docs/site/app-trial.md) covers Stripe, OpenAI, and Slack with the versioned image.
 
 With the CLI installed, the same request and safety report renders as:
 
@@ -174,7 +171,7 @@ See [Reports](docs/site/reports.md) and [Support matrix](docs/site/support-matri
 
 ## Docs And Distribution
 
-Full docs, install paths, and release verification live under [docs/site/](docs/site/index.md). Current preview: `v0.2.0-preview` via [Docker / GHCR](docs/site/distribution.md) and [GitHub release archives](docs/site/distribution.md). The npm wrapper is experimental; Go binary and Docker remain primary.
+Full docs, install paths, and release verification live under [docs/site/](docs/site/index.md). Current preview: `v0.3.0-preview` via [Docker / GHCR](docs/site/distribution.md) and [GitHub release archives](docs/site/distribution.md). The npm wrapper is experimental; Go binary and Docker remain primary.
 
 > **⚠️ Archive**: Pre-implementation design documents (May 2026) are preserved in [docs/archive/design/](docs/archive/design/README.md). They are not maintained and may diverge from the current implementation.
 

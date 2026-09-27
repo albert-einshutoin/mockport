@@ -16,12 +16,16 @@ Stripe、OpenAI、Slack、GitHub OAuth、LINE、Zoho OAuth の統合コードを
 
 ## 30 秒クイックスタート
 
-ローカルインストールなしで試せます。
+Mockport本体のローカルインストールなしで試せます。
+
+前提は Docker と Git です。公開タグから設定ファイルを取得してから起動します。
 
 ```bash
+git clone --branch v0.3.0-preview --depth 1 https://github.com/albert-einshutoin/mockport.git
+cd mockport
 docker run --rm -p 127.0.0.1:43101:43101 \
   -v $(pwd)/examples/stripe-checkout/mockport.yml:/etc/mockport/mockport.yml \
-  ghcr.io/albert-einshutoin/mockport:0.2.0-preview \
+  ghcr.io/albert-einshutoin/mockport:0.3.0-preview \
   run --config /etc/mockport/mockport.yml --host 0.0.0.0
 ```
 
@@ -55,7 +59,7 @@ docker run --rm -p 127.0.0.1:43101:43101 \
 bash scripts/smoke-empty-dir.sh
 ```
 
-このスクリプトは現在の checkout をビルドし、空ディレクトリからその image を起動します。出力に source SHA、ビルド時と実行時の image ID、Compose コマンド、health/API/report の結果を残します。公開 preview の検証には、distribution guide にある固定タグ `ghcr.io/albert-einshutoin/mockport:0.2.0-preview` を使用してください。
+このスクリプトは現在の checkout をビルドし、空ディレクトリからその image を起動します。出力に source SHA、ビルド時と実行時の image ID、Compose コマンド、health/API/report の結果を残します。公開 preview の検証には、distribution guide にある固定タグ `ghcr.io/albert-einshutoin/mockport:0.3.0-preview` を使用してください。
 
 PR を開く前に、標準のローカル trust gate を実行してください:
 
@@ -74,21 +78,14 @@ $ curl http://localhost:43101/health
 {"status":"ok"}
 ```
 
-上記の公開 `v0.2.0-preview` imageでのStripe風checkout session:
-
-```bash
-$ curl -X POST http://localhost:43101/stripe/v1/checkout/sessions
-{"id":"stripe_checkout_session_000001","object":"checkout.session","payment_status":"paid"}
-```
-
-最新sourceからbuildしたimageでは、同じ空bodyリクエストはMockport専用デモとして未払いで作成されます。
+上記の公開preview imageでのStripe風checkout session。空bodyはMockport専用デモで、providerの有効な決済リクエストではありません。
 
 ```bash
 $ curl -X POST http://localhost:43101/stripe/v1/checkout/sessions
 {"id":"stripe_checkout_session_000001","object":"checkout.session","payment_status":"unpaid"}
 ```
 
-実APIとして有効なpaymentリクエストは、inline price明細を公式SDKから送る[StripeアプリE2E例](examples/app-e2e/README.md)を参照してください。[digest 固定のアプリ試用](docs/site/app-trial.ja.md)には P0/P1 公開 image と source-build・#84 Slack の対象版を分けた手順があります。このsource変更は版付き preview image には含まれていません。
+実APIとして有効なpaymentリクエストは、inline price明細を公式SDKから送る[StripeアプリE2E例](examples/app-e2e/README.md)を参照してください。[公開imageのアプリ試用](docs/site/app-trial.ja.md)はStripe・OpenAI・Slackの3フローを確認します。
 
 CLI がインストール済みの場合、同じリクエストと安全性レポートを整形表示できます。
 
@@ -172,7 +169,7 @@ block を生成できます。詳細は [AI coding agents](docs/site/ai-agents.j
 
 ## ドキュメントと配布
 
-docs、install 経路、release verification は [docs/site/](docs/site/index.ja.md) 配下にあります。現在の preview は `v0.2.0-preview`（[Docker / GHCR](docs/site/distribution.ja.md)、[GitHub release archives](docs/site/distribution.ja.md)）。npm wrapper は experimental。Go binary と Docker が主経路です。
+docs、install 経路、release verification は [docs/site/](docs/site/index.ja.md) 配下にあります。現在の preview は `v0.3.0-preview`（[Docker / GHCR](docs/site/distribution.ja.md)、[GitHub release archives](docs/site/distribution.ja.md)）。npm wrapper は experimental。Go binary と Docker が主経路です。
 
 > **⚠️ アーカイブ**: 実装開始前(2026-05)の設計ドキュメントは [docs/archive/design/](docs/archive/design/README.ja.md) に保存されています。内容は保守されておらず、実装と乖離している可能性があります。
 

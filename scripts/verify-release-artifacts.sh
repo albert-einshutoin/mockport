@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-VERSION="${1:-0.2.0-preview}"
+VERSION="${1:-0.3.0-preview}"
 DIST_DIR="${2:-dist}"
 IMAGE="${3:-}"
 

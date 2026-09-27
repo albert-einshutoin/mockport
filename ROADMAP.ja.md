@@ -4,6 +4,8 @@
 
 Mockport の roadmap は、Docker-first な local emulator から provider-compatible な selected workflow へ段階的に進めるための計画です。
 
+現在の公開版は [`v0.3.0-preview`](docs/releases/v0.3.0-preview.ja.md) です。6 adapter の `workflow-compatible` の範囲を維持し、Stripe・OpenAI・Slack の選択したアプリフローと無変更の LLM 0.36 技術接続を含みます。
+
 ## 主要な方向性
 
 - public preview では、Stripe/OpenAI/GitHub OAuth/Slack/LINE/Zoho OAuth などの workflow-compatible adapter を安定させます。
@@ -14,8 +16,8 @@ Mockport の roadmap は、Docker-first な local emulator から provider-compa
 ## 次の優先順位（2026-09-27時点）
 
 1. P0はmainへ反映済みです。checkout imageの取り違え [#315](https://github.com/albert-einshutoin/mockport/issues/315) / [PR #384](https://github.com/albert-einshutoin/mockport/pull/384)、通常HTTPのfake-key認証 [#82](https://github.com/albert-einshutoin/mockport/issues/82) / [PR #385](https://github.com/albert-einshutoin/mockport/pull/385)、Responses `stream:true` の未対応明示 [#386](https://github.com/albert-einshutoin/mockport/issues/386) / [PR #387](https://github.com/albert-einshutoin/mockport/pull/387) を含みます。
-2. P1もmainへ反映済みです。[#86](https://github.com/albert-einshutoin/mockport/issues/86) の [Stripe PR #389](https://github.com/albert-einshutoin/mockport/pull/389) と [OpenAI PR #390](https://github.com/albert-einshutoin/mockport/pull/390) は、Checkout→署名付きWebhook→業務状態更新と、Python appのHTTP入口→公式SDK→応答・有限再試行・timeoutを同じMockportプロセスでローカルとCIに再現します。mutationで意図的なアプリ不具合も検出します。公開 `v0.2.0-preview` には未反映です。
-3. P2の選択sourceフロー [#84](https://github.com/albert-einshutoin/mockport/issues/84) は、Slack署名付きmessage event→アプリの公式SDK署名・時刻検証→同じthreadへのSDK返信です。app E2EはSDK応答とreportの1要求、adapterテストは保存した返信を確認します。[digest固定の配布試用](docs/site/app-trial.ja.md)は、従来のP0/P1 imageと#84公開後のimageを分けます。次の製品検証は初見利用者の別アプリ1フローで、実施済みとはまだ扱いません。
+2. P1は `v0.3.0-preview` に含まれます。[#86](https://github.com/albert-einshutoin/mockport/issues/86) の [Stripe PR #389](https://github.com/albert-einshutoin/mockport/pull/389) と [OpenAI PR #390](https://github.com/albert-einshutoin/mockport/pull/390) は、Checkout→署名付きWebhook→業務状態更新と、Python appのHTTP入口→公式SDK→応答・有限再試行・timeoutを同じMockportプロセスで再現します。
+3. [#84](https://github.com/albert-einshutoin/mockport/issues/84) のSlack署名付きmessage event→同threadへのSDK返信と、[#395](https://github.com/albert-einshutoin/mockport/issues/395) の無変更LLM 0.36接続も同版に含まれます。[公開image試用](docs/site/app-trial.ja.md)は版付きimageとサンプルsourceを記録します。初見利用者の導入・継続利用は未検証です。
 
 Block Kit、interactions、LINE追加機能、OpenAI追加APIは利用者フローを示してから優先します。Responses SSE本体は利用アプリと最小event契約を定めた後に判断します。SendGridは具体的需要、限定フロー、公式SDK等の検証方法、保守見通しが揃うまで着手しません。初見利用者の試行は、今回のローカル・CI再現後の製品検証です。
 
