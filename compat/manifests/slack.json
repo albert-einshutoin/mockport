@@ -62,6 +62,12 @@
       "supported": true
     },
     {
+      "id": "post_slack_test_event_send",
+      "method": "POST",
+      "path": "/slack/test/event/send",
+      "supported": true
+    },
+    {
       "id": "post_slack_test_reset",
       "method": "POST",
       "path": "/slack/test/reset",

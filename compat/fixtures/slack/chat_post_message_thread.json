@@ -1,0 +1,53 @@
+{
+  "provider": "slack",
+  "provider_version": "2025-02-01",
+  "sdk": {
+    "name": "slack-sdk",
+    "version": "3.44.1"
+  },
+  "source": {
+    "type": "docs",
+    "title": "Slack chat.postMessage method",
+    "url_or_path": "https://docs.slack.dev/reference/methods/chat.postMessage/",
+    "retrieved_at": "2026-09-27"
+  },
+  "scenario": "message_success",
+  "request": {
+    "method": "POST",
+    "path": "/api/chat.postMessage",
+    "headers": {
+      "Authorization": "Bearer mockport_slack_token",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "channel": "C_MOCKPORT",
+      "thread_ts": "1710000000.000001",
+      "text": "Mockport thread reply"
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "ok": true,
+      "channel": "C_MOCKPORT",
+      "ts": "slack_message_000001",
+      "message": {
+        "type": "message",
+        "team": "T_MOCKPORT",
+        "channel": "C_MOCKPORT",
+        "ts": "slack_message_000001",
+        "thread_ts": "1710000000.000001",
+        "user": "U_MOCKPORT",
+        "text": "Mockport thread reply"
+      }
+    }
+  },
+  "normalization": [
+    "parent message is injected by the selected fixture and is not retrievable through an API",
+    "thread reply is saved but excluded from conversations.history",
+    "reply timestamp is deterministic fake state"
+  ]
+}

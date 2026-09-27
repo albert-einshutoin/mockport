@@ -109,6 +109,9 @@ npm ci
 npm run test:live -- --provider "$PROVIDER" --base-url "$BASE_URL" --json
 
 if [[ "$PROVIDER" == "slack" || "$PROVIDER" == "all" ]]; then
+  python3 -m venv "$WORK_DIR/slack-venv"
+  "$WORK_DIR/slack-venv/bin/python" -m pip install -r "$ROOT_DIR/examples/app-e2e/slack-app/requirements.lock" --quiet
+  MOCKPORT_BASE_URL="$BASE_URL" "$WORK_DIR/slack-venv/bin/python" "$ROOT_DIR/contract/sdk/slack-python-smoke.py"
   set_slack_scenario "rate_limited"
   start_mockport
   npm run test:live -- --provider slack-rate-limited --base-url "$BASE_URL" --json

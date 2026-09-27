@@ -96,6 +96,27 @@ func TestInitGeneratesMultipleAdapters(t *testing.T) {
 	}
 }
 
+func TestInitSlackUsesDistinctFakeTokenAndSigningSecret(t *testing.T) {
+	dir := chdirTemp(t)
+	cmd, _ := newTestCommand(t, "init", "--adapter", "slack")
+	if err := cmd.Execute(); err != nil {
+		t.Fatal(err)
+	}
+	configData, err := os.ReadFile(filepath.Join(dir, "mockport.yml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	envData, err := os.ReadFile(filepath.Join(dir, ".env.mockport"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(configData), "signing_secret: mockport_slack_signing_secret") ||
+		!strings.Contains(string(envData), "SLACK_BOT_TOKEN=mockport_slack_token") ||
+		!strings.Contains(string(envData), "SLACK_SIGNING_SECRET=mockport_slack_signing_secret") {
+		t.Fatalf("Slack generated config/env mismatch:\n%s\n%s", configData, envData)
+	}
+}
+
 func TestInitExistingFileErrorPrefersMockportYml(t *testing.T) {
 	dir := chdirTemp(t)
 	for _, name := range []string{".env.mockport", "docker-compose.mockport.yml", "mockport.yml"} {

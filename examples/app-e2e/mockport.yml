@@ -22,3 +22,11 @@ adapters:
     scenario: chat_success
     fake_secret: mockport_openai_key
     auth_required: true
+  slack:
+    enabled: true
+    base_path: /slack
+    scenario: message_success
+    fake_secret: mockport_slack_token
+    webhook:
+      target_url: http://127.0.0.1:33003/slack/events
+      signing_secret: mockport_slack_signing_secret

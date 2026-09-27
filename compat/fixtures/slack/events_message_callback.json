@@ -8,8 +8,8 @@
   "source": {
     "type": "docs",
     "title": "Slack Events API message event",
-    "url_or_path": "https://api.slack.com/events/message",
-    "retrieved_at": "2026-05-26"
+    "url_or_path": "https://docs.slack.dev/apis/events-api/",
+    "retrieved_at": "2026-09-27"
   },
   "scenario": "message_success",
   "request": {
@@ -21,11 +21,18 @@
     },
     "body": {
       "type": "event_callback",
+      "team_id": "T_MOCKPORT",
+      "api_app_id": "A_MOCKPORT",
+      "event_id": "EvMOCKPORT001",
+      "event_time": 1710000000,
       "event": {
         "type": "message",
         "channel": "C_MOCKPORT",
         "text": "event hello",
-        "user": "U_EVENT"
+        "user": "U_EVENT",
+        "ts": "1710000000.000001",
+        "event_ts": "1710000000.000001",
+        "channel_type": "channel"
       }
     }
   },
@@ -39,7 +46,7 @@
     }
   },
   "normalization": [
-    "event identity is deterministic fake data",
+    "event identity is deterministic fake fixture data; signing header timestamp is fresh at delivery",
     "message event is persisted to local Mockport history",
     "Slack retry and app subscription behavior are not modeled"
   ]
