@@ -42,7 +42,7 @@ tar -xzf mockport_0.3.0-preview_darwin_arm64.tar.gz
 
 Use the explicit `0.3.0-preview` image tag for preview installs. The `latest` tag follows the default branch image and is not the preview release contract.
 
-The published registry digest is `ghcr.io/albert-einshutoin/mockport@sha256:497f6ec7dc6f1fea8afd292f9480872983bc940425a090aa8ad8580350d8e9a5`. The [release record](../releases/v0.3.0-preview.md) and [app trial](app-trial.md) tie it to the source tag and tested sample. Use this digest rather than `latest` for repeated trials. Record the registry digest, local image ID, and executed platform separately.
+The published OCI index digest is `ghcr.io/albert-einshutoin/mockport@sha256:497f6ec7dc6f1fea8afd292f9480872983bc940425a090aa8ad8580350d8e9a5`. The [release record](../releases/v0.3.0-preview.md) and [app trial](app-trial.md) tie it to the source tag and tested sample. Use this digest rather than `latest` for repeated trials. Record the index digest, selected platform manifest/config digests, local Docker image ID, and executed platform separately; Docker 29.8.0 reported the index digest as its local `.Id` in this trial.
 
 Local release archive check:
 
