@@ -20,6 +20,8 @@
 
 # Node dependencies
 node_modules/
+__pycache__/
+*.pyc
 
 # Test and coverage outputs
 coverage.out

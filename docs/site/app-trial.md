@@ -2,7 +2,7 @@
 
 [日本語版](app-trial.ja.md)
 
-This trial runs three sample apps against a published Mockport image. A separate, first-time user should substitute one flow in their own app; the bundled sample is preparation evidence, not an external-app trial. No real provider token, Slack workspace, payment, or AI inference is used.
+This trial runs three sample apps against a published Mockport image. A separate technical trial connects the unmodified [LLM 0.36 CLI](../../examples/external-llm/README.md) using its normal OpenAI model configuration and records nonstreaming, streaming, 401, and key restoration. First-time human use of another app remains untested. No real provider token, Slack workspace, payment, or AI inference is used.
 
 ## Verified combinations
 
@@ -36,6 +36,8 @@ docker compose -f examples/app-e2e/compose.published.yml -p mockport-published d
 The published Compose file has an `image:` selector for Mockport and no Mockport `build:`. The runner prints the Stripe order, OpenAI streamed text, and the Slack SDK reply. A nonzero runner exit means the selected flow failed. Record `git rev-parse HEAD`, the pulled digest, `docker image inspect` platform/image ID, the command and result together. Clean up with the `down` command even after an unsuccessful run. To exercise only the earlier P0/P1 image, use its digest from the first table row and set `PUBLISHED_FLOWS=p0p1`; that image does not contain #84.
 
 ## First-time external app trial card
+
+The LLM 0.36 trial is a Codex-run technical connection of an existing external app. Its baseline public image exposed a Chat Completions response gap; the corrected source and final published-image evidence are tracked in [Issue #395](https://github.com/albert-einshutoin/mockport/issues/395). It does not fill the human onboarding record below.
 
 Choose one ordinary app flow and wire only its provider URL and fake credentials to Mockport. For Slack, configure distinct fake `SLACK_BOT_TOKEN` and `SLACK_SIGNING_SECRET`, then deliver the selected message event. Expected success is one accepted event and one SDK reply to the event channel/thread. As a representative failure, send a changed body after signing or an old timestamp and check that the app rejects it without another reply. For Stripe or OpenAI, use their [app examples](../../examples/app-e2e/README.md) to select a matching failure case. Avoid real credentials.
 

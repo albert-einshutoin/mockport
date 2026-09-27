@@ -2,7 +2,7 @@
 
 [English](app-trial.md)
 
-公開 Mockport image に対してサンプルアプリを動かす導入手順です。初見利用者による別アプリ試用では、協力者自身のアプリの 1 フローに置き換えます。実 token・Slack workspace・決済・AI 推論は不要です。
+公開 Mockport image に対してサンプルアプリを動かす導入手順です。別の技術試験では、既存の [LLM 0.36 CLI](../../examples/external-llm/README.md) を通常のOpenAIモデル設定で接続し、非streaming・streaming・401・キー復元を確認します。初見利用者による別アプリ試用は未実施です。実 token・Slack workspace・決済・AI 推論は不要です。
 
 ## 検証済みの組み合わせ
 
@@ -36,6 +36,8 @@ docker compose -f examples/app-e2e/compose.published.yml -p mockport-published d
 配布用 Compose には Mockport の `build:` がなく、`MOCKPORT_IMAGE` の digest を使います。runner の正常終了時は Stripe の注文、OpenAI の stream、Slack の SDK 返信が出ます。終了 code が非 0 なら成功と扱いません。`git rev-parse HEAD`、digest、`docker image inspect` の image ID/platform、実行 command と結果を記録し、失敗時も `down` で片付けます。従来の P0/P1 image だけを試す場合は表の1行目の digest と `PUBLISHED_FLOWS=p0p1` を使用します。その image に #84 は含まれません。
 
 ## 初見利用者・別アプリ試用の記録票
+
+LLM 0.36はCodexが既存の外部アプリを接続した技術試験です。基準の公開imageではChat Completions応答の不足が見つかり、修正sourceと最終公開imageの証拠は [Issue #395](https://github.com/albert-einshutoin/mockport/issues/395) で追跡します。下の初見利用者の記録票を実施済みにはしません。
 
 利用者自身の通常フローを一つ選び、接続先と偽 credential を Mockport に向けます。Slack なら token と署名鍵を別の偽値にして、選択 message event を送り、受信の成功と同じ channel/thread への SDK 返信を確認します。代表的な失敗として署名後の本文改ざんか古い timestamp を送り、返信が増えず拒否されることを確かめます。Stripe/OpenAI の失敗例は [app E2E](../../examples/app-e2e/README.md) を参照します。
 
