@@ -6,13 +6,13 @@ This trial runs three sample apps against a published Mockport image. A separate
 
 ## v0.3.0-preview procedure
 
-Prerequisites: Docker with Compose, Git, access to GHCR and package registries, and free local ports 43101/33001/33002/33003. The release tag fixes sample source and package locks. The [release record](../releases/v0.3.0-preview.md) records the image digest after publication.
+Prerequisites: Docker with Compose, Git, access to GHCR and package registries, and free local ports 43101/33001/33002/33003. The release tag fixes sample source and package locks. The image below is the published registry digest; the versioned tag is `0.3.0-preview`.
 
 ```sh
 git clone --branch v0.3.0-preview --depth 1 https://github.com/albert-einshutoin/mockport.git
 cd mockport
 git rev-parse HEAD
-export MOCKPORT_IMAGE='ghcr.io/albert-einshutoin/mockport:0.3.0-preview'
+export MOCKPORT_IMAGE='ghcr.io/albert-einshutoin/mockport@sha256:497f6ec7dc6f1fea8afd292f9480872983bc940425a090aa8ad8580350d8e9a5'
 export PUBLISHED_FLOWS=all
 docker pull "$MOCKPORT_IMAGE"
 docker image inspect "$MOCKPORT_IMAGE" --format '{{.Id}} {{.Os}}/{{.Architecture}}'
@@ -20,7 +20,9 @@ docker compose -f examples/app-e2e/compose.published.yml -p mockport-published u
 docker compose -f examples/app-e2e/compose.published.yml -p mockport-published down --remove-orphans
 ```
 
-For exact repetition after publication, set `MOCKPORT_IMAGE` to the recorded `ghcr.io/albert-einshutoin/mockport@sha256:...` digest. Compose builds only sample apps and the runner; it pulls Mockport. The `all` run checks a Stripe order update, OpenAI streaming, and a Slack thread reply. Clean up with `down --remove-orphans` after failures too. The separate LLM 0.36 trial requires Python 3.13 with `venv` and `pip`; from this same checkout, run `MOCKPORT_IMAGE="$MOCKPORT_IMAGE" bash scripts/run-external-llm.sh`. Its [guide](../../examples/external-llm/README.md) describes the lock and fake model configuration.
+Compose builds only sample apps and the runner; it pulls Mockport. The `all` run checks a Stripe order update, OpenAI streaming, and a Slack thread reply. Clean up with `down --remove-orphans` after failures too. The separate LLM 0.36 trial requires Python 3.13 with `venv` and `pip`; from this same checkout, run `MOCKPORT_IMAGE="$MOCKPORT_IMAGE" bash scripts/run-external-llm.sh`. Its [guide](../../examples/external-llm/README.md) describes the lock and fake model configuration.
+
+The 2026-09-28 published-image check used sample commit `d54f03d164f0cea1dfdbc4ef838ad1b7ef703259` from the release tag on macOS arm64 / Docker 29.8.0 linux/arm64. `docker image inspect .Id` and a running container's `.Image` both reported local image-store ID `sha256:497f6ec7dc6f1fea8afd292f9480872983bc940425a090aa8ad8580350d8e9a5`; the selected linux/arm64 registry manifest was separately `sha256:574638d691a6cd6c1009b4cc4e3565d17c52af54c5cc10847b922c19bf6d9d39` with config `sha256:9f5d7cfda57baeac21b1538b73d7a95d4f54368e9126a4b116aef26be46b6ded`. With the index digest above and `PUBLISHED_FLOWS=all`, Compose runner exited 0: Stripe order update, OpenAI streaming (4 chunks), and Slack SDK thread reply all passed. The LLM runner on the same source and image reported CLI exits `0,0,1,0` and request statuses `200,200,401,200`. Both commands cleaned up their owned containers and network; the host port was free afterward. The registry also has a linux/amd64 manifest, but that platform was not run in this check. See the [release record](../releases/v0.3.0-preview.md) for archives, checksums, and workflow URLs.
 
 ## Earlier technical trials (historical)
 ## Verified combinations

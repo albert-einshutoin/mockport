@@ -42,7 +42,7 @@ tar -xzf mockport_0.3.0-preview_darwin_arm64.tar.gz
 
 Use the explicit `0.3.0-preview` image tag for preview installs. The `latest` tag follows the default branch image and is not the preview release contract.
 
-The [release record](../releases/v0.3.0-preview.md) and [app trial](app-trial.md) record the registry digest after publication. Use the digest rather than `latest` for repeated trials. A registry digest and the local platform image ID are different identifiers; record both.
+The published OCI index digest is `ghcr.io/albert-einshutoin/mockport@sha256:497f6ec7dc6f1fea8afd292f9480872983bc940425a090aa8ad8580350d8e9a5`. The [release record](../releases/v0.3.0-preview.md) and [app trial](app-trial.md) tie it to the source tag and tested sample. Use this digest rather than `latest` for repeated trials. Record the index digest, selected platform manifest/config digests, local Docker image ID, and executed platform separately; Docker 29.8.0 reported the index digest as its local `.Id` in this trial.
 
 Local release archive check:
 
@@ -57,5 +57,5 @@ From the tagged checkout, install the GitHub CLI (`gh`) and Go 1.26.8 if using t
 ```bash
 tmpdir="$(mktemp -d)"
 gh release download v0.3.0-preview -D "$tmpdir"
-scripts/verify-release-artifacts.sh 0.3.0-preview "$tmpdir" ghcr.io/albert-einshutoin/mockport:0.3.0-preview
+scripts/verify-release-artifacts.sh 0.3.0-preview "$tmpdir" ghcr.io/albert-einshutoin/mockport@sha256:497f6ec7dc6f1fea8afd292f9480872983bc940425a090aa8ad8580350d8e9a5
 ```

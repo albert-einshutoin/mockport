@@ -6,13 +6,13 @@
 
 ## v0.3.0-preview 手順
 
-前提はDocker Compose、Git、GHCRとpackage registryへの接続、空きport 43101/33001/33002/33003です。公開tagでsample sourceと依存lockを固定します。公開後の[記録](../releases/v0.3.0-preview.ja.md)にimage digestを追記します。
+前提はDocker Compose、Git、GHCRとpackage registryへの接続、空きport 43101/33001/33002/33003です。公開tagでsample sourceと依存lockを固定します。下記は公開済みregistry digestです。版付きtagは`0.3.0-preview`です。
 
 ```sh
 git clone --branch v0.3.0-preview --depth 1 https://github.com/albert-einshutoin/mockport.git
 cd mockport
 git rev-parse HEAD
-export MOCKPORT_IMAGE='ghcr.io/albert-einshutoin/mockport:0.3.0-preview'
+export MOCKPORT_IMAGE='ghcr.io/albert-einshutoin/mockport@sha256:497f6ec7dc6f1fea8afd292f9480872983bc940425a090aa8ad8580350d8e9a5'
 export PUBLISHED_FLOWS=all
 docker pull "$MOCKPORT_IMAGE"
 docker image inspect "$MOCKPORT_IMAGE" --format '{{.Id}} {{.Os}}/{{.Architecture}}'
@@ -20,7 +20,9 @@ docker compose -f examples/app-e2e/compose.published.yml -p mockport-published u
 docker compose -f examples/app-e2e/compose.published.yml -p mockport-published down --remove-orphans
 ```
 
-公開後の正確な再実行では、`MOCKPORT_IMAGE`を記録済み`ghcr.io/albert-einshutoin/mockport@sha256:...`に設定します。Composeがbuildするのはsampleアプリとrunnerだけで、Mockportは取得したimageを使います。`all`はStripe注文更新、OpenAI streaming、Slack thread返信を確認します。失敗後も`down --remove-orphans`を実行します。別のLLM 0.36試験には`venv`と`pip`を含むPython 3.13が必要です。同じcheckoutで`MOCKPORT_IMAGE="$MOCKPORT_IMAGE" bash scripts/run-external-llm.sh`を実行します。[ガイド](../../examples/external-llm/README.md)にlockと偽モデル設定があります。
+Composeがbuildするのはsampleアプリとrunnerだけで、Mockportは取得したimageを使います。`all`はStripe注文更新、OpenAI streaming、Slack thread返信を確認します。失敗後も`down --remove-orphans`を実行します。別のLLM 0.36試験には`venv`と`pip`を含むPython 3.13が必要です。同じcheckoutで`MOCKPORT_IMAGE="$MOCKPORT_IMAGE" bash scripts/run-external-llm.sh`を実行します。[ガイド](../../examples/external-llm/README.md)にlockと偽モデル設定があります。
+
+2026-09-28の公開image確認は、公開tagのsample commit `d54f03d164f0cea1dfdbc4ef838ad1b7ef703259`をmacOS arm64 / Docker 29.8.0 linux/arm64で使用しました。`docker image inspect .Id`と実行中containerの`.Image`はいずれもlocal image-store ID `sha256:497f6ec7dc6f1fea8afd292f9480872983bc940425a090aa8ad8580350d8e9a5`でした。選択されたlinux/arm64 registry manifestは別の`sha256:574638d691a6cd6c1009b4cc4e3565d17c52af54c5cc10847b922c19bf6d9d39`で、configは`sha256:9f5d7cfda57baeac21b1538b73d7a95d4f54368e9126a4b116aef26be46b6ded`です。上記index digestと`PUBLISHED_FLOWS=all`でCompose runner exit 0となり、Stripe注文更新、OpenAI streaming（4 chunk）、Slack SDK thread返信が通過しました。同じsource/imageのLLM runnerはCLI exit `0,0,1,0`、request status `200,200,401,200`です。所有container/networkは後始末し、host portも空いています。registryにはlinux/amd64 manifestもありますが、そのplatformでの動作試験は行っていません。archive、checksum、workflow URLは[公開記録](../releases/v0.3.0-preview.ja.md)を参照してください。
 
 ## 以前の技術試験（履歴）
 ## 検証済みの組み合わせ
