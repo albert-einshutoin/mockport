@@ -4,6 +4,25 @@
 
 公開 Mockport image に対してサンプルアプリを動かす導入手順です。別の技術試験では、既存の [LLM 0.36 CLI](../../examples/external-llm/README.md) を通常のOpenAIモデル設定で接続し、非streaming・streaming・401・キー復元を確認します。初見利用者による別アプリ試用は未実施です。実 token・Slack workspace・決済・AI 推論は不要です。
 
+## v0.3.0-preview 手順
+
+前提はDocker Compose、Git、GHCRとpackage registryへの接続、空きport 43101/33001/33002/33003です。公開tagでsample sourceと依存lockを固定します。公開後の[記録](../releases/v0.3.0-preview.ja.md)にimage digestを追記します。
+
+```sh
+git clone --branch v0.3.0-preview --depth 1 https://github.com/albert-einshutoin/mockport.git
+cd mockport
+git rev-parse HEAD
+export MOCKPORT_IMAGE='ghcr.io/albert-einshutoin/mockport:0.3.0-preview'
+export PUBLISHED_FLOWS=all
+docker pull "$MOCKPORT_IMAGE"
+docker image inspect "$MOCKPORT_IMAGE" --format '{{.Id}} {{.Os}}/{{.Architecture}}'
+docker compose -f examples/app-e2e/compose.published.yml -p mockport-published up --build --abort-on-container-exit --exit-code-from runner
+docker compose -f examples/app-e2e/compose.published.yml -p mockport-published down --remove-orphans
+```
+
+公開後の正確な再実行では、`MOCKPORT_IMAGE`を記録済み`ghcr.io/albert-einshutoin/mockport@sha256:...`に設定します。Composeがbuildするのはsampleアプリとrunnerだけで、Mockportは取得したimageを使います。`all`はStripe注文更新、OpenAI streaming、Slack thread返信を確認します。失敗後も`down --remove-orphans`を実行します。別のLLM 0.36試験には`venv`と`pip`を含むPython 3.13が必要です。同じcheckoutで`MOCKPORT_IMAGE="$MOCKPORT_IMAGE" bash scripts/run-external-llm.sh`を実行します。[ガイド](../../examples/external-llm/README.md)にlockと偽モデル設定があります。
+
+## 以前の技術試験（履歴）
 ## 検証済みの組み合わせ
 
 | フロー | Mockport source commit | registry image | サンプル commit | platform | 結果 |
@@ -11,13 +30,13 @@
 | P0/P1 Stripe + OpenAI | `67a81591e48526c88b96381cd56c54386d93341a` | `ghcr.io/albert-einshutoin/mockport@sha256:eae6ba56f01cc9969038da36982e6699732379028f27313ba86dba5d1e43b8fb` | `f6fe7d573ee37b282767aa112d30615be1941298` | `linux/arm64` | 新規ディレクトリの Compose runner exit 0、2フロー成功 |
 | #84 Stripe + OpenAI + Slack | `01ab1614e40e0d92122123639eba799633e3e6c1` | `ghcr.io/albert-einshutoin/mockport@sha256:534cfaa092373cf1a307a9a140415a015b414cad8301a24e0b546b9ed46dbb04` | `f6fe7d573ee37b282767aa112d30615be1941298` | `linux/arm64` | 新規ディレクトリの Compose runner exit 0、3フロー成功 |
 
-版付き `0.2.0-preview` は従来版です。可変の `latest` だけでは版を再現できません。サンプル Dockerfile は build 時に固定した SDK 依存を取得するため、Mockport の digest に加えてサンプル commit と lock file を記録します。
+旧 `0.2.0-preview` はこれらのアプリフローを含みません。可変の `latest` だけでは版を再現できません。サンプル Dockerfile は build 時に固定した SDK 依存を取得するため、Mockport の digest に加えてサンプル commit と lock file を記録します。
 
 P0/P1 は新規一時ディレクトリに固定 commit をローカル clone し、GHCR から公開 digest を pull して配布用 Compose で実行しました。実行 container の image ID は digest と一致し、`down --remove-orphans` 後に対象 container は残りませんでした。ローカル clone 0.76 秒、Compose 7.02 秒ですが、base image と依存 layer はキャッシュ済みです。前提導入・新規依存取得を含む cold 時間として扱いません。
 
 #84 は新規ディレクトリへ固定 sample commit を GitHub から clone しました。clone 0.94 秒、sample app image の `docker compose build --no-cache` 8.52 秒、公開 Mockport digest の pull 3.21 秒、3フローの `up --no-build` 5.43 秒でした。別の新規ディレクトリで下記と同じ `up --build` も実行し、依存 cache 済みで 6.77 秒でした。Docker・Git・base image・OS・registry 側 cache は既存のため、完全な新規マシンの cold 導入時間ではありません。実行 Mockport image ID は固定 digest と一致し、対象 container は後始末済みです。
 
-## 新規作業ディレクトリから実行
+## 以前の試験を新規作業ディレクトリから再実行
 
 前提は Docker Compose、Git、GHCR と依存 package registry への接続、空いているローカル port 43101/33001/33002/33003 です。不足する前提の導入前から時間を計測します。表の行に対応する commit と digest を使用します。
 

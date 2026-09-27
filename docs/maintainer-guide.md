@@ -22,8 +22,8 @@ go vet ./...
 
 ```bash
 tmpdir="$(mktemp -d)"
-scripts/build-release-archives.sh 0.2.0-preview "$tmpdir"
-scripts/verify-release-artifacts.sh 0.2.0-preview "$tmpdir"
+scripts/build-release-archives.sh 0.3.0-preview "$tmpdir"
+scripts/verify-release-artifacts.sh 0.3.0-preview "$tmpdir"
 ```
 
 4. Sync the public preview image tag everywhere it appears before tagging (see [Release version update checklist](#release-version-update-checklist) below).
@@ -38,7 +38,7 @@ scripts/verify-release-artifacts.sh 0.2.0-preview "$tmpdir"
 On each release, update the current preview version consistently in every file below. Run:
 
 ```bash
-git grep -n "0.2.0-preview" -- . ':(exclude)docs/releases/**'
+git grep -n "0.3.0-preview" -- . ':(exclude)docs/releases/**'
 ```
 
 | File | Role |

@@ -4,19 +4,18 @@ This exercises unmodified [simonw/llm 0.36](https://github.com/simonw/llm/releas
 
 ## Reproduce
 
-Prerequisites: Python 3.13 with `venv` and `pip`, Go from `go.mod` for the source run, an unoccupied loopback port 43101, and access to the package registry. For the published-image run, use Docker and a verified digest in place of Go. Set `SOURCE_SHA` and `MOCKPORT_IMAGE` to the final values recorded in Issue #395. Time missing prerequisite installation separately.
+Prerequisites: Git, Python 3.13 with `venv` and `pip`, Docker for the published-image run, an unoccupied loopback port 43101, and package-registry access. A source build additionally needs Go 1.26.8. This tag contains the runner, `requirements.lock`, `extra-openai-models.yaml`, and `mockport.yml`. [Issue #395](https://github.com/albert-einshutoin/mockport/issues/395) records the pre-release technical test; the [release record](../../docs/releases/v0.3.0-preview.md) records the versioned-image run.
 
 ```sh
-git clone https://github.com/albert-einshutoin/mockport.git
+git clone --branch v0.3.0-preview --depth 1 https://github.com/albert-einshutoin/mockport.git
 cd mockport
-: "${SOURCE_SHA:?Set SOURCE_SHA to the final main SHA in Issue #395}"
-git checkout "$SOURCE_SHA"
-bash scripts/run-external-llm.sh
-
-# After the corrected image is published, use its verified digest:
-: "${MOCKPORT_IMAGE:?Set MOCKPORT_IMAGE to the final digest in Issue #395}"
+git rev-parse HEAD
+export MOCKPORT_IMAGE='ghcr.io/albert-einshutoin/mockport:0.3.0-preview'
+docker pull "$MOCKPORT_IMAGE"
 MOCKPORT_IMAGE="$MOCKPORT_IMAGE" bash scripts/run-external-llm.sh
 ```
+
+For exact repetition, replace the versioned tag with the digest from the release record. Expected CLI exits are `0,0,1,0`; report statuses are `200,200,401,200`. Run `bash scripts/run-external-llm.sh` without `MOCKPORT_IMAGE` only for a source-build check.
 
 The runner creates and removes its own Python venv and empty `LLM_USER_PATH`. It installs the exact Python 3.13 versions in [requirements.lock](requirements.lock), copies only [extra-openai-models.yaml](extra-openai-models.yaml) into that user directory, and uses the normal `--key` option. The model file follows [LLM's documented configuration](https://llm.datasette.io/en/stable/other-models.html). Its `api_key_name` is essential: LLM 0.36 otherwise treats a model with only `api_base` as not needing a key and supplies a dummy key. No user keys or existing conversation history are read.
 

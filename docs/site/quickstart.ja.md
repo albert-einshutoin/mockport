@@ -4,6 +4,8 @@
 
 Stripe 風 adapter を生成して、ローカルで起動します。
 
+Dockerでの初回起動はDockerとGitを用意し、[配布案内](distribution.ja.md)の公開タグ`v0.3.0-preview`から設定を取得します。以下の`mockport init`は公開archiveから取得したbinaryをPATHに置いた後の手順です。
+
 ```bash
 mockport init --adapter stripe
 docker compose -f docker-compose.mockport.yml up
@@ -31,8 +33,10 @@ docker compose -f docker-compose.mockport.yml up
 # Stripe の失敗系をテストする（サーバー再起動不要）
 curl -X POST http://localhost:43101/stripe/v1/checkout/sessions \
   -H "X-Mockport-Scenario: payment_failed" \
-  -H "Authorization: Bearer $STRIPE_KEY" \
-  -d "mode=payment&success_url=http://localhost/success&cancel_url=http://localhost/cancel"
+  -H "Authorization: Bearer mockport_stripe_secret" \
+  -d 'mode=payment' -d 'success_url=http://localhost/success' -d 'cancel_url=http://localhost/cancel' \
+  -d 'line_items[0][price_data][currency]=usd' -d 'line_items[0][price_data][unit_amount]=1200' \
+  -d 'line_items[0][price_data][product_data][name]=Mockport item' -d 'line_items[0][quantity]=1'
 ```
 
 各アダプタの対応シナリオ一覧は [アダプタリファレンス](adapters.ja.md) を参照してください。

@@ -6,7 +6,7 @@ Mockport is a Docker-first local API environment for AI-native development and C
 
 ## Current Release
 
-- `v0.2.0-preview`: six workflow-compatible adapters, generated compatibility evidence, official Stripe/OpenAI/LINE SDK contracts, bounded reports, and AI-safe environment checks.
+- `v0.3.0-preview`: six workflow-compatible adapters and selected Stripe, OpenAI, and Slack app flows, including fake-key checks and an unmodified LLM 0.36 technical connection. See the [release notes](docs/releases/v0.3.0-preview.md).
 
 ## Current Mainline
 
@@ -17,8 +17,8 @@ Mockport is a Docker-first local API environment for AI-native development and C
 ## Near Term
 
 1. P0 complete on main: empty-directory source smoke runs the built checkout image ([#315](https://github.com/albert-einshutoin/mockport/issues/315), [PR #384](https://github.com/albert-einshutoin/mockport/pull/384)); ordinary Stripe/OpenAI requests check fake keys ([#82](https://github.com/albert-einshutoin/mockport/issues/82), [PR #385](https://github.com/albert-einshutoin/mockport/pull/385)); Responses streaming is rejected explicitly ([#386](https://github.com/albert-einshutoin/mockport/issues/386), [PR #387](https://github.com/albert-einshutoin/mockport/pull/387)).
-2. P1 complete on main: [#86](https://github.com/albert-einshutoin/mockport/issues/86) has [Stripe PR #389](https://github.com/albert-einshutoin/mockport/pull/389) and [OpenAI PR #390](https://github.com/albert-einshutoin/mockport/pull/390): Checkout create/retrieve → signed webhook → one business-state update; Python app HTTP request → official SDK non-streaming/Chat streaming → bounded error, retry, and timeout responses. Both run against one Mockport process locally and in CI, with mutation checks proving the E2E assertions detect app bugs. These changes are not in the published `v0.2.0-preview`.
-3. P2 selected source flow: [#84](https://github.com/albert-einshutoin/mockport/issues/84) delivers one signed Slack message event to an app, verifies its signature and timestamp with the official Python SDK, and replies to the event thread with `chat.postMessage`. The app E2E checks the SDK response and one report call; the adapter test checks stored reply fields. A digest-pinned [published-image trial](docs/site/app-trial.md) separates the earlier P0/P1 image from the #84 image after publication. The next product check is one first-time user's separate app flow; that trial is not yet claimed.
+2. P1 is included in `v0.3.0-preview`: [#86](https://github.com/albert-einshutoin/mockport/issues/86) has [Stripe PR #389](https://github.com/albert-einshutoin/mockport/pull/389) and [OpenAI PR #390](https://github.com/albert-einshutoin/mockport/pull/390): Checkout create/retrieve → signed webhook → one business-state update; Python app HTTP request → official SDK non-streaming/Chat streaming → bounded error, retry, and timeout responses. Both run against one Mockport process locally and in CI.
+3. The selected [#84](https://github.com/albert-einshutoin/mockport/issues/84) Slack source flow and [#395](https://github.com/albert-einshutoin/mockport/issues/395) LLM 0.36 technical connection are included in `v0.3.0-preview`. A [published-image trial](docs/site/app-trial.md) records the versioned image and sample source. First-time user adoption and continued use remain untested.
 
 ## Public Preview Follow-up
 

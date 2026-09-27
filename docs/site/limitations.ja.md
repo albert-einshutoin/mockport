@@ -25,6 +25,7 @@ adapter spec、compatibility report、runtime 挙動と突合した症状ベー�
 
   Mockport はJSONエラーを返し、reportに `reason=unsupported_feature` を記録し、response状態を作成しません。`stream:true` がないResponsesは従来どおりdeterministicなJSONを返します。このendpointで `text/event-stream` や `response.output_text.delta` のようなnamed eventは返しません。
 - **OpenAI: 実 inference 品質は再現しません** — 応答は deterministic な placeholder。model quality、tokenization parity、hosted tools、vector stores、provider scheduling は対象外。
+- **OpenAI: 模擬usageは固定値です** — LLM 0.36を含む選択clientとの接続用にChat応答へ付けています。実token数・費用・回答品質の計測値ではありません。
 - **Slack: 実 workspace 配送や Events API 全体は対象外** — 固定の署名付き message event を設定したローカル app に配送し、thread 返信を検証できます。親 message は fixture の入力です。親・thread の取得、再配送 scheduler、他の event 型、Block Kit validation、files、app scopes、enterprise directory は未対応です。
 - **LINE: 実 Login UI や LIFF browser はありません** — OAuth code/token/profile は local で動作。QR login、LIFF runtime、署名付き ID token、provider 側 webhook 再配送、quota enforcement（シナリオ以外）は未対応。
 - **全般: `mockport.yml` の `scenarios:` ブロックは未実装** — パースされますが runtime には適用されません。存在時は起動時・`--check`・`/_mockport/report` で警告します。

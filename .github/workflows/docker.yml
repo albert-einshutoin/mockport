@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Optional image tag to publish, for example 0.2.0-preview"
+        description: "Optional image tag to publish, for example 0.3.0-preview"
         required: false
         type: string
 

@@ -4,6 +4,14 @@
 
 ## Unreleased
 
+## v0.3.0-preview - 2026-09-27
+
+- Added opt-in fake-key validation for ordinary Stripe and OpenAI requests. Unsupported OpenAI Responses `stream:true` now returns 501.
+- Added a Stripe app flow with valid inline Checkout items, unpaid Session creation, signed completion webhook, and one order update.
+- Added OpenAI nonstreaming and Chat streaming app flows, bounded failures, and the response fields needed by unmodified LLM 0.36. Simulated usage counts are fixed values.
+- Added a signed Slack message event flow with official SDK signature verification and a reply in the same thread.
+- Pinned the Docker, binary, CLI init, and experimental npm wrapper entrypoints to this preview. See [release notes](docs/releases/v0.3.0-preview.md) for migration, reproducible samples, and limits.
+
 ## v0.2.0-preview - 2026-07-19
 
 ### Compatibility release track

@@ -66,16 +66,16 @@ Compose builds Mockport from this checkout and installs the pinned Node and Pyth
 
 ## Run the published Mockport image
 
-[`compose.published.yml`](compose.published.yml) uses `MOCKPORT_IMAGE` only for the Mockport service; it contains no Mockport build instruction. Set it to a verified registry digest. `PUBLISHED_FLOWS=all` checks Stripe, OpenAI, and Slack against the #84 image; `p0p1` checks only Stripe and OpenAI with the earlier digest. The sample app images and their pinned SDK dependencies are built/downloaded locally; a digest pin for Mockport does not pin those builds. Check out the sample commit recorded in [the trial guide](../../docs/site/app-trial.md) before running from a fresh directory.
+[`compose.published.yml`](compose.published.yml) uses `MOCKPORT_IMAGE` only for Mockport and has no Mockport build instruction. Check out the `v0.3.0-preview` tag as shown in the [trial guide](../../docs/site/app-trial.md). The sample apps and pinned SDK dependencies are built or downloaded locally. `PUBLISHED_FLOWS=all` checks Stripe, OpenAI, and Slack; `p0p1` is retained for an earlier historical digest.
 
 ```sh
-export MOCKPORT_IMAGE='ghcr.io/albert-einshutoin/mockport@sha256:534cfaa092373cf1a307a9a140415a015b414cad8301a24e0b546b9ed46dbb04'
+export MOCKPORT_IMAGE='ghcr.io/albert-einshutoin/mockport:0.3.0-preview'
 export PUBLISHED_FLOWS=all
 docker pull "$MOCKPORT_IMAGE"
 docker compose -f examples/app-e2e/compose.published.yml -p mockport-published up --build --abort-on-container-exit --exit-code-from runner
 docker compose -f examples/app-e2e/compose.published.yml -p mockport-published down --remove-orphans
 ```
 
-This digest includes #84 and was built from main `01ab1614e40e0d92122123639eba799633e3e6c1`. The earlier P0/P1 digest is `sha256:eae6ba56f01cc9969038da36982e6699732379028f27313ba86dba5d1e43b8fb`; use it with `PUBLISHED_FLOWS=p0p1`. The versioned `0.2.0-preview` image is older still. The trial guide records the verified sample commit, platform, and measurement limits.
+For exact repetition, use the digest recorded in the [release record](../../docs/releases/v0.3.0-preview.md). The older P0/P1 digest `sha256:eae6ba56f01cc9969038da36982e6699732379028f27313ba86dba5d1e43b8fb` needs `PUBLISHED_FLOWS=p0p1`. Clean up after failures too.
 
 CI runs the SDK contracts and local `all` command on every PR and push. The Docker Compose runs are additional network-isolated smoke checks. These selected flows are example contracts, not full provider compatibility claims.
